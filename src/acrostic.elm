@@ -57,30 +57,39 @@ view model =
             , textInput "Author" model.author Author
             , textarea [ placeholder "Quote", onInput Quote, rows 5, cols 50 ] [text model.quote]
             ]
-        , div [id "stats"]
-            [ div [] [text "Words: ", model |> numWords |> String.fromInt |> text]
-            , div [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
-            , let 
-                  initialismHist = letterHist (initialism model)
+        , let 
+              initialismHist = letterHist (initialism model)
 
-                  quoteHist = letterHist model.quote 
+              quoteHist = letterHist model.quote 
 
-                  missingHist = histDifference quoteHist initialismHist
-                                  |> Debug.log "missingHist" 
+              missingHist = histDifference quoteHist initialismHist
 
-              in
+              viable = isEmptyHist missingHist
 
-                  if isEmptyHist missingHist
-                  then text "Viable acrostic"
-                  else div [] [ text "Non-viable acrostic; initialism needs: "
-                              , histogramToShortString missingHist |> text
-                              ]
-            ]
+          in
+
+            div [id "stats"]
+                [ div [] [text "Words: ", model |> numWords |> String.fromInt |> text]
+                , div [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
+                ,
+                    if viable
+                    then text "Viable acrostic"
+                    else div [] [ text "Non-viable acrostic; initialism needs: "
+                                , histToShortString missingHist |> text
+                                ]
+                , histToHtml quoteHist
+                ]
         ]
 
 {- Acrostic functions -}
 
 type alias Hist = Dict Char Int
+
+histogramChars : String -> List Char
+histogramChars s =
+    s |> String.toUpper 
+      |> String.toList
+      |> List.filter Char.isAlphaNum
 
 initialism : Model -> String
 initialism model = model.author ++ model.title
@@ -120,13 +129,30 @@ letterHist s =
     in
 
     List.foldl (\c m -> Dict.update c incrementCount m)
-        emptyHist (String.toList s)
+        emptyHist (histogramChars s)
 
-histogramToShortString : Hist -> String
-histogramToShortString h =
-    h |> Dict.toList
+cleanLetterHist : Hist -> Hist
+cleanLetterHist h =
+    Dict.union h emptyLetterHist 
+        |> Dict.filter (\c cnt -> cnt >= 0)
+
+histToShortString : Hist -> String
+histToShortString h =
+    h |> Dict.filter (\c cnt -> cnt > 0)
+      |> Dict.toList
       |> List.map (\(c, count) -> c |> String.fromChar |> String.repeat count)
       |> String.concat
+
+histToHtml : Hist -> Html msg
+histToHtml h =
+    div []
+        (h |> cleanLetterHist
+           |> Dict.toList
+           |> List.map (\(c,cnt) -> 
+                            span [] [ span [] [text (String.fromChar c)]
+                                    , span [] [text (String.fromInt cnt)]
+                                    ])
+        )
 
 histDifference : Hist -> Hist -> Hist
 histDifference hSub hSup = 
