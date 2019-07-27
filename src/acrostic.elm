@@ -61,11 +61,12 @@ view model =
             [ div [] [text "Words: ", model |> numWords |> String.fromInt |> text]
             , div [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
             , let 
-                  initialismHist = letterHistogram (initialism model)
+                  initialismHist = letterHist (initialism model)
 
-                  quoteHist = letterHistogram model.quote 
+                  quoteHist = letterHist model.quote 
 
-                  missingHist = histDifference initialismHist quoteHist
+                  missingHist = histDifference quoteHist initialismHist
+                                  |> Debug.log "missingHist" 
 
               in
 
@@ -98,25 +99,28 @@ numLetters model =
         |> List.map String.length 
         |> List.sum
 
-letterHistogram : String -> Hist
-letterHistogram s =
+emptyHist : Hist
+emptyHist = Dict.empty
+
+emptyLetterHist : Hist
+emptyLetterHist = 
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
+        |> String.toList
+        |> List.map (\c -> (c,0))
+        |> Dict.fromList
+
+
+letterHist : String -> Hist
+letterHist s =
     let 
-
-        emptyLetterHistogram = 
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
-                |> String.toList
-                |> List.map (\c -> (c,0))
-                |> Dict.fromList
-
         incrementCount mcnt =
             case mcnt of
              Nothing -> Just 1
              Just cnt -> Just (cnt + 1)
-
     in
 
     List.foldl (\c m -> Dict.update c incrementCount m)
-        emptyLetterHistogram (String.toList s)
+        emptyHist (String.toList s)
 
 histogramToShortString : Hist -> String
 histogramToShortString h =
@@ -125,8 +129,16 @@ histogramToShortString h =
       |> String.concat
 
 histDifference : Hist -> Hist -> Hist
-histDifference = Dict.diff {- FIXME needs to consider counts -}
+histDifference hSub hSup = 
+    Dict.merge
+        (\c cSub      d -> Dict.insert c (-cSub) d)
+        (\c cSub cSup d -> Dict.insert c (cSup - cSub) d)
+        (\c      cSup d -> Dict.insert c cSup d)
+        hSub hSup
+        Dict.empty
 
 isEmptyHist : Hist -> Bool
-isEmptyHist = Dict.isEmpty
+isEmptyHist h = 
+    h |> Dict.filter (\c cnt -> cnt > 0)
+      |> Dict.isEmpty
   
