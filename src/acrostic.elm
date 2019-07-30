@@ -12,17 +12,20 @@ type Msg =
     Title String
   | Author String
   | Quote String
+  | Clue Int String
 
 type alias Model = 
     { title : String
     , author : String
     , quote : String
+    , clues : List String
     }
 
 initialModel =
     { title = ""
     , author = ""
     , quote = ""
+    , clues = []
     }
 
 main = Browser.element
@@ -44,21 +47,40 @@ subscriptions model = Sub.none
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
-        Title title -> ({ model | title = String.toUpper title }, Cmd.none)
-        Author author -> ({ model | author = String.toUpper author }, Cmd.none)
+        Title title -> (updateClues { model | title = String.toUpper title }, Cmd.none)
+        Author author -> (updateClues { model | author = String.toUpper author }, Cmd.none)
         Quote quote -> ({ model | quote = String.toUpper quote }, Cmd.none)
+        Clue idx clue -> ({ model | clues = updateIndex idx clue model.clues}, Cmd.none)
+
+updateClues : Model -> Model
+updateClues model =
+    let initials = initialism model 
+
+        len = String.length initials
+
+        shortenedClues = List.take len model.clues
+
+        numMissing = len - List.length shortenedClues
+
+        lengthenedClues = shortenedClues ++ List.repeat numMissing ""
+                   
+    in
+    
+        { model | clues = lengthenedClues }
 
 view : Model -> Html Msg
 view model = 
+    let initials = initialism model in
+
     div [] 
         [ h1 [] [text "Crossbars Acrostic Constructor"]
-        , div []
+        , section [id "quote"]
             [ textInput "Title" model.title Title
             , textInput "Author" model.author Author
             , textarea [ placeholder "Quote", onInput Quote, rows 5, cols 50 ] [text model.quote]
             ]
         , let 
-              initialismHist = letterHist (initialism model)
+              initialismHist = letterHist initials
 
               quoteHist = letterHist model.quote 
 
@@ -66,9 +88,13 @@ view model =
 
               viable = isEmptyHist missingHist
 
+              clueHist = letterHist (String.concat model.clues)
+
+              remainingHist = histDifference clueHist quoteHist
+
           in
 
-            div [id "stats"]
+            section [id "stats"]
                 [ div [] [text "Words: ", model |> numWords |> String.fromInt |> text]
                 , div [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
                 ,
@@ -77,9 +103,23 @@ view model =
                     else div [] [ text "Non-viable acrostic; initialism needs: "
                                 , histToShortString missingHist |> text
                                 ]
-                , histToHtml quoteHist
+                , histToHtml remainingHist
                 ]
+        ,
+
+            section [id "clues"]
+            [ ol [type_ "A"] 
+                 (List.map3 viewClue
+                      (List.range 0 (String.length initials - 1))
+                      (String.toList initials) 
+                      model.clues)
+            ]
         ]
+
+viewClue : Int -> Char -> String -> Html Msg
+viewClue index initial clue = 
+    li []
+        [textInput ("Clue starting with " ++ String.fromChar initial) clue (Clue index)]
 
 {- Acrostic functions -}
 
@@ -92,7 +132,7 @@ histogramChars s =
       |> List.filter Char.isAlphaNum
 
 initialism : Model -> String
-initialism model = model.author ++ model.title
+initialism model = model.author ++ model.title |> String.filter Char.isAlphaNum
 
 numWords : Model -> Int
 numWords model = 
@@ -168,3 +208,10 @@ isEmptyHist h =
     h |> Dict.filter (\c cnt -> cnt > 0)
       |> Dict.isEmpty
   
+updateIndex : Int -> a -> List a -> List a
+updateIndex n v l =
+    case l of
+        [] -> [v]
+        h::t -> if n == 0
+                then v::t
+                else h::updateIndex (n-1) v t
