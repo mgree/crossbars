@@ -61,23 +61,11 @@ update msg model =
         Title title -> (updateClues { model | title = String.toUpper title }, Cmd.none)
         Author author -> (updateClues { model | author = String.toUpper author }, Cmd.none)
         Quote quote -> ({ model | quote = String.toUpper quote }, Cmd.none)
-        Clue idx clue -> ({ model | clues = updateIndex idx clue model.clues}, Cmd.none)
+        Clue idx clue -> ({ model | clues = updateIndex idx (String.toUpper clue) model.clues}, Cmd.none)
 
 updateClues : Model -> Model
 updateClues model =
-    let initials = initialism model 
-
-        len = String.length initials
-
-        shortenedClues = List.take len model.clues
-
-        numMissing = len - List.length shortenedClues
-
-        lengthenedClues = shortenedClues ++ List.repeat numMissing ""
-                   
-    in
-    
-        { model | clues = lengthenedClues }
+    { model | clues = initialism model |> String.toList |> List.map String.fromChar }
 
 view : Model -> Html Msg
 view model = 
@@ -120,7 +108,7 @@ view model =
                     else div [] [ text "Non-viable acrostic; initialism needs: "
                                 , histToShortString missingHist |> text
                                 ]
-                , histToHtml remainingHist
+                , histToHtml "remaining" remainingHist
                 ]
         ,
 
@@ -137,9 +125,9 @@ viewClues initials clues =
                    breakSublists 5 |> transpose in
     table 
       [id "clues"]
-      (List.map (\clueRow -> tr [] (List.map clueEntry clueRow)) clueRows)
+      (List.map (\clueRow -> tr [] (List.concatMap clueEntry clueRow)) clueRows)
 
-clueEntry : (Int, (Char, String)) -> Html Msg
+clueEntry : (Int, (Char, String)) -> List (Html Msg)
 clueEntry (index, (initial, clue)) =
     let 
 
@@ -149,12 +137,14 @@ clueEntry (index, (initial, clue)) =
                  
         valid = String.startsWith initialStr clue
 
+        lbl = "clue-" ++ letter
     in
-    td [class (if valid then "valid-initial" else "invalid-initial")]
-       [ span [class "clue-letter", id ("clue-" ++ letter)] [text (letter ++ ". ")]
-       , textInput [tabindex (index + baseTabs)] 
+
+        [ td [class "clue-letter"] 
+              [label [for lbl] [text (letter ++ ". ")]]
+        , textInput [tabindex (index + baseTabs), name lbl] 
            ("Clue starting with " ++ initialStr) clue (Clue index)
-       ]
+        ] 
 
 transpose : List (List a) -> List (List a)
 transpose ls =
@@ -254,13 +244,17 @@ histToShortString h =
       |> List.map (\(c, count) -> c |> String.fromChar |> String.repeat count)
       |> String.concat
 
-histToHtml : Hist -> Html msg
-histToHtml h =
+histToHtml : String -> Hist -> Html msg
+histToHtml histId h =
     let hl = h |> cleanLetterHist |> Dict.toList in
-    table [class "histogram"]
-        [ tr [] (List.map (\(c,cnt) -> td [] [text (String.fromChar c)]) hl)
-        , tr [] (List.map (\(c,cnt) -> td [] [text (String.fromInt cnt)]) hl)
+    table [class "histogram", id histId]
+        [ tr [] (List.map (\(c,cnt) -> histEntryTD cnt (text (String.fromChar c))) hl)
+        , tr [] (List.map (\(c,cnt) -> histEntryTD cnt (text (String.fromInt cnt))) hl)
         ]
+
+histEntryTD : Int -> Html msg -> Html msg
+histEntryTD cnt inner = 
+    td (if cnt <= 0 then [class "exhausted"] else []) [inner]
 
 histDifference : Hist -> Hist -> Hist
 histDifference hSub hSup = 
