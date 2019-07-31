@@ -48,8 +48,9 @@ main = Browser.element
 init : Flags -> (Model, Cmd Msg)
 init flags = (initialModel, Cmd.none)
 
-textInput : String -> String -> (String -> msg) -> Html msg
-textInput p v toMsg = input [ type_ "text", placeholder p, value v, onInput toMsg ] []
+textInput : List (Attribute msg) -> String -> String -> (String -> msg) -> Html msg
+textInput attrs p v toMsg = 
+    input ([ type_ "text", placeholder p, value v, onInput toMsg ] ++ attrs) []
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.none
@@ -85,9 +86,15 @@ view model =
     div [] 
         [ h1 [] [text "Crossbars Acrostic Constructor"]
         , section [id "quote"]
-            [ textInput "Title" model.title Title
-            , textInput "Author" model.author Author
-            , textarea [ placeholder "Quote", onInput Quote, rows 6, cols 60 ] [text model.quote]
+            [ textInput [tabindex 1] "Title" model.title Title
+            , textInput [tabindex 2] "Author" model.author Author
+            , textarea [ tabindex 3 {- see baseTabs below -}
+                       , placeholder "Quote"
+                       , onInput Quote
+                       , rows 6
+                       , cols 60 
+                       ] 
+                  [text model.quote]
             ]
         , let 
               initialismHist = letterHist initials
@@ -121,18 +128,16 @@ view model =
                 [ viewClues (String.toList initials) model.clues ]
         ]
 
+baseTabs : Int
+baseTabs = 3 {- title, author, quote -}
+
 viewClues : List Char -> List String -> Html Msg
 viewClues initials clues = 
     let clueRows = clues |> addInitials initials |> addIndex |> 
                    breakSublists 5 |> transpose in
     table 
       [id "clues"]
-      (List.map clueRow clueRows)
-
-clueRow : List (Int, (Char, String)) -> Html Msg
-clueRow clues = 
-    tr []
-        (List.map clueEntry clues)
+      (List.map (\clueRow -> tr [] (List.map clueEntry clueRow)) clueRows)
 
 clueEntry : (Int, (Char, String)) -> Html Msg
 clueEntry (index, (initial, clue)) =
@@ -147,7 +152,8 @@ clueEntry (index, (initial, clue)) =
     in
     td [class (if valid then "valid-initial" else "invalid-initial")]
        [ span [class "clue-letter", id ("clue-" ++ letter)] [text (letter ++ ". ")]
-       , textInput ("Clue starting with " ++ initialStr) clue (Clue index)
+       , textInput [tabindex (index + baseTabs)] 
+           ("Clue starting with " ++ initialStr) clue (Clue index)
        ]
 
 transpose : List (List a) -> List (List a)
