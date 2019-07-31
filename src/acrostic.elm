@@ -1,3 +1,13 @@
+{- TODO
+   highlight invalid bits in histogram, clues
+
+   cleaner puzzle display
+
+   button to fix author/title (warnings on clue realignment?)
+
+   way to control escaped characters
+-}
+
 import Dict exposing (Dict)
 
 import Html exposing (..)
@@ -77,7 +87,7 @@ view model =
         , section [id "quote"]
             [ textInput "Title" model.title Title
             , textInput "Author" model.author Author
-            , textarea [ placeholder "Quote", onInput Quote, rows 5, cols 50 ] [text model.quote]
+            , textarea [ placeholder "Quote", onInput Quote, rows 6, cols 60 ] [text model.quote]
             ]
         , let 
               initialismHist = letterHist initials
@@ -108,18 +118,69 @@ view model =
         ,
 
             section [id "clues"]
-            [ ol [type_ "A"] 
-                 (List.map3 viewClue
-                      (List.range 0 (String.length initials - 1))
-                      (String.toList initials) 
-                      model.clues)
-            ]
+                [ viewClues (String.toList initials) model.clues ]
         ]
 
-viewClue : Int -> Char -> String -> Html Msg
-viewClue index initial clue = 
-    li []
-        [textInput ("Clue starting with " ++ String.fromChar initial) clue (Clue index)]
+viewClues : List Char -> List String -> Html Msg
+viewClues initials clues = 
+    let clueRows = clues |> addInitials initials |> addIndex |> 
+                   breakSublists 5 |> transpose in
+    table 
+      [id "clues"]
+      (List.map clueRow clueRows)
+
+clueRow : List (Int, (Char, String)) -> Html Msg
+clueRow clues = 
+    tr []
+        (List.map clueEntry clues)
+
+clueEntry : (Int, (Char, String)) -> Html Msg
+clueEntry (index, (initial, clue)) =
+    let 
+
+        initialStr = String.fromChar initial
+
+        letter = letterFor index 
+                 
+        valid = String.startsWith initialStr clue
+
+    in
+    td [class (if valid then "valid-initial" else "invalid-initial")]
+       [ span [class "clue-letter", id ("clue-" ++ letter)] [text (letter ++ ". ")]
+       , textInput ("Clue starting with " ++ initialStr) clue (Clue index)
+       ]
+
+transpose : List (List a) -> List (List a)
+transpose ls =
+    if List.isEmpty ls
+    then []
+    else (List.filterMap List.head ls) :: transpose (List.filterMap List.tail ls)
+
+breakSublists : Int -> List a -> List (List a)
+breakSublists len l =
+    if List.isEmpty l
+    then []
+    else List.take len l :: breakSublists len (List.drop len l)
+
+addInitials : List Char -> List String -> List (Char, String)
+addInitials initial clues = List.map2 Tuple.pair initial clues
+
+addIndex : List a -> List (Int, a)
+addIndex l = List.indexedMap Tuple.pair l
+
+lettering : List String
+lettering =
+    let 
+        aToZ = List.map String.fromChar alphabetList
+        aaToZZ = List.map (String.repeat 2) aToZ 
+    in
+        aToZ ++ aaToZZ
+
+letterFor : Int -> String
+letterFor index = 
+    case List.head (List.drop index lettering) of
+        Nothing -> ""
+        Just letter -> letter
 
 {- Acrostic functions -}
 
@@ -151,13 +212,17 @@ numLetters model =
 emptyHist : Hist
 emptyHist = Dict.empty
 
+alphabet : String
+alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
+
+alphabetList : List Char
+alphabetList = alphabet |> String.toList
+
 emptyLetterHist : Hist
 emptyLetterHist = 
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
-        |> String.toList
+    alphabetList
         |> List.map (\c -> (c,0))
         |> Dict.fromList
-
 
 letterHist : String -> Hist
 letterHist s =
@@ -174,7 +239,7 @@ letterHist s =
 cleanLetterHist : Hist -> Hist
 cleanLetterHist h =
     Dict.union h emptyLetterHist 
-        |> Dict.filter (\c cnt -> cnt >= 0)
+{-        |> Dict.filter (\c cnt -> cnt >= 0) -}
 
 histToShortString : Hist -> String
 histToShortString h =
@@ -185,14 +250,11 @@ histToShortString h =
 
 histToHtml : Hist -> Html msg
 histToHtml h =
-    div []
-        (h |> cleanLetterHist
-           |> Dict.toList
-           |> List.map (\(c,cnt) -> 
-                            span [] [ span [] [text (String.fromChar c)]
-                                    , span [] [text (String.fromInt cnt)]
-                                    ])
-        )
+    let hl = h |> cleanLetterHist |> Dict.toList in
+    table [class "histogram"]
+        [ tr [] (List.map (\(c,cnt) -> td [] [text (String.fromChar c)]) hl)
+        , tr [] (List.map (\(c,cnt) -> td [] [text (String.fromInt cnt)]) hl)
+        ]
 
 histDifference : Hist -> Hist -> Hist
 histDifference hSub hSup = 
