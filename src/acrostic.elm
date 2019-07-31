@@ -74,13 +74,14 @@ view model =
     div [] 
         [ h1 [] [text "Crossbars Acrostic Constructor"]
         , section [id "quote"]
-            [ textInput [tabindex 1] "Title" model.title Title
-            , textInput [tabindex 2] "Author" model.author Author
+            [ textInput [tabindex 1, size 60] "Title" model.title Title
+            , textInput [tabindex 2, size 60] "Author" model.author Author
             , textarea [ tabindex 3 {- see baseTabs below -}
                        , placeholder "Quote"
                        , onInput Quote
                        , rows 6
-                       , cols 60 
+                       , cols 60
+                       , attribute "autocapitalize" "character"
                        ] 
                   [text model.quote]
             ]
