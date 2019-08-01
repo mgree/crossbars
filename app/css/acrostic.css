@@ -1,5 +1,31 @@
+#crossbars-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 10px;
+    grid-auto-rows: minmax(100px, auto);
+}
+
 #quote {
-    width: 45%;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#stats {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#stats svg {
+    width: 90%;
+}
+
+#stats svg text {
+    font-size: 6pt;
+}
+
+#clues {
+    grid-column: 1 / span 2;
+    grid-row: 2;
 }
 
 #quote input {

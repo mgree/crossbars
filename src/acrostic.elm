@@ -20,6 +20,8 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Svg
+import Svg.Attributes
 import Browser
 
 
@@ -78,9 +80,8 @@ view : Model -> Html Msg
 view model = 
     let initials = initialism model in
 
-    div [] 
-        [ h1 [] [text "Crossbars Acrostic Constructor"]
-        , section [id "quote"]
+    div [id "crossbars-wrapper"] 
+        [ section [id "quote"]
             [ textInput [tabindex 1, size 60] "Title" model.title Title
             , textInput [tabindex 2, size 60] "Author" model.author Author
             , textarea [ tabindex 3 {- see baseTabs below -}
@@ -116,7 +117,7 @@ view model =
                     else div [] [ text "Non-viable acrostic; the quote does not have some letters the initialism needs: "
                                 , histToShortString missingHist |> text
                                 ]
-                , histToHtml "remaining" remainingHist
+                , histToSVG quoteHist remainingHist
                 ]
         ,
 
@@ -259,6 +260,42 @@ histToHtml histId h =
         [ tr [] (List.map (\(c,cnt) -> histEntryTD cnt (text (String.fromChar c))) hl)
         , tr [] (List.map (\(c,cnt) -> histEntryTD cnt (text (String.fromInt cnt))) hl)
         ]
+
+histToSVG : Hist -> Hist -> Html msg
+histToSVG hQuote hRemaining =
+    let 
+        width = 260
+        height = 110
+
+        hq = hQuote |> cleanLetterHist 
+        hr = hRemaining |> cleanLetterHist 
+
+        allLetters = Dict.keys (Dict.union hq hr)
+        letterSpacing = width / toFloat (List.length allLetters)
+        letterStart = letterSpacing / 2
+        letterY = height - 2
+        letterLabels = 
+            List.indexedMap
+                (\index letter ->
+                     let letterX = letterStart + letterSpacing * toFloat index in
+                     Svg.text_ 
+                         [ letterX |> String.fromFloat |> Svg.Attributes.x
+                         , letterY |> String.fromFloat |> Svg.Attributes.y
+                         , Svg.Attributes.textAnchor "middle"
+                         ]
+                         [ letter |> String.fromChar |> Svg.text  ])
+                allLetters
+    in
+
+        Svg.svg 
+            [ Svg.Attributes.viewBox 
+                  ("0 0 " ++ String.fromInt width ++ " " ++ String.fromInt height)
+            , id "remaining" 
+            ]
+            (letterLabels ++
+             [ Svg.title [] [Svg.text "Letters remaining"]
+             ])
+    
 
 histEntryTD : Int -> Html msg -> Html msg
 histEntryTD cnt inner = 
