@@ -293,20 +293,24 @@ histToSVG hQuote hRemaining =
         barWidth = letterSpacing * 0.75
         barX index = letterX index - (barWidth / 2)
         barY = height - 10
-        quoteBars =
+
+        bars cls h =             
             if maxRemaining > 0
             then List.indexedMap 
                   (\index cnt ->
-                       let h = barHeight cnt in
                        Svg.rect
                            [ barX index |> String.fromFloat |> Svg.Attributes.x 
-                           , barY - h |> String.fromFloat |> Svg.Attributes.y
+                           , barY - barHeight cnt |> String.fromFloat |> Svg.Attributes.y
                            , barWidth |> String.fromFloat |> Svg.Attributes.width
-                           , h |> String.fromFloat |> Svg.Attributes.height
+                           , barHeight cnt |> String.fromFloat |> Svg.Attributes.height
+                           , Svg.Attributes.class cls
                            ]
                            [])
-                  (Dict.values hq)
+                  (Dict.values h)
             else []
+
+        quoteBars = bars "quote" hq
+        remainingBars = bars "remaining" hr
     in
 
         Svg.svg 
@@ -316,6 +320,7 @@ histToSVG hQuote hRemaining =
             ]
             (letterLabels ++
              quoteBars ++
+             remainingBars ++
              [ Svg.title [] [Svg.text "Letters remaining"]
              ])
     
