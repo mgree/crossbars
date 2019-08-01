@@ -1,5 +1,5 @@
 {- TODO
-   highlight invalid bits in histogram, clues
+   highlight invalid bits clues
 
    use CSS flex to wrap columns in clues
 
@@ -109,15 +109,14 @@ view model =
           in
 
             section [id "stats"]
-                [ div [] [text "Words: ", model |> numWords |> String.fromInt |> text]
-                , div [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
-                ,
-                    if viable
-                    then text "Viable acrostic"
-                    else div [] [ text "Non-viable acrostic; the quote does not have some letters the initialism needs: "
-                                , histToShortString missingHist |> text
-                                ]
-                , histToSVG quoteHist remainingHist
+                [ histToSVG quoteHist remainingHist
+                , span []
+                    [ if viable
+                      then text "Viable acrostic"
+                      else text ("Non-viable acrostic; the quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
+                    ]
+                , span [] [text "Words: ", model |> numWords |> String.fromInt |> text]
+                , span [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
                 ]
         ,
 
@@ -300,7 +299,7 @@ histToSVG hQuote hRemaining =
                   (\index cnt ->
                        let             
                            barH = barHeight cnt
-                           barY = barBaseY - barH
+                           barY = Basics.min (barBaseY - barH) barBaseY
                            bar = Svg.rect
                                  [ barX index |> String.fromFloat |> Svg.Attributes.x 
                                  , barY |> String.fromFloat |> Svg.Attributes.y
@@ -308,10 +307,12 @@ histToSVG hQuote hRemaining =
                                  , barH |> String.fromFloat |> Svg.Attributes.height
                                  ] []
 
+                           countCls = if cnt >= 0 then "valid" else "invalid"
                            count = Svg.text_
                                  [ letterX index |> String.fromFloat |> Svg.Attributes.x
                                  , barY - 2 |> String.fromFloat |> Svg.Attributes.y
                                  , Svg.Attributes.textAnchor "middle"
+                                 , Svg.Attributes.class countCls
                                  ]
                                  [ cnt |> String.fromInt |> Svg.text ]
 

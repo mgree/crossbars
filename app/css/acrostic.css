@@ -10,12 +10,34 @@
     grid-row: 1;
 }
 
+#quote input {
+    margin: 5px 0px;
+    border: 1px solid gray;
+    width: 100%;
+    display: block;
+    text-transform: uppercase;
+}
+
+#quote textarea {
+    margin: 5px 0px;
+    border: 1px solid gray;
+    width: 100%;
+    display: block;
+    text-transform: uppercase;
+}
+
 #stats {
     grid-column: 2;
     grid-row: 1;
 }
 
+#stats span {
+    display: inline-block;
+    width: 33%;
+}
+
 #stats svg {
+    display: block;
     width: 90%;
 }
 
@@ -36,8 +58,12 @@
     stroke: lightblue;
 }
 
-#stats svg .remaining text {
+#stats svg .remaining text.valid {
     fill: lightblue;
+}
+
+#stats svg .remaining text.invalid {
+    fill: red;
 }
 
 
@@ -46,28 +72,8 @@
     grid-row: 2;
 }
 
-#quote input {
-    margin: 5px 0px;
-    border: 1px solid gray;
-    width: 100%;
-    display: block;
-    text-transform: uppercase;
-}
-
-#quote textarea {
-    margin: 5px 0px;
-    border: 1px solid gray;
-    width: 100%;
-    display: block;
-    text-transform: uppercase;
-}
-
 td.invalid input {
     color: red;
-}
-
-table.histogram td.exhausted {
-    color: gray;
 }
 
 table#clues .clue-letter {
