@@ -23,15 +23,23 @@
     font-size: 6pt;
 }
 
-#stats svg rect.quote {
+#stats svg .quote rect {
     fill: aliceblue;
-    stroke: lightblue;
 }
 
-#stats svg rect.remaining {
+#stats svg .quote text {
+    fill: aliceblue;
+}
+
+#stats svg .remaining rect {
     fill: lightblue;
     stroke: lightblue;
 }
+
+#stats svg .remaining text {
+    fill: lightblue;
+}
+
 
 #clues {
     grid-column: 1 / span 2;

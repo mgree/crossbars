@@ -284,7 +284,7 @@ histToSVG hQuote hRemaining =
                          , letterY |> String.fromFloat |> Svg.Attributes.y
                          , Svg.Attributes.textAnchor "middle"
                          ]
-                         [ letter |> String.fromChar |> Svg.text  ])
+                         [ letter |> String.fromChar |> Svg.text ])
                 allLetters
 
         maxRemaining = hc |> Dict.values 
@@ -292,20 +292,31 @@ histToSVG hQuote hRemaining =
         barHeight cnt = 100 * (toFloat cnt / maxRemaining)
         barWidth = letterSpacing * 0.75
         barX index = letterX index - (barWidth / 2)
-        barY = height - 10
+        barBaseY = height - 10
 
         bars cls h =             
             if maxRemaining > 0
             then List.indexedMap 
                   (\index cnt ->
-                       Svg.rect
-                           [ barX index |> String.fromFloat |> Svg.Attributes.x 
-                           , barY - barHeight cnt |> String.fromFloat |> Svg.Attributes.y
-                           , barWidth |> String.fromFloat |> Svg.Attributes.width
-                           , barHeight cnt |> String.fromFloat |> Svg.Attributes.height
-                           , Svg.Attributes.class cls
-                           ]
-                           [])
+                       let             
+                           barH = barHeight cnt
+                           barY = barBaseY - barH
+                           bar = Svg.rect
+                                 [ barX index |> String.fromFloat |> Svg.Attributes.x 
+                                 , barY |> String.fromFloat |> Svg.Attributes.y
+                                 , barWidth |> String.fromFloat |> Svg.Attributes.width
+                                 , barH |> String.fromFloat |> Svg.Attributes.height
+                                 ] []
+
+                           count = Svg.text_
+                                 [ letterX index |> String.fromFloat |> Svg.Attributes.x
+                                 , barY - 2 |> String.fromFloat |> Svg.Attributes.y
+                                 , Svg.Attributes.textAnchor "middle"
+                                 ]
+                                 [ cnt |> String.fromInt |> Svg.text ]
+
+                       in
+                       Svg.g [Svg.Attributes.class cls] [bar, count])
                   (Dict.values h)
             else []
 
