@@ -110,8 +110,10 @@ view model =
                   then text "Viable acrostic"
                   else text ("Non-viable acrostic; the quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
                 ]
-            , span [] [text "Words: ", model |> numWords |> String.fromInt |> text]
-            , span [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
+            , span [] [ text "Total letters: "
+                      , quoteHist |> countHist |> String.fromInt |> text]
+            , span [] [ text "Remaining letters: "
+                      , remainingHist |> countHist |> String.fromInt |> text]
             ]
         , section [id "stats"]
             [ histToSVG quoteHist remainingHist ]
@@ -194,20 +196,6 @@ histogramChars s =
 initialism : Model -> String
 initialism model = model.author ++ model.title |> String.filter Char.isAlphaNum
 
-numWords : Model -> Int
-numWords model = 
-    model.quote 
-        |> String.words 
-        |> List.filter (\w -> w |> String.isEmpty |> not) 
-        |> List.length
-
-numLetters : Model -> Int
-numLetters model = 
-    model.quote 
-        |> String.words
-        |> List.map String.length 
-        |> List.sum
-
 emptyHist : Hist
 emptyHist = Dict.empty
 
@@ -277,6 +265,7 @@ histToSVG hQuote hRemaining =
                          [ letterX index |> String.fromFloat |> Svg.Attributes.x
                          , letterY |> String.fromFloat |> Svg.Attributes.y
                          , Svg.Attributes.textAnchor "middle"
+                         , Svg.Attributes.class "label"
                          ]
                          [ letter |> String.fromChar |> Svg.text ])
                 allLetters
@@ -335,6 +324,9 @@ histToSVG hQuote hRemaining =
 histEntryTD : Int -> Html msg -> Html msg
 histEntryTD cnt inner = 
     td (if cnt <= 0 then [class "exhausted"] else []) [inner]
+
+countHist : Hist -> Int
+countHist h = List.sum (Dict.values h)
 
 histDifference : Hist -> Hist -> Hist
 histDifference hSub hSup = 
