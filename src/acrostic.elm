@@ -78,7 +78,20 @@ updateClues model =
 
 view : Model -> Html Msg
 view model = 
-    let initials = initialism model in
+    let initials = initialism model 
+
+        initialismHist = letterHist initials
+
+        quoteHist = letterHist model.quote 
+                                     
+        missingHist = histDifference quoteHist initialismHist
+
+        viable = isEmptyHist missingHist
+
+        clueHist = letterHist (String.concat model.clues)
+
+        remainingHist = histDifference clueHist quoteHist
+    in
 
     div [id "crossbars-wrapper"] 
         [ section [id "quote"]
@@ -92,36 +105,18 @@ view model =
                        , attribute "autocapitalize" "character"
                        ] 
                   [text model.quote]
-            ]
-        , let 
-              initialismHist = letterHist initials
-
-              quoteHist = letterHist model.quote 
-
-              missingHist = histDifference quoteHist initialismHist
-
-              viable = isEmptyHist missingHist
-
-              clueHist = letterHist (String.concat model.clues)
-
-              remainingHist = histDifference clueHist quoteHist
-
-          in
-
-            section [id "stats"]
-                [ histToSVG quoteHist remainingHist
-                , span []
-                    [ if viable
-                      then text "Viable acrostic"
-                      else text ("Non-viable acrostic; the quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
-                    ]
-                , span [] [text "Words: ", model |> numWords |> String.fromInt |> text]
-                , span [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
+            , span []
+                [ if viable
+                  then text "Viable acrostic"
+                  else text ("Non-viable acrostic; the quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
                 ]
-        ,
-
-            section [id "clues"]
-                [ viewClues (String.toList initials) model.clues ]
+            , span [] [text "Words: ", model |> numWords |> String.fromInt |> text]
+            , span [] [text "Letters: ", model |> numLetters |> String.fromInt |> text]
+            ]
+        , section [id "stats"]
+            [ histToSVG quoteHist remainingHist ]
+        , section [id "clues"]
+            [ viewClues (String.toList initials) model.clues ]
         ]
 
 baseTabs : Int
@@ -263,7 +258,7 @@ histToHtml histId h =
 histToSVG : Hist -> Hist -> Html msg
 histToSVG hQuote hRemaining =
     let 
-        width = 260
+        width = 300
         height = 120
 
         hq = hQuote |> cleanLetterHist 

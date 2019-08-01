@@ -31,9 +31,10 @@
     grid-row: 1;
 }
 
-#stats span {
+#quote span {
     display: inline-block;
-    width: 33%;
+    margin-top: 0.25em;
+    margin-right: 1em;
 }
 
 #stats svg {
@@ -79,4 +80,10 @@ td.invalid input {
 table#clues .clue-letter {
     width: 1.25em;
     text-align: center;
+}
+
+#footer {
+    margin-top: 1.5em;
+    text-align: center;
+    font-size: small;
 }
