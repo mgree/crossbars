@@ -16,6 +16,7 @@
     width: 100%;
     display: block;
     text-transform: uppercase;
+    font-family: monospace;
 }
 
 #quote textarea {
@@ -24,6 +25,7 @@
     width: 100%;
     display: block;
     text-transform: uppercase;
+    font-family: monospace;
 }
 
 #stats {
@@ -44,6 +46,10 @@
 
 #stats svg text {
     font-size: 6pt;
+}
+
+#stats svg text.label {
+    font-family: monospace;
 }
 
 #stats svg .quote rect {
@@ -77,9 +83,13 @@ td.invalid input {
     color: red;
 }
 
-table#clues .clue-letter {
+#clues .clue-letter {
     width: 1.25em;
     text-align: center;
+}
+
+#clues input {
+    font-family: monospace;
 }
 
 #footer {
