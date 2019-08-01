@@ -1,6 +1,8 @@
 {- TODO
    highlight invalid bits in histogram, clues
 
+   use CSS flex to wrap columns in clues
+
    cleaner puzzle display
 
    modes/phases
