@@ -265,26 +265,48 @@ histToSVG : Hist -> Hist -> Html msg
 histToSVG hQuote hRemaining =
     let 
         width = 260
-        height = 110
+        height = 120
 
         hq = hQuote |> cleanLetterHist 
         hr = hRemaining |> cleanLetterHist 
+        hc = Dict.union hq hr
 
-        allLetters = Dict.keys (Dict.union hq hr)
+        allLetters = Dict.keys hc
         letterSpacing = width / toFloat (List.length allLetters)
         letterStart = letterSpacing / 2
+        letterX index = letterStart + letterSpacing * toFloat index
         letterY = height - 2
         letterLabels = 
             List.indexedMap
                 (\index letter ->
-                     let letterX = letterStart + letterSpacing * toFloat index in
                      Svg.text_ 
-                         [ letterX |> String.fromFloat |> Svg.Attributes.x
+                         [ letterX index |> String.fromFloat |> Svg.Attributes.x
                          , letterY |> String.fromFloat |> Svg.Attributes.y
                          , Svg.Attributes.textAnchor "middle"
                          ]
                          [ letter |> String.fromChar |> Svg.text  ])
                 allLetters
+
+        maxRemaining = hc |> Dict.values 
+                          |> List.maximum |> Maybe.withDefault 0 |> toFloat
+        barHeight cnt = 100 * (toFloat cnt / maxRemaining)
+        barWidth = letterSpacing * 0.75
+        barX index = letterX index - (barWidth / 2)
+        barY = height - 10
+        quoteBars =
+            if maxRemaining > 0
+            then List.indexedMap 
+                  (\index cnt ->
+                       let h = barHeight cnt in
+                       Svg.rect
+                           [ barX index |> String.fromFloat |> Svg.Attributes.x 
+                           , barY - h |> String.fromFloat |> Svg.Attributes.y
+                           , barWidth |> String.fromFloat |> Svg.Attributes.width
+                           , h |> String.fromFloat |> Svg.Attributes.height
+                           ]
+                           [])
+                  (Dict.values hq)
+            else []
     in
 
         Svg.svg 
@@ -293,6 +315,7 @@ histToSVG hQuote hRemaining =
             , id "remaining" 
             ]
             (letterLabels ++
+             quoteBars ++
              [ Svg.title [] [Svg.text "Letters remaining"]
              ])
     
