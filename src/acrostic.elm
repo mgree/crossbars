@@ -3,9 +3,14 @@
 
    cleaner puzzle display
 
-   button to fix author/title (warnings on clue realignment?)
+   modes/phases
+     - Quote Entry
+     - Anagramming (quotes uneditable, show puzzle view)
+     - Lettering and cluing (anagrams uneditable, too)
 
-   way to control escaped characters
+   autonumbering (SAT/SMT? CLP (since there may not exist an optimal solution)?)
+
+   way to control escaped characters in the quote
 -}
 
 import Dict exposing (Dict)
@@ -106,7 +111,7 @@ view model =
                 ,
                     if viable
                     then text "Viable acrostic"
-                    else div [] [ text "Non-viable acrostic; initialism needs: "
+                    else div [] [ text "Non-viable acrostic; the quote does not have some letters the initialism needs: "
                                 , histToShortString missingHist |> text
                                 ]
                 , histToHtml "remaining" remainingHist
