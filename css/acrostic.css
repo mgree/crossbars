@@ -1,8 +1,19 @@
+#quote {
+    width: 45%;
+}
+
 #quote input {
+    margin: 5px 0px;
+    border: 1px solid gray;
+    width: 100%;
     display: block;
+    text-transform: uppercase;
 }
 
 #quote textarea {
+    margin: 5px 0px;
+    border: 1px solid gray;
+    width: 100%;
     display: block;
     text-transform: uppercase;
 }
