@@ -85,6 +85,9 @@
     fill: red;
 }
 
+#stats svg .hooray {
+    font-size: 32pt;
+}
 
 #clues {
     grid-column: 1 / span 2;

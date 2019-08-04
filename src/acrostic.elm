@@ -145,7 +145,7 @@ view model =
                                      
         missingHist = histDifference quoteHist initialismHist
 
-        viable = isEmptyHist missingHist
+        viable = isExhaustedHist missingHist
 
         clueHist = letterHist (model.clues |> List.map clueAnswer |> String.concat)
 
@@ -373,6 +373,19 @@ histToSVG hQuote hRemaining =
 
         quoteBars = bars "quote" hq
         remainingBars = bars "remaining" hr
+
+        hooray =
+            if isEmptyHist hr && not (isEmptyHist hq)
+            then [ Svg.text_
+                       [ width / 2 |> String.fromFloat |> Svg.Attributes.x
+                       , height / 2 |> String.fromFloat |> Svg.Attributes.y
+                       , Svg.Attributes.textAnchor "middle"
+                       , Svg.Attributes.dominantBaseline "middle"
+                       , Svg.Attributes.class "hooray"
+                       ]
+                       [ Svg.text "🎉" ]
+                 ]
+            else []
     in
 
         Svg.svg 
@@ -383,6 +396,7 @@ histToSVG hQuote hRemaining =
             (letterLabels ++
              quoteBars ++
              remainingBars ++
+             hooray ++
              [ Svg.title [] [Svg.text "Letters remaining"]
              ])
     
@@ -403,8 +417,12 @@ histDifference hSub hSup =
         hSub hSup
         Dict.empty
 
-isEmptyHist : Hist -> Bool
-isEmptyHist h = 
+isExhaustedHist : Hist -> Bool
+isExhaustedHist h = 
     h |> Dict.filter (\c cnt -> cnt > 0)
       |> Dict.isEmpty
   
+isEmptyHist : Hist -> Bool
+isEmptyHist h =
+    h |> Dict.values
+      |> List.all (\cnt -> cnt == 0)
