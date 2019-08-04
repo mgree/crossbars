@@ -1,5 +1,5 @@
 {- TODO
-   highlight invalid bits clues
+   highlight invalid bits in answers
 
    cleaner puzzle display
 
@@ -10,6 +10,12 @@
 
    autonumbering (SAT/SMT? CLP (since there may not exist an optimal solution)?)
 
+   answer search
+     /usr/share/dict/words
+     Wikipedia/Wiktionary titles
+     generic JSON API?
+     tie in to autocomplete?
+
    way to control escaped characters in the quote
 -}
 
@@ -17,7 +23,7 @@ import Dict exposing (Dict)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onFocus)
 import Svg
 import Svg.Attributes
 import Browser
@@ -30,12 +36,14 @@ type Msg =
   | Author String
   | Quote String
   | Answer Int String
+  | Select Int
 
 type alias Model = 
     { title : String
     , author : String
     , quote : String
     , clues : List Clue
+    , selectedClue : Maybe Int
     }
 
 type alias Clue =
@@ -51,6 +59,7 @@ initialModel =
     , author = ""
     , quote = ""
     , clues = []
+    , selectedClue = Nothing
     }
 
 main = Browser.element
@@ -77,6 +86,11 @@ update msg model =
         Author author -> (fixupAnswerInitials { model | author = author }, Cmd.none)
         Quote quote -> ({ model | quote = quote }, Cmd.none)
         Answer idx clue -> ({ model | clues = updateAnswer model idx clue model.clues}, Cmd.none)
+        Select idx -> ({ model | selectedClue = 
+                             if 0 <= idx && idx < List.length model.clues
+                             then Just idx
+                             else Nothing }, 
+                       Cmd.none)
 
 defaultClue : String -> Clue
 defaultClue s = { clue = ""
@@ -186,6 +200,14 @@ view model =
                 |> addInitials (String.toList initials) 
                 |> addIndex 
                 |> List.map clueEntry)
+
+        , section [id "clue-info"]
+            [ span [] 
+                  [ text <| case model.selectedClue of
+                                Nothing -> "no clue selected" 
+                                Just index -> String.fromInt index ++ " selected"
+                  ]
+            ]
         ]
 
 baseTabs : Int
@@ -205,9 +227,10 @@ clueEntry (index, (initial, clue)) =
 
         lbl = "clue-" ++ letter
     in
-        div []
+        div [onClick (Select index)]
             [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
-            , textInput [tabindex (index + baseTabs), name lbl, validCls] 
+            , textInput [tabindex (index + baseTabs), name lbl, validCls, 
+                         onFocus (Select index)] 
                 (initialStr ++ "...") clue (Answer index)
             ] 
 
