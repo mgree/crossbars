@@ -32,9 +32,18 @@
 
 #quote #summary {
     display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
     justify-content: space-between;
     margin-top: 0.25em;
+}
 
+#quote #summary #viability {
+    flex: 0 0 100%;
+}
+
+#quote #summary .count {
+    flex-basis: content;
 }
 
 #stats {
