@@ -17,6 +17,7 @@
     display: block;
     text-transform: uppercase;
     font-family: monospace;
+    font-size: 13px;
 }
 
 #quote textarea {
@@ -26,17 +27,19 @@
     display: block;
     text-transform: uppercase;
     font-family: monospace;
+    font-size: 13px;
+}
+
+#quote #summary {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25em;
+
 }
 
 #stats {
     grid-column: 2;
     grid-row: 1;
-}
-
-#quote span {
-    display: inline-block;
-    margin-top: 0.25em;
-    margin-right: 1em;
 }
 
 #stats svg {
@@ -77,23 +80,40 @@
 #clues {
     grid-column: 1 / span 2;
     grid-row: 2;
+    height: 7em;
 }
 
-td.invalid input {
-    color: red;
+#clues {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+#clues .clue {
+    margin: 2px;
 }
 
 #clues .clue-letter {
     width: 1.25em;
+    display: inline-block;
     text-align: center;
 }
 
 #clues input {
     font-family: monospace;
+    margin: .1em;
+    border: 1px solid gray;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-size: 13px;
 }
 
 #footer {
     margin-top: 1.5em;
     text-align: center;
     font-size: small;
+}
+
+.invalid {
+    background-color: pink;
 }

@@ -1,8 +1,6 @@
 {- TODO
    highlight invalid bits clues
 
-   use CSS flex to wrap columns in clues
-
    cleaner puzzle display
 
    modes/phases
@@ -105,34 +103,31 @@ view model =
                        , attribute "autocapitalize" "character"
                        ] 
                   [text model.quote]
-            , span []
-                [ if viable
-                  then text "Viable acrostic"
-                  else text ("Non-viable acrostic; the quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
+            , div [id "summary"]
+                [ span []
+                      [ if viable
+                        then text "Viable acrostic"
+                        else text ("Non-viable acrostic; the quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
+                      ]
+                , span [] [ text "Total letters: "
+                          , quoteHist |> countHist |> String.fromInt |> text]
+                , span [] [ text "Remaining letters: "
+                          , remainingHist |> countHist |> String.fromInt |> text]
                 ]
-            , span [] [ text "Total letters: "
-                      , quoteHist |> countHist |> String.fromInt |> text]
-            , span [] [ text "Remaining letters: "
-                      , remainingHist |> countHist |> String.fromInt |> text]
             ]
         , section [id "stats"]
             [ histToSVG quoteHist remainingHist ]
         , section [id "clues"]
-            [ viewClues (String.toList initials) model.clues ]
+            (model.clues 
+                |> addInitials (String.toList initials) 
+                |> addIndex 
+                |> List.map clueEntry)
         ]
 
 baseTabs : Int
 baseTabs = 3 {- title, author, quote -}
 
-viewClues : List Char -> List String -> Html Msg
-viewClues initials clues = 
-    let clueRows = clues |> addInitials initials |> addIndex |> 
-                   breakSublists 5 |> transpose in
-    table 
-      [id "clues"]
-      (List.map (\clueRow -> tr [] (List.concatMap clueEntry clueRow)) clueRows)
-
-clueEntry : (Int, (Char, String)) -> List (Html Msg)
+clueEntry : (Int, (Char, String)) -> Html Msg
 clueEntry (index, (initial, clue)) =
     let 
 
@@ -140,16 +135,17 @@ clueEntry (index, (initial, clue)) =
 
         letter = letterFor index 
                  
-        valid = String.startsWith initialStr clue
+        validCls = class <| if String.startsWith initialStr clue
+                            then "valid"
+                            else "invalid"
 
         lbl = "clue-" ++ letter
     in
-
-        [ td [class "clue-letter"] 
-              [label [for lbl] [text (letter ++ ". ")]]
-        , textInput [tabindex (index + baseTabs), name lbl] 
-           ("Clue starting with " ++ initialStr) clue (Clue index)
-        ] 
+        div []
+            [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
+            , textInput [tabindex (index + baseTabs), name lbl, validCls] 
+                (initialStr ++ "...") clue (Clue index)
+            ] 
 
 transpose : List (List a) -> List (List a)
 transpose ls =
