@@ -29,14 +29,22 @@ type Msg =
     Title String
   | Author String
   | Quote String
-  | Clue Int String
+  | Answer Int String
 
 type alias Model = 
     { title : String
     , author : String
     , quote : String
-    , clues : List String
+    , clues : List Clue
     }
+
+type alias Clue =
+    { clue : String
+    , answer : List (Maybe Int, Char)
+    }
+
+clueAnswer : Clue -> String
+clueAnswer c = c.answer |> List.map Tuple.second |> String.fromList
 
 initialModel =
     { title = ""
@@ -65,14 +73,67 @@ subscriptions model = Sub.none
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
-        Title title -> (updateClues { model | title = String.toUpper title }, Cmd.none)
-        Author author -> (updateClues { model | author = String.toUpper author }, Cmd.none)
+        Title title -> (fixupAnswerInitials { model | title = String.toUpper title }, Cmd.none)
+        Author author -> (fixupAnswerInitials { model | author = String.toUpper author }, Cmd.none)
         Quote quote -> ({ model | quote = String.toUpper quote }, Cmd.none)
-        Clue idx clue -> ({ model | clues = updateIndex idx (String.toUpper clue) model.clues}, Cmd.none)
+        Answer idx clue -> ({ model | clues = updateAnswer model idx (String.toUpper clue) model.clues}, Cmd.none)
 
-updateClues : Model -> Model
-updateClues model =
-    { model | clues = initialism model |> String.toList |> List.map String.fromChar }
+defaultClue : String -> Clue
+defaultClue s = { clue = ""
+                , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
+                }
+
+updateAnswer : Model -> Int -> String -> List Clue -> List Clue
+updateAnswer model index answer clues =
+    case clues of
+        [] -> [defaultClue answer]
+        clue::rest -> 
+            if index == 0
+            then 
+                           
+                let
+                    
+                    numbering = clue.answer |> List.map Tuple.first
+
+                    extendedNumbering = numbering ++ List.repeat (String.length answer - List.length numbering) Nothing
+
+                    numberedAnswer = 
+                        answer |> String.toList
+                               |> List.map2 
+                                    (\mnum c ->
+                                         {- FIXME slightly inefficient...  -}
+                                         case mnum of
+                                             Nothing -> (Nothing, c)
+                                             Just num ->
+                                                 if quoteIndex model num == Just c
+                                                 then (Just num, c)
+                                                 else (Nothing, c))
+                                    extendedNumbering
+                in
+                    
+                    {clue | answer = numberedAnswer }::rest
+                        
+            else clue::updateAnswer model (index-1) answer rest
+
+fixupAnswerInitials : Model -> Model
+fixupAnswerInitials model =
+    let 
+        initials = initialism model |> String.toList |> List.map String.fromChar
+
+        clues = 
+            {- FIXME with more detailed delta information, we could be smarter here -}
+            if List.length model.clues /= List.length initials
+            then List.map defaultClue initials
+            else List.map2 
+                (\i c -> 
+                     if String.startsWith i (clueAnswer c)
+                     then c
+                     else defaultClue i) 
+                initials model.clues
+
+    in
+
+        { model | clues = clues }
 
 view : Model -> Html Msg
 view model = 
@@ -86,7 +147,7 @@ view model =
 
         viable = isEmptyHist missingHist
 
-        clueHist = letterHist (String.concat model.clues)
+        clueHist = letterHist (model.clues |> List.map clueAnswer |> String.concat)
 
         remainingHist = histDifference clueHist quoteHist
     in
@@ -119,6 +180,7 @@ view model =
             [ histToSVG quoteHist remainingHist ]
         , section [id "clues"]
             (model.clues 
+                |> List.map clueAnswer
                 |> addInitials (String.toList initials) 
                 |> addIndex 
                 |> List.map clueEntry)
@@ -144,7 +206,7 @@ clueEntry (index, (initial, clue)) =
         div []
             [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
             , textInput [tabindex (index + baseTabs), name lbl, validCls] 
-                (initialStr ++ "...") clue (Clue index)
+                (initialStr ++ "...") clue (Answer index)
             ] 
 
 transpose : List (List a) -> List (List a)
@@ -180,6 +242,12 @@ letterFor index =
         Just letter -> letter
 
 {- Acrostic functions -}
+
+quoteIndex : Model -> Int -> Maybe Char
+quoteIndex model index =
+    model.quote |> histogramChars
+                |> List.drop index
+                |> List.head
 
 type alias Hist = Dict Char Int
 
@@ -338,10 +406,3 @@ isEmptyHist h =
     h |> Dict.filter (\c cnt -> cnt > 0)
       |> Dict.isEmpty
   
-updateIndex : Int -> a -> List a -> List a
-updateIndex n v l =
-    case l of
-        [] -> [v]
-        h::t -> if n == 0
-                then v::t
-                else h::updateIndex (n-1) v t
