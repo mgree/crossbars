@@ -1,4 +1,6 @@
 {- TODO
+   section headers; dividers?
+
    highlight invalid bits in answers
 
    cleaner puzzle display
@@ -280,7 +282,8 @@ cleanChars : String -> List Char
 cleanChars s =
     s |> String.toUpper 
       |> String.toList
-      |> List.filter Char.isAlphaNum
+      |> List.filter Char.isAlphaNum         
+      {- FIXME doesn't work with diacritics, Greek, etc. -}
 
 initialism : Model -> String
 initialism model = model.author ++ model.title |> String.filter Char.isAlphaNum
@@ -313,9 +316,7 @@ letterHist s =
         emptyHist (cleanChars s)
 
 cleanLetterHist : Hist -> Hist
-cleanLetterHist h =
-    Dict.union h emptyLetterHist 
-{-        |> Dict.filter (\c cnt -> cnt >= 0) -}
+cleanLetterHist h = Dict.union h emptyLetterHist 
 
 histToShortString : Hist -> String
 histToShortString h =
@@ -323,14 +324,6 @@ histToShortString h =
       |> Dict.toList
       |> List.map (\(c, count) -> c |> String.fromChar |> String.repeat count)
       |> String.concat
-
-histToHtml : String -> Hist -> Html msg
-histToHtml histId h =
-    let hl = h |> cleanLetterHist |> Dict.toList in
-    table [class "histogram", id histId]
-        [ tr [] (List.map (\(c,cnt) -> histEntryTD cnt (text (String.fromChar c))) hl)
-        , tr [] (List.map (\(c,cnt) -> histEntryTD cnt (text (String.fromInt cnt))) hl)
-        ]
 
 histToSVG : Hist -> Hist -> Html msg
 histToSVG hQuote hRemaining =
