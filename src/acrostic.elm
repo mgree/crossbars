@@ -73,10 +73,10 @@ subscriptions model = Sub.none
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
-        Title title -> (fixupAnswerInitials { model | title = String.toUpper title }, Cmd.none)
-        Author author -> (fixupAnswerInitials { model | author = String.toUpper author }, Cmd.none)
-        Quote quote -> ({ model | quote = String.toUpper quote }, Cmd.none)
-        Answer idx clue -> ({ model | clues = updateAnswer model idx (String.toUpper clue) model.clues}, Cmd.none)
+        Title title -> (fixupAnswerInitials { model | title = title }, Cmd.none)
+        Author author -> (fixupAnswerInitials { model | author = author }, Cmd.none)
+        Quote quote -> ({ model | quote = quote }, Cmd.none)
+        Answer idx clue -> ({ model | clues = updateAnswer model idx clue model.clues}, Cmd.none)
 
 defaultClue : String -> Clue
 defaultClue s = { clue = ""
@@ -165,15 +165,17 @@ view model =
                        ] 
                   [text model.quote]
             , div [id "summary"]
-                [ span []
+                [ span [id "viability"]
                       [ if viable
-                        then text "Viable acrostic"
-                        else text ("Non-viable acrostic; the quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
+                        then text "Quote has all of the initialism's letters"
+                        else text ("The quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
                       ]
-                , span [] [ text "Total letters: "
-                          , quoteHist |> countHist |> String.fromInt |> text]
-                , span [] [ text "Remaining letters: "
-                          , remainingHist |> countHist |> String.fromInt |> text]
+                , span [class "count"] 
+                    [ text "Total letters: "
+                    , quoteHist |> countHist |> String.fromInt |> text]
+                , span [class "count"] 
+                    [ text "Remaining letters: "
+                    , remainingHist |> countHist |> String.fromInt |> text]
                 ]
             ]
         , section [id "stats"]
@@ -245,14 +247,14 @@ letterFor index =
 
 quoteIndex : Model -> Int -> Maybe Char
 quoteIndex model index =
-    model.quote |> histogramChars
+    model.quote |> cleanChars
                 |> List.drop index
                 |> List.head
 
 type alias Hist = Dict Char Int
 
-histogramChars : String -> List Char
-histogramChars s =
+cleanChars : String -> List Char
+cleanChars s =
     s |> String.toUpper 
       |> String.toList
       |> List.filter Char.isAlphaNum
@@ -285,7 +287,7 @@ letterHist s =
     in
 
     List.foldl (\c m -> Dict.update c incrementCount m)
-        emptyHist (histogramChars s)
+        emptyHist (cleanChars s)
 
 cleanLetterHist : Hist -> Hist
 cleanLetterHist h =
