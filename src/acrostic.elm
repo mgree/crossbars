@@ -39,6 +39,8 @@ type Msg =
   | Quote String
   | Answer Int String
   | Select Int
+  | Hint Int String
+  | Number Int Int String
 
 type alias Model = 
     { title : String
@@ -49,7 +51,7 @@ type alias Model =
     }
 
 type alias Clue =
-    { clue : String
+    { hint : String
     , answer : List (Maybe Int, Char)
     }
 
@@ -87,22 +89,33 @@ update msg model =
         Title title -> (fixupAnswerInitials { model | title = title }, Cmd.none)
         Author author -> (fixupAnswerInitials { model | author = author }, Cmd.none)
         Quote quote -> ({ model | quote = quote }, Cmd.none)
-        Answer idx clue -> ({ model | clues = updateAnswer model idx clue model.clues}, Cmd.none)
+        Answer idx answer -> ({ model | clues = updateAnswer model idx answer model.clues}, Cmd.none)
         Select idx -> ({ model | selectedClue = 
                              if 0 <= idx && idx < List.length model.clues
                              then Just idx
                              else Nothing }, 
                        Cmd.none)
+        Hint idx hint -> ({ model | clues = updateHint idx hint model.clues}, Cmd.none)
+        Number idx numIdx newNum -> (model, Cmd.none) 
 
 defaultClue : String -> Clue
-defaultClue s = { clue = ""
+defaultClue s = { hint = ""
                 , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
                 }
+
+updateHint : Int -> String -> List Clue -> List Clue
+updateHint index hint clues =
+    case clues of
+        [] -> []
+        clue::rest ->
+            if index == 0
+            then { clue | hint = hint }::rest
+            else clue::updateHint (index-1) hint rest
 
 updateAnswer : Model -> Int -> String -> List Clue -> List Clue
 updateAnswer model index answer clues =
     case clues of
-        [] -> [defaultClue answer]
+        [] -> [] 
         clue::rest -> 
             if index == 0
             then 
@@ -204,12 +217,67 @@ view model =
                 |> List.map clueEntry)
 
         , section [id "clue-info"]
-            [ span [] 
-                  [ text <| case model.selectedClue of
-                                Nothing -> "no clue selected" 
-                                Just index -> String.fromInt index ++ " selected"
-                  ]
-            ]
+            (case model.selectedClue of
+                 Nothing -> []
+                 Just index -> 
+                     let 
+                        
+                         clueLetter = letterFor index
+
+                         clue = clueFor index model
+
+                     in
+
+                         [ h3 [] [ clueLetter ++ ". " |> text ]
+                         , textInput [ tabindex (baseTabs + List.length model.clues + 1)
+                                     , class "clue-hint"
+                                     , value clue.hint
+                                     ]
+                               "Clue hint text"
+                               clue.hint
+                               (Hint index)
+                         , table [class "clue-numbering"]
+                             [ tr []
+                                   (List.map 
+                                        (\(_, c) ->
+                                             td [class "clue-numbering-letter"] 
+                                                [c |> String.fromChar |> text])
+                                        clue.answer)
+                             , tr []
+                                   (List.indexedMap
+                                        (\numIndex (mnum, c) ->
+                                             let
+                                                 validCls = 
+                                                     case mnum of
+                                                         Nothing -> "unentered"
+                                                         Just num ->
+                                                             if quoteIndex model num 
+                                                                  |> Maybe.map (\qC -> c == qC)
+                                                                  |> Maybe.withDefault False
+                                                             then "valid"
+                                                             else "invalid"
+                                                                                    
+                                             in
+                                             td [class "clue-numbering-number", class validCls]
+                                                [textInput [] 
+                                                           "Number"
+                                                           (mnum |> Maybe.map String.fromInt 
+                                                                 |> Maybe.withDefault "")
+                                                           (Number index numIndex)
+                                                ])
+                                        clue.answer)
+          {- PICK UP HERE 
+
+               don't use textboxes for answer numbers (dropdown list?)
+               fix Number in Msg
+               check for duplicate uses
+               warnings:
+                 multiple letters from the same word
+                 ascending or descending runs
+
+           -}
+                             ]
+                         ])
         ]
 
 baseTabs : Int
@@ -263,10 +331,12 @@ lettering =
         aToZ ++ aaToZZ
 
 letterFor : Int -> String
-letterFor index = 
-    case List.head (List.drop index lettering) of
-        Nothing -> ""
-        Just letter -> letter
+letterFor index = List.head (List.drop index lettering) |> Maybe.withDefault ""
+
+clueFor : Int -> Model -> Clue
+clueFor index model = 
+    List.head (List.drop index model.clues) |> Maybe.withDefault (defaultClue "")
+
 
 {- Acrostic functions -}
 

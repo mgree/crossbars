@@ -5,6 +5,14 @@
     grid-auto-rows: minmax(100px, auto);
 }
 
+#crossbars-wrapper input {
+    font-family: monospace;
+    border: 1px solid gray;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-size: 13px;
+}
+
 #quote {
     grid-column: 1;
     grid-row: 1;
@@ -12,12 +20,8 @@
 
 #quote input {
     margin: 5px 0px;
-    border: 1px solid gray;
     width: 100%;
     display: block;
-    text-transform: uppercase;
-    font-family: monospace;
-    font-size: 13px;
 }
 
 #quote textarea {
@@ -112,12 +116,7 @@
 }
 
 #clues input {
-    font-family: monospace;
     margin: .1em;
-    border: 1px solid gray;
-    text-transform: uppercase;
-    font-family: monospace;
-    font-size: 13px;
 }
 
 #footer {
@@ -128,4 +127,47 @@
 
 .invalid {
     background-color: pink;
+}
+
+#clue-info {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+}
+
+#clue-info h3 {
+    display: inline;
+    margin-right: 1em;
+}
+
+#clue-info input {
+    font-size: 16pt;
+    text-transform: none;
+    font-family: initial;
+}
+
+#clue-info input.clue-hint {
+    width 50%;
+}
+
+#clue-info table.clue-numbering {
+    margin-top: 1em;
+    border-spacing: 2em 0;
+}
+
+#clue-info .clue-numbering-letter {
+    width: 1.1em;
+    text-transform: uppercase;
+    font-family: monospace;
+    text-align: center;
+    font-size: 22pt;
+    border-bottom: 2px solid black;
+}
+
+#clue-info .clue-numbering-number input {
+    width: 100%;
+}
+
+#clue-info .clue-numbering-number {
+    text-align: center;
+    font-size: 12pt;
 }
