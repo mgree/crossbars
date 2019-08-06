@@ -95,13 +95,17 @@ update msg model =
                              then Just idx
                              else Nothing }, 
                        Cmd.none)
-        Hint idx hint -> ({ model | clues = updateHint idx hint model.clues}, Cmd.none)
-        Number idx numIdx newNum -> (model, Cmd.none) 
+        Hint idx hint -> ({ model | clues = updateHint idx hint model.clues }, Cmd.none)
+        Number idx numIdx newNum -> ({ model | clues = updateNumbering idx numIdx (newNum |> String.toInt) model.clues }, Cmd.none) 
 
 defaultClue : String -> Clue
 defaultClue s = { hint = ""
                 , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
                 }
+
+updateNumbering : Int -> Int -> Maybe Int -> List Clue -> List Clue
+updateNumbering index numIndex mQuoteNum clues =
+    updateIndex index (\clue -> { clue | answer = updateIndex numIndex (\(_,c) -> (mQuoteNum, c)) clue.answer }) clues
 
 updateHint : Int -> String -> List Clue -> List Clue
 updateHint index hint clues =
@@ -179,6 +183,19 @@ view model =
         clueHist = letterHist (model.clues |> List.map clueAnswer |> String.concat)
 
         remainingHist = histDifference clueHist quoteHist
+
+        quoteIndices =     
+            model.quote |> cleanChars
+                        |> List.indexedMap (\i c -> (c, i))
+                        |> List.foldr 
+                             (\(c, i) d -> 
+                                  Dict.update c 
+                                    (\mis -> 
+                                         case mis of
+                                             Nothing -> Just [i]
+                                             Just is -> Just (i::is)) d)
+                             Dict.empty
+
     in
 
     div [id "crossbars-wrapper"] 
@@ -226,6 +243,21 @@ view model =
 
                          clue = clueFor index model
 
+                         numberingFor numIndex mNum c = 
+                             select [id ("clue-numbering-" ++ String.fromInt index ++ "-" ++ String.fromInt numIndex)
+                                    , onInput (Number index numIndex)]
+                                 ([option [ value ""
+                                          , selected (mNum == Nothing)] 
+                                          [text "###"]] ++
+                                  (List.map
+                                       (\qIndex ->
+                                            {- FIXME indicate which are already taken -}
+                                            option [ qIndex |> String.fromInt |> value
+                                                   , selected (mNum == Just qIndex)
+                                                   ] 
+                                                   [qIndex + 1 |> String.fromInt |> text])
+                                       (Dict.get c quoteIndices |> Maybe.withDefault [])))
+
                      in
 
                          [ h3 [] [ clueLetter ++ ". " |> text ]
@@ -245,31 +277,26 @@ view model =
                                         clue.answer)
                              , tr []
                                    (List.indexedMap
-                                        (\numIndex (mnum, c) ->
+                                        (\numIndex (mNum, rawC) ->
                                              let
+                                                 c = Char.toUpper rawC
+
                                                  validCls = 
-                                                     case mnum of
+                                                     case mNum of
                                                          Nothing -> "unentered"
                                                          Just num ->
                                                              if quoteIndex model num 
-                                                                  |> Maybe.map (\qC -> c == qC)
+                                                                  |> Maybe.map (\qC -> c == Char.toUpper qC)
                                                                   |> Maybe.withDefault False
                                                              then "valid"
                                                              else "invalid"
                                                                                     
                                              in
                                              td [class "clue-numbering-number", class validCls]
-                                                [textInput [] 
-                                                           "Number"
-                                                           (mnum |> Maybe.map String.fromInt 
-                                                                 |> Maybe.withDefault "")
-                                                           (Number index numIndex)
-                                                ])
+                                                [numberingFor numIndex mNum c])
                                         clue.answer)
           {- PICK UP HERE 
 
-               don't use textboxes for answer numbers (dropdown list?)
-               fix Number in Msg
                check for duplicate uses
                warnings:
                  multiple letters from the same word
@@ -512,3 +539,12 @@ isEmptyHist : Hist -> Bool
 isEmptyHist h =
     h |> Dict.values
       |> List.all (\cnt -> cnt == 0)
+
+updateIndex : Int -> (a -> a) -> List a -> List a
+updateIndex index f l =
+    case l of
+        [] -> []
+        x::rest -> 
+            if index == 0
+            then f x::rest
+            else x::updateIndex (index - 1) f rest
