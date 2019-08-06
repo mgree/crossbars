@@ -3,6 +3,10 @@
 
    highlight invalid bits in answers
 
+   warnings:
+     multiple letters from the same word
+     ascending or descending runs
+
    cleaner puzzle display
 
    modes/phases
@@ -187,14 +191,18 @@ view model =
         quoteIndices =     
             model.quote |> cleanChars
                         |> List.indexedMap (\i c -> (c, i))
-                        |> List.foldr 
-                             (\(c, i) d -> 
-                                  Dict.update c 
-                                    (\mis -> 
-                                         case mis of
-                                             Nothing -> Just [i]
-                                             Just is -> Just (i::is)) d)
-                             Dict.empty
+                        |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
+
+        quoteIndexUses = 
+            model.clues |> List.indexedMap (\i clue -> 
+                                                List.foldr 
+                                                  (\(numIndex, (mNum,_)) d ->
+                                                       case mNum of
+                                                           Nothing -> d
+                                                           Just num -> updateCons num (i, numIndex) d)
+                                                  Dict.empty
+                                                  (clue.answer |> List.indexedMap Tuple.pair))
+                        |> mergeConsMany
 
     in
 
@@ -251,11 +259,24 @@ view model =
                                           [text "###"]] ++
                                   (List.map
                                        (\qIndex ->
-                                            {- FIXME indicate which are already taken -}
+                                            let 
+
+                                                uses = Dict.get qIndex quoteIndexUses 
+                                                         |> Maybe.withDefault []
+                                                         |> List.filter (\(uIdx, uNumIdx) -> uIdx /= index || (uIdx == index && uNumIdx /= numIndex))
+
+                                                clueMention (cIdx, cNumIdx) = letterFor cIdx ++ ". " ++ (cNumIdx + 1 |> String.fromInt)
+
+                                                useText = if List.isEmpty uses
+                                                          then ""
+                                                          else " (used by " ++ String.join ", " (List.map clueMention uses) ++ ")"
+
+                                            in
+
                                             option [ qIndex |> String.fromInt |> value
                                                    , selected (mNum == Just qIndex)
                                                    ] 
-                                                   [qIndex + 1 |> String.fromInt |> text])
+                                                   [text ((qIndex + 1 |> String.fromInt) ++ useText)])
                                        (Dict.get c quoteIndices |> Maybe.withDefault [])))
 
                      in
@@ -295,14 +316,6 @@ view model =
                                              td [class "clue-numbering-number", class validCls]
                                                 [numberingFor numIndex mNum c])
                                         clue.answer)
-          {- PICK UP HERE 
-
-               check for duplicate uses
-               warnings:
-                 multiple letters from the same word
-                 ascending or descending runs
-
-           -}
                              ]
                          ])
         ]
@@ -540,6 +553,8 @@ isEmptyHist h =
     h |> Dict.values
       |> List.all (\cnt -> cnt == 0)
 
+{- utility functions -}
+
 updateIndex : Int -> (a -> a) -> List a -> List a
 updateIndex index f l =
     case l of
@@ -548,3 +563,31 @@ updateIndex index f l =
             if index == 0
             then f x::rest
             else x::updateIndex (index - 1) f rest
+
+updateCons : comparable -> v -> Dict comparable (List v) -> Dict comparable (List v)
+updateCons k v d =
+    Dict.update k
+        (\mvs ->
+             case mvs of
+                 Nothing -> Just [v]
+                 Just vs -> Just (v::vs))
+        d
+
+updateAppend : comparable -> List v -> Dict comparable (List v) -> Dict comparable (List v)
+updateAppend k v d =
+    Dict.update k
+        (\mvs ->
+             case mvs of
+                 Nothing -> Just v
+                 Just vs -> Just (v ++ vs))
+        d
+
+mergeCons : Dict comparable (List v) -> Dict comparable (List v) -> Dict comparable (List v)
+mergeCons d1 d2 = Dict.foldr (\k vs d -> updateAppend k vs d) d2 d1
+
+mergeConsMany : List (Dict comparable (List v)) -> Dict comparable (List v)
+mergeConsMany l = 
+    case l of
+        [] -> Dict.empty
+        [d] -> d
+        d::ds -> mergeCons d (mergeConsMany ds)
