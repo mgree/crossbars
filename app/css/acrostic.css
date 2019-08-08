@@ -163,6 +163,10 @@
     border-bottom: 2px solid black;
 }
 
+#clue-info .clue-numbering-letter.double-dipped {
+    color: darkorange;
+}
+
 #clue-info .clue-numbering-number input {
     width: 100%;
 }
@@ -170,4 +174,21 @@
 #clue-info .clue-numbering-number {
     text-align: center;
     font-size: 12pt;
+}
+
+.warnings {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.warnings span {
+    color: darkred;
+}
+
+.warnings span::before {
+    content: "⚠ ";
+    color: darkred;
+                
 }

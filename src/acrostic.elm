@@ -1,12 +1,6 @@
 {- TODO
    section headers; dividers?
 
-   highlight invalid bits in answers
-
-   warnings:
-     multiple letters from the same word
-     ascending or descending runs
-
    cleaner puzzle display
 
    modes/phases
@@ -33,7 +27,6 @@ import Html.Events exposing (onClick, onInput, onFocus)
 import Svg
 import Svg.Attributes
 import Browser
-
 
 type alias Flags = ()
 
@@ -193,6 +186,15 @@ view model =
                         |> List.indexedMap (\i c -> (c, i))
                         |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
 
+        quoteIndexWords =
+            model.quote |> String.words
+                        |> List.map cleanChars
+                        |> List.filter (not << List.isEmpty)
+                        |> List.indexedMap (\i w -> List.repeat (List.length w) i)
+                        |> List.concat
+                        |> List.indexedMap Tuple.pair
+                        |> Dict.fromList
+                           
         quoteIndexUses = 
             model.clues |> List.indexedMap (\i clue -> 
                                                 List.foldr 
@@ -267,9 +269,10 @@ view model =
 
                                                 clueMention (cIdx, cNumIdx) = letterFor cIdx ++ ". " ++ (cNumIdx + 1 |> String.fromInt)
 
-                                                useText = if List.isEmpty uses
-                                                          then ""
-                                                          else " (used by " ++ String.join ", " (List.map clueMention uses) ++ ")"
+                                                useText =
+                                                    if List.isEmpty uses
+                                                    then ""
+                                                    else " (used by " ++ String.join ", " (List.map clueMention uses) ++ ")"
 
                                             in
 
@@ -278,6 +281,27 @@ view model =
                                                    ] 
                                                    [text ((qIndex + 1 |> String.fromInt) ++ useText)])
                                        (Dict.get c quoteIndices |> Maybe.withDefault [])))
+
+                         clueNumbers = clue.answer |> List.indexedMap Tuple.pair
+                                                   |> List.filterMap (\(ansIndex,(mNumIndex,_)) -> Maybe.map (Tuple.pair ansIndex) mNumIndex)
+
+                         unindexedClueNumbers = clueNumbers |> List.map Tuple.second
+                 
+                         fullyNumbered = List.map (Tuple.second >> Just) clueNumbers == List.map Tuple.first clue.answer
+
+                         clueWords = List.filterMap
+                                       (\(ansIndex, numIndex) ->
+                                              Dict.get numIndex quoteIndexWords |> Maybe.map (Tuple.pair ansIndex))
+                                       clueNumbers
+
+                         dupWords = List.filter
+                                      (\(ansIndex, wIndex) ->
+                                           List.any
+                                             (\(otherAnsIndex, otherWIndex) -> ansIndex /= otherAnsIndex && wIndex == otherWIndex)
+                                                 clueWords)
+                                             clueWords
+
+                         dupLetters = List.map Tuple.first dupWords
 
                      in
 
@@ -291,10 +315,18 @@ view model =
                                (Hint index)
                          , table [class "clue-numbering"]
                              [ tr []
-                                   (List.map 
-                                        (\(_, c) ->
-                                             td [class "clue-numbering-letter"] 
-                                                [c |> String.fromChar |> text])
+                                   (List.indexedMap 
+                                        (\numIndex (_, c) ->
+                                             let
+
+                                                 dupClasses =
+                                                     if List.member numIndex dupLetters
+                                                     then [ class "double-dipped" ]
+                                                     else []
+                                             
+                                             in
+                                                 td ([class "clue-numbering-letter"] ++ dupClasses)
+                                                    [c |> String.fromChar |> text])
                                         clue.answer)
                              , tr []
                                    (List.indexedMap
@@ -317,6 +349,24 @@ view model =
                                                 [numberingFor numIndex mNum c])
                                         clue.answer)
                              ]
+                         , let
+
+                               ascendingWarning = if fullyNumbered && List.sort unindexedClueNumbers == unindexedClueNumbers
+                                                  then Just (span [] [text "Clue numbers are an ascending run."])
+                                                  else Nothing
+
+                               descendingWarning = if fullyNumbered && List.sort unindexedClueNumbers == List.reverse unindexedClueNumbers
+                                                   then Just (span [] [text "Clue numbers are a descending run."])
+                                                   else Nothing
+
+                               duplicateWarning = if not (List.isEmpty dupWords)
+                                                  then Just (span [] [ text "Highlighted clue letters come from the same word." ])
+                                                  else Nothing
+                                                       
+                               warnings = [ascendingWarning, descendingWarning, duplicateWarning]
+
+                           in
+                               div [class "warnings"] (List.filterMap identity warnings)
                          ])
         ]
 
