@@ -5,17 +5,29 @@
     grid-auto-rows: minmax(100px, auto);
 }
 
-#crossbars-wrapper input {
-    font-family: monospace;
+#crossbars-wrapper input[type="text"] {
     border: 1px solid gray;
     text-transform: uppercase;
     font-family: monospace;
     font-size: 13px;
 }
 
+#overview {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+}
+
+#overview .phase.active {
+    font-weight: bold;
+    color: green;
+}
+
+#overview .phase.inactive {
+}
+
 #quote {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 2;
 }
 
 #quote input {
@@ -52,7 +64,7 @@
 
 #stats {
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 2;
 }
 
 #stats svg {
@@ -95,7 +107,7 @@
 
 #clues {
     grid-column: 1 / span 2;
-    grid-row: 2;
+    grid-row: 3;
     height: 7em;
 }
 
@@ -131,7 +143,7 @@
 
 #clue-info {
     grid-column: 1 / span 2;
-    grid-row: 3;
+    grid-row: 4;
 }
 
 #clue-info h3 {
@@ -181,6 +193,7 @@
     flex-direction: column;
     flex-wrap: wrap;
     justify-content: space-between;
+    margin-top: 1em;
 }
 
 .warnings span {

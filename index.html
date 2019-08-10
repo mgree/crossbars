@@ -11,8 +11,14 @@
     <div id="elm"></div>
     <script>
       let app = Elm.Main.init({
-          node: document.getElementById('elm')
+          node: document.getElementById('elm'),
+          flags: JSON.parse(localStorage.getItem('puzzles'))
       });
+
+      app.ports.savePuzzles.subscribe(function (puzzles) {
+          localStorage.setItem('puzzles', JSON.stringify(puzzles));
+      });
+
     </script>
     <div id="footer">
       <div>Crossbars is open source under GPLv3; you can find the <a href="https://github.com/mgree/crossbars"> source code on GitHub</a>.</div>
