@@ -1,12 +1,9 @@
+port module Main exposing (..)
+
 {- TODO
    section headers; dividers?
 
    cleaner puzzle display
-
-   modes/phases
-     - Quote Entry
-     - Anagramming (quotes uneditable, show puzzle view)
-     - Lettering and cluing (anagrams uneditable, too)
 
    autonumbering (SAT/SMT? CLP (since there may not exist an optimal solution)?)
 
@@ -24,11 +21,27 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onFocus)
+
 import Svg
 import Svg.Attributes
+
+import Json.Encode
+import Json.Decode
+
 import Browser
 
-type alias Flags = ()
+-- MAIN                    
+
+main = Browser.element
+       { init = init
+       , view = view
+       , update = update
+       , subscriptions = subscriptions
+       }
+
+-- MESSAGES, PORTS, FLAGS
+    
+type alias Flags = Json.Encode.Value {- saved puzzles -}
 
 type Msg =
     Title String
@@ -38,14 +51,16 @@ type Msg =
   | Select Int
   | Hint Int String
   | Number Int Int String
+  | Phase Phase
+  | Save    
 
-type alias Model = 
-    { title : String
-    , author : String
-    , quote : String
-    , clues : List Clue
-    , selectedClue : Maybe Int
-    }
+port savePuzzles : Json.Encode.Value -> Cmd msg
+
+-- TYPES, HELPERS                
+                   
+type Phase = QuoteEntry
+           | Anagramming {- quotes uneditable, show puzzle view -}
+           | CluingLettering {- answers uneditable, too -}
 
 type alias Clue =
     { hint : String
@@ -55,23 +70,127 @@ type alias Clue =
 clueAnswer : Clue -> String
 clueAnswer c = c.answer |> List.map Tuple.second |> String.fromList
 
-initialModel =
+defaultClue : String -> Clue
+defaultClue s = { hint = ""
+                , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
+                }
+               
+type alias Puzzle =
+    { title : String
+    , author : String
+    , quote : String
+    , clues : List Clue
+    , phase : Phase
+    }
+
+emptyPuzzle : Puzzle
+emptyPuzzle =
     { title = ""
     , author = ""
     , quote = ""
     , clues = []
-    , selectedClue = Nothing
+    , phase = QuoteEntry
     }
 
-main = Browser.element
-       { init = init
-       , view = view
-       , update = update
-       , subscriptions = subscriptions
-       }
+-- Puzzle setters
+    
+setTitle : String -> Puzzle -> Puzzle
+setTitle title puzzle = { puzzle | title = title }
 
+setAuthor : String -> Puzzle -> Puzzle
+setAuthor author puzzle = { puzzle | author = author }
+
+setQuote : String -> Puzzle -> Puzzle
+setQuote quote puzzle = { puzzle | quote = quote }
+
+setPhase : Phase -> Puzzle -> Puzzle
+setPhase phase puzzle = { puzzle | phase = phase }
+    
+
+updateNumbering : Int -> Int -> Maybe Int -> Puzzle -> Puzzle
+updateNumbering index numIndex mQuoteNum puzzle =
+    { puzzle | clues =
+          updateIndex index
+            (\clue ->
+                 { clue | answer =
+                       updateIndex numIndex (\(_,c) -> (mQuoteNum, c)) clue.answer })
+          puzzle.clues
+    }
+
+updateHint : Int -> String -> Puzzle -> Puzzle
+updateHint index hint puzzle =
+    { puzzle | clues =
+          updateIndex index
+            (\clue -> { clue | hint = hint })
+            puzzle.clues
+    }
+
+updateAnswer : Int -> String -> Puzzle -> Puzzle
+updateAnswer index answer puzzle =    
+    { puzzle | clues =
+          updateIndex index
+          (\clue ->
+               let
+                    
+                   numbering = clue.answer |> List.map Tuple.first
+               
+                   extendedNumbering = numbering ++ List.repeat (String.length answer - List.length numbering) Nothing
+
+                   numberedAnswer = 
+                       answer |> String.toList
+                              |> List.map2 
+                                    (\mnum c ->
+                                         {- FIXME slightly inefficient...  -}
+                                         case mnum of
+                                             Nothing -> (Nothing, c)
+                                             Just num ->
+                                                 if quoteIndex puzzle num == Just c
+                                                 then (Just num, c)
+                                                 else (Nothing, c))
+                                    extendedNumbering
+                in
+                    
+                    {clue | answer = numberedAnswer })
+            puzzle.clues
+    }
+
+fixupAnswerInitials : Puzzle -> Puzzle
+fixupAnswerInitials puzzle =
+    let 
+        initials = initialism puzzle |> String.toList |> List.map String.fromChar
+
+        clues = 
+            {- FIXME with more detailed delta information, we could be smarter here -}
+            if List.length puzzle.clues /= List.length initials
+            then List.map defaultClue initials
+            else List.map2 
+                (\i c -> 
+                     if String.startsWith i (clueAnswer c)
+                     then c
+                     else defaultClue i) 
+                initials puzzle.clues
+
+    in
+
+        { puzzle | clues = clues }
+
+type alias Model = 
+    { puzzle : Puzzle
+    , selectedClue : Maybe Int
+    , savedPuzzles : List Puzzle
+    }
+
+asCurrentPuzzleIn : Model -> Puzzle -> Model
+asCurrentPuzzleIn model puzzle = { model | puzzle = puzzle }    
+    
 init : Flags -> (Model, Cmd Msg)
-init flags = (initialModel, Cmd.none)
+init savedPuzzleJSON =
+    ( { puzzle = emptyPuzzle
+      , selectedClue = Nothing
+      , savedPuzzles = []
+      }
+    , Cmd.none
+    )
 
 textInput : List (Attribute msg) -> String -> String -> (String -> msg) -> Html msg
 textInput attrs p v toMsg = 
@@ -83,111 +202,60 @@ subscriptions model = Sub.none
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
-        Title title -> (fixupAnswerInitials { model | title = title }, Cmd.none)
-        Author author -> (fixupAnswerInitials { model | author = author }, Cmd.none)
-        Quote quote -> ({ model | quote = quote }, Cmd.none)
-        Answer idx answer -> ({ model | clues = updateAnswer model idx answer model.clues}, Cmd.none)
+        Title title -> (model.puzzle |> setTitle title |> fixupAnswerInitials |> asCurrentPuzzleIn model, Cmd.none)
+        Author author -> (model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model, Cmd.none)
+        Quote quote -> (model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model, Cmd.none)
+        Answer idx answer -> (model.puzzle |> updateAnswer idx answer |> asCurrentPuzzleIn model, Cmd.none)
         Select idx -> ({ model | selectedClue = 
-                             if 0 <= idx && idx < List.length model.clues
+                             if 0 <= idx && idx < List.length model.puzzle.clues
                              then Just idx
                              else Nothing }, 
                        Cmd.none)
-        Hint idx hint -> ({ model | clues = updateHint idx hint model.clues }, Cmd.none)
-        Number idx numIdx newNum -> ({ model | clues = updateNumbering idx numIdx (newNum |> String.toInt) model.clues }, Cmd.none) 
-
-defaultClue : String -> Clue
-defaultClue s = { hint = ""
-                , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
-                }
-
-updateNumbering : Int -> Int -> Maybe Int -> List Clue -> List Clue
-updateNumbering index numIndex mQuoteNum clues =
-    updateIndex index (\clue -> { clue | answer = updateIndex numIndex (\(_,c) -> (mQuoteNum, c)) clue.answer }) clues
-
-updateHint : Int -> String -> List Clue -> List Clue
-updateHint index hint clues =
-    case clues of
-        [] -> []
-        clue::rest ->
-            if index == 0
-            then { clue | hint = hint }::rest
-            else clue::updateHint (index-1) hint rest
-
-updateAnswer : Model -> Int -> String -> List Clue -> List Clue
-updateAnswer model index answer clues =
-    case clues of
-        [] -> [] 
-        clue::rest -> 
-            if index == 0
-            then 
-                           
-                let
-                    
-                    numbering = clue.answer |> List.map Tuple.first
-
-                    extendedNumbering = numbering ++ List.repeat (String.length answer - List.length numbering) Nothing
-
-                    numberedAnswer = 
-                        answer |> String.toList
-                               |> List.map2 
-                                    (\mnum c ->
-                                         {- FIXME slightly inefficient...  -}
-                                         case mnum of
-                                             Nothing -> (Nothing, c)
-                                             Just num ->
-                                                 if quoteIndex model num == Just c
-                                                 then (Just num, c)
-                                                 else (Nothing, c))
-                                    extendedNumbering
-                in
-                    
-                    {clue | answer = numberedAnswer }::rest
-                        
-            else clue::updateAnswer model (index-1) answer rest
-
-fixupAnswerInitials : Model -> Model
-fixupAnswerInitials model =
-    let 
-        initials = initialism model |> String.toList |> List.map String.fromChar
-
-        clues = 
-            {- FIXME with more detailed delta information, we could be smarter here -}
-            if List.length model.clues /= List.length initials
-            then List.map defaultClue initials
-            else List.map2 
-                (\i c -> 
-                     if String.startsWith i (clueAnswer c)
-                     then c
-                     else defaultClue i) 
-                initials model.clues
-
-    in
-
-        { model | clues = clues }
+        Hint idx hint -> (model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model, Cmd.none)
+        Number idx numIdx newNum -> (model.puzzle |>  updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model, Cmd.none)
+        Phase phase -> (model.puzzle |> setPhase phase |> asCurrentPuzzleIn model, Cmd.none)
+        Save -> (model, savePuzzles Json.Encode.null)
 
 view : Model -> Html Msg
 view model = 
-    let initials = initialism model 
+    let
+        puzzle = model.puzzle
+        
+        quoteFixed = puzzle.phase /= QuoteEntry
+
+        answersFixed = puzzle.phase == CluingLettering
+
+        initials = initialism puzzle 
 
         initialismHist = letterHist initials
 
-        quoteHist = letterHist model.quote 
+        quoteHist = letterHist puzzle.quote 
                                      
         missingHist = histDifference quoteHist initialismHist
 
         viable = isExhaustedHist missingHist
 
-        clueHist = letterHist (model.clues |> List.map clueAnswer |> String.concat)
+        clueHist = letterHist (puzzle.clues |> List.map clueAnswer |> String.concat)
 
         remainingHist = histDifference clueHist quoteHist
 
+        readyForPhase phase =
+            puzzle.phase == phase ||
+                case phase of
+                    QuoteEntry -> True
+                    Anagramming -> viable &&
+                                   not (isEmptyHist quoteHist)
+                    CluingLettering -> viable &&
+                                       not (isEmptyHist quoteHist) &&
+                                       isEmptyHist remainingHist
+                        
         quoteIndices =     
-            model.quote |> cleanChars
+            puzzle.quote |> cleanChars
                         |> List.indexedMap (\i c -> (c, i))
                         |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
 
         quoteIndexWords =
-            model.quote |> String.words
+            puzzle.quote |> String.words
                         |> List.map cleanChars
                         |> List.filter (not << List.isEmpty)
                         |> List.indexedMap (\i w -> List.repeat (List.length w) i)
@@ -196,7 +264,7 @@ view model =
                         |> Dict.fromList
                            
         quoteIndexUses = 
-            model.clues |> List.indexedMap (\i clue -> 
+            puzzle.clues |> List.indexedMap (\i clue -> 
                                                 List.foldr 
                                                   (\(numIndex, (mNum,_)) d ->
                                                        case mNum of
@@ -209,17 +277,35 @@ view model =
     in
 
     div [id "crossbars-wrapper"] 
-        [ section [id "quote"]
-            [ textInput [tabindex 1, size 60] "Title" model.title Title
-            , textInput [tabindex 2, size 60] "Author" model.author Author
+        [ section [id "overview"]
+              [ h1 [] [text "Crossbars — Acrostic Constructor"]
+              , div [] (List.intersperse (span [] [text " → "])
+                            (List.map
+                                 (\p ->
+                                      input [ type_ "button"
+                                            , class "phase"
+                                            , class (if p == puzzle.phase then "active" else "inactive")
+                                            , disabled (not (readyForPhase p))
+                                            , value (stringOfPhase p)
+                                            , onClick (Phase p)
+                                            ]
+                                            [])
+                                 phases))
+              ]
+        , section [id "quote"]
+            [ textInput [tabindex 1, size 60, disabled quoteFixed]
+                  "Title" puzzle.title Title
+            , textInput [tabindex 2, size 60, disabled quoteFixed]
+                  "Author" puzzle.author Author
             , textarea [ tabindex 3 {- see baseTabs below -}
+                       , disabled quoteFixed
                        , placeholder "Quote"
                        , onInput Quote
                        , rows 6
                        , cols 60
                        , attribute "autocapitalize" "character"
                        ] 
-                  [text model.quote]
+                  [text puzzle.quote]
             , div [id "summary"]
                 [ span [id "viability"]
                       [ if viable
@@ -237,11 +323,11 @@ view model =
         , section [id "stats"]
             [ histToSVG quoteHist remainingHist ]
         , section [id "clues"]
-            (model.clues 
+            (puzzle.clues 
                 |> List.map clueAnswer
                 |> addInitials (String.toList initials) 
                 |> addIndex 
-                |> List.map clueEntry)
+                |> List.map (clueEntry answersFixed))
 
         , section [id "clue-info"]
             (case model.selectedClue of
@@ -251,7 +337,7 @@ view model =
                         
                          clueLetter = letterFor index
 
-                         clue = clueFor index model
+                         clue = clueFor index puzzle
 
                          numberingFor numIndex mNum c = 
                              select [id ("clue-numbering-" ++ String.fromInt index ++ "-" ++ String.fromInt numIndex)
@@ -306,7 +392,7 @@ view model =
                      in
 
                          [ h3 [] [ clueLetter ++ ". " |> text ]
-                         , textInput [ tabindex (baseTabs + List.length model.clues + 1)
+                         , textInput [ tabindex (baseTabs + List.length puzzle.clues + 1)
                                      , class "clue-hint"
                                      , value clue.hint
                                      ]
@@ -338,7 +424,7 @@ view model =
                                                      case mNum of
                                                          Nothing -> "unentered"
                                                          Just num ->
-                                                             if quoteIndex model num 
+                                                             if quoteIndex puzzle num 
                                                                   |> Maybe.map (\qC -> c == Char.toUpper qC)
                                                                   |> Maybe.withDefault False
                                                              then "valid"
@@ -351,6 +437,10 @@ view model =
                              ]
                          , let
 
+                               editableWarning = if puzzle.phase /= CluingLettering
+                                                 then Just (span [] [text "Editing the clue will erase any numbers you have entered."])
+                                                 else Nothing
+                               
                                ascendingWarning = if fullyNumbered && List.sort unindexedClueNumbers == unindexedClueNumbers
                                                   then Just (span [] [text "Clue numbers are an ascending run."])
                                                   else Nothing
@@ -363,7 +453,7 @@ view model =
                                                   then Just (span [] [ text "Highlighted clue letters come from the same word." ])
                                                   else Nothing
                                                        
-                               warnings = [ascendingWarning, descendingWarning, duplicateWarning]
+                               warnings = [editableWarning, ascendingWarning, descendingWarning, duplicateWarning]
 
                            in
                                div [class "warnings"] (List.filterMap identity warnings)
@@ -373,8 +463,18 @@ view model =
 baseTabs : Int
 baseTabs = 3 {- title, author, quote -}
 
-clueEntry : (Int, (Char, String)) -> Html Msg
-clueEntry (index, (initial, clue)) =
+stringOfPhase : Phase -> String
+stringOfPhase p =
+    case p of
+        QuoteEntry -> "Quote entry"
+        Anagramming -> "Anagramming"
+        CluingLettering -> "Cluing and lettering"
+
+phases : List Phase
+phases = [QuoteEntry, Anagramming, CluingLettering]
+         
+clueEntry : Bool -> (Int, (Char, String)) -> Html Msg
+clueEntry answersFixed (index, (initial, clue)) =
     let 
 
         initialStr = String.fromChar initial
@@ -390,7 +490,7 @@ clueEntry (index, (initial, clue)) =
         div [onClick (Select index)]
             [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
             , textInput [tabindex (index + baseTabs), name lbl, validCls, 
-                         onFocus (Select index)] 
+                         onFocus (Select index), disabled answersFixed] 
                 (initialStr ++ "...") clue (Answer index)
             ] 
 
@@ -423,18 +523,17 @@ lettering =
 letterFor : Int -> String
 letterFor index = List.head (List.drop index lettering) |> Maybe.withDefault ""
 
-clueFor : Int -> Model -> Clue
-clueFor index model = 
-    List.head (List.drop index model.clues) |> Maybe.withDefault (defaultClue "")
-
+clueFor : Int -> Puzzle -> Clue
+clueFor index puzzle = 
+    List.head (List.drop index puzzle.clues) |> Maybe.withDefault (defaultClue "")
 
 {- Acrostic functions -}
 
-quoteIndex : Model -> Int -> Maybe Char
-quoteIndex model index =
-    model.quote |> cleanChars
-                |> List.drop index
-                |> List.head
+quoteIndex : Puzzle -> Int -> Maybe Char
+quoteIndex puzzle index =
+    puzzle.quote |> cleanChars
+                 |> List.drop index
+                 |> List.head
 
 type alias Hist = Dict Char Int
 
@@ -445,8 +544,8 @@ cleanChars s =
       |> List.filter Char.isAlphaNum         
       {- FIXME doesn't work with diacritics, Greek, etc. -}
 
-initialism : Model -> String
-initialism model = model.author ++ model.title |> String.filter Char.isAlphaNum
+initialism : Puzzle -> String
+initialism puzzle = puzzle.author ++ puzzle.title |> String.filter Char.isAlphaNum
 
 emptyHist : Hist
 emptyHist = Dict.empty
