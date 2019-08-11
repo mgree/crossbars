@@ -74,7 +74,13 @@ defaultClue : String -> Clue
 defaultClue s = { hint = ""
                 , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
                 }
-               
+
+{- FIXME
+
+   creation/access time?
+
+ -}
+
 type alias Puzzle =
     { title : String
     , author : String
@@ -180,42 +186,157 @@ type alias Model =
     , savedPuzzles : List Puzzle
     }
 
+emptyModel : Model
+emptyModel = { puzzle = emptyPuzzle
+             , selectedClue = Nothing
+             , savedPuzzles = []
+             }
+    
 asCurrentPuzzleIn : Model -> Puzzle -> Model
 asCurrentPuzzleIn model puzzle = { model | puzzle = puzzle }    
-    
+
+-- PUZZLE SAVING
+
+encodeModel : Model -> Json.Encode.Value
+encodeModel model =
+    Json.Encode.object
+        [ ("puzzle", encodePuzzle model.puzzle)
+        , ("selectedClue", encodeNullable Json.Encode.int model.selectedClue)
+        , ("savedPuzzles", Json.Encode.list encodePuzzle model.savedPuzzles)
+        ]
+              
+encodePuzzle : Puzzle -> Json.Encode.Value
+encodePuzzle puzzle =
+    Json.Encode.object
+        [ ("title", Json.Encode.string puzzle.title)
+        , ("author", Json.Encode.string puzzle.author)
+        , ("quote", Json.Encode.string puzzle.quote)
+        , ("clues", Json.Encode.list encodeClue puzzle.clues)
+        , ("phase", encodePhase puzzle.phase)
+        ]
+
+encodeClue : Clue -> Json.Encode.Value
+encodeClue clue =
+    Json.Encode.object
+        [ ("hint", Json.Encode.string clue.hint)
+        , ("answer", Json.Encode.list encodeAnswer clue.answer)
+        ]
+
+encodeAnswer : (Maybe Int, Char) -> Json.Encode.Value
+encodeAnswer (mNum, c) =
+    Json.Encode.object
+        [ ("number", encodeNullable Json.Encode.int mNum)
+        , ("char", Json.Encode.string <| String.fromChar <| c)
+        ]
+
+encodePhase : Phase -> Json.Encode.Value
+encodePhase phase =
+    Json.Encode.string <| case phase of
+                              QuoteEntry -> "QuoteEntry"
+                              Anagramming -> "Anagramming"
+                              CluingLettering -> "CluingLettering"
+
+encodeNullable : (a -> Json.Encode.Value) -> Maybe a -> Json.Encode.Value
+encodeNullable encode ma =
+    case ma of
+        Nothing -> Json.Encode.null
+        Just a -> encode a
+                                                 
+decodeModel : Json.Decode.Decoder Model
+decodeModel =
+    Json.Decode.map3
+        (\puzzle selectedClue savedPuzzles ->
+             { puzzle = puzzle
+             , selectedClue = selectedClue
+             , savedPuzzles = savedPuzzles
+             })
+        (Json.Decode.field "puzzle" decodePuzzle)
+        (Json.Decode.field "selectedClue" (Json.Decode.nullable Json.Decode.int))
+        (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
+                                                 
+decodePuzzle : Json.Decode.Decoder Puzzle
+decodePuzzle =
+    Json.Decode.map5
+        (\title author quote clues phase ->
+             { title = title
+             , author = author
+             , quote = quote
+             , clues = clues
+             , phase = phase
+             })
+        (Json.Decode.field "title" Json.Decode.string)
+        (Json.Decode.field "author" Json.Decode.string)
+        (Json.Decode.field "quote" Json.Decode.string)
+        (Json.Decode.field "clues" (Json.Decode.list decodeClue))
+        (Json.Decode.field "phase" decodePhase)
+
+decodeClue : Json.Decode.Decoder Clue
+decodeClue =
+    Json.Decode.map2
+        (\hint answer ->
+             { hint = hint
+             , answer = answer
+             })
+        (Json.Decode.field "hint" Json.Decode.string)
+        (Json.Decode.field "answer" (Json.Decode.list decodeAnswer))
+
+decodeAnswer : Json.Decode.Decoder (Maybe Int, Char)
+decodeAnswer =
+    Json.Decode.map2
+        Tuple.pair
+        (Json.Decode.field "number" (Json.Decode.nullable Json.Decode.int))
+        (Json.Decode.field "char" (Json.Decode.string |> Json.Decode.andThen
+                           (\s ->
+                                case String.uncons s of
+                                    Just (c, "") -> Json.Decode.succeed c
+                                    _ -> Json.Decode.fail ("expected single character in answer, found '" ++ s ++ "'"))))
+
+decodePhase : Json.Decode.Decoder Phase
+decodePhase =
+    Json.Decode.string |> Json.Decode.andThen
+        (\s ->
+             case s of
+                 "QuoteEntry" -> Json.Decode.succeed QuoteEntry
+                 "Anagramming" -> Json.Decode.succeed Anagramming
+                 "CluingLettering" -> Json.Decode.succeed CluingLettering
+                 _ -> Json.Decode.fail ("invalid phase '" ++ s ++ "'"))
+
+-- INITIAL STATE, SUBSCRIPTIONS
+                                 
 init : Flags -> (Model, Cmd Msg)
 init savedPuzzleJSON =
-    ( { puzzle = emptyPuzzle
-      , selectedClue = Nothing
-      , savedPuzzles = []
-      }
+    ( savedPuzzleJSON
+        |> Json.Decode.decodeValue decodeModel 
+        |> Result.withDefault emptyModel {- FIXME indicate error? -}
     , Cmd.none
     )
-
-textInput : List (Attribute msg) -> String -> String -> (String -> msg) -> Html msg
-textInput attrs p v toMsg = 
-    input ([ type_ "text", placeholder p, value v, onInput toMsg ] ++ attrs) []
-
+    
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.none
 
+-- UPDATE
+                      
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
-        Title title -> (model.puzzle |> setTitle title |> fixupAnswerInitials |> asCurrentPuzzleIn model, Cmd.none)
-        Author author -> (model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model, Cmd.none)
-        Quote quote -> (model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model, Cmd.none)
-        Answer idx answer -> (model.puzzle |> updateAnswer idx answer |> asCurrentPuzzleIn model, Cmd.none)
-        Select idx -> ({ model | selectedClue = 
-                             if 0 <= idx && idx < List.length model.puzzle.clues
-                             then Just idx
-                             else Nothing }, 
-                       Cmd.none)
-        Hint idx hint -> (model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model, Cmd.none)
-        Number idx numIdx newNum -> (model.puzzle |>  updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model, Cmd.none)
-        Phase phase -> (model.puzzle |> setPhase phase |> asCurrentPuzzleIn model, Cmd.none)
-        Save -> (model, savePuzzles Json.Encode.null)
+        Title title -> model.puzzle |> setTitle title |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
+        Author author -> model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
+        Quote quote -> model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
+        Answer idx answer -> model.puzzle |> updateAnswer idx answer |> asCurrentPuzzleIn model |> andSave
+        Select idx -> { model | selectedClue = 
+                            if 0 <= idx && idx < List.length model.puzzle.clues
+                            then Just idx
+                            else Nothing } |> andSave
+        Hint idx hint -> model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model |> andSave
+        Number idx numIdx newNum -> model.puzzle |>  updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model |> andSave
+        Phase phase -> model.puzzle |> setPhase phase |> asCurrentPuzzleIn model |> andSave
+        Save -> (model, savePuzzles (encodeModel model))
 
+andSave : Model -> (Model, Cmd Msg)
+andSave model = (model, savePuzzles (encodeModel model))
+
+-- VIEW
+                
 view : Model -> Html Msg
 view model = 
     let
@@ -463,6 +584,10 @@ view model =
 baseTabs : Int
 baseTabs = 3 {- title, author, quote -}
 
+textInput : List (Attribute msg) -> String -> String -> (String -> msg) -> Html msg
+textInput attrs p v toMsg = 
+    input ([ type_ "text", placeholder p, value v, onInput toMsg ] ++ attrs) []
+           
 stringOfPhase : Phase -> String
 stringOfPhase p =
     case p of
@@ -527,7 +652,7 @@ clueFor : Int -> Puzzle -> Clue
 clueFor index puzzle = 
     List.head (List.drop index puzzle.clues) |> Maybe.withDefault (defaultClue "")
 
-{- Acrostic functions -}
+-- ACROSTIC FUNCTIONS
 
 quoteIndex : Puzzle -> Int -> Maybe Char
 quoteIndex puzzle index =
