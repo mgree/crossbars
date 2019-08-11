@@ -28,6 +28,10 @@ import Svg.Attributes
 import Json.Encode
 import Json.Decode
 
+import Task
+
+import Time
+
 import Browser
 
 -- MAIN                    
@@ -52,7 +56,7 @@ type Msg =
   | Hint Int String
   | Number Int Int String
   | Phase Phase
-  | Save    
+  | Save Time.Posix
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
 
@@ -75,9 +79,14 @@ defaultClue s = { hint = ""
                 , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
                 }
 
-{- FIXME
+{- PICK UP HERE
 
-   creation/access time?
+   new puzzle button (saves old one)
+   saved puzzle display
+   load puzzle (saves old one)
+
+   way to delete puzzles
+   prompt to save?
 
  -}
 
@@ -87,15 +96,17 @@ type alias Puzzle =
     , quote : String
     , clues : List Clue
     , phase : Phase
+    , timeModified : Time.Posix
     }
 
-emptyPuzzle : Puzzle
+emptyPuzzle :  Puzzle
 emptyPuzzle =
     { title = ""
     , author = ""
     , quote = ""
     , clues = []
     , phase = QuoteEntry
+    , timeModified = Time.millisToPosix 0
     }
 
 -- Puzzle setters
@@ -111,8 +122,10 @@ setQuote quote puzzle = { puzzle | quote = quote }
 
 setPhase : Phase -> Puzzle -> Puzzle
 setPhase phase puzzle = { puzzle | phase = phase }
-    
 
+setTimeModified : Time.Posix -> Puzzle -> Puzzle
+setTimeModified now puzzle = { puzzle | timeModified = now }
+                        
 updateNumbering : Int -> Int -> Maybe Int -> Puzzle -> Puzzle
 updateNumbering index numIndex mQuoteNum puzzle =
     { puzzle | clues =
@@ -187,10 +200,11 @@ type alias Model =
     }
 
 emptyModel : Model
-emptyModel = { puzzle = emptyPuzzle
-             , selectedClue = Nothing
-             , savedPuzzles = []
-             }
+emptyModel =
+    { puzzle = emptyPuzzle
+    , selectedClue = Nothing
+    , savedPuzzles = []
+    }
     
 asCurrentPuzzleIn : Model -> Puzzle -> Model
 asCurrentPuzzleIn model puzzle = { model | puzzle = puzzle }    
@@ -213,6 +227,7 @@ encodePuzzle puzzle =
         , ("quote", Json.Encode.string puzzle.quote)
         , ("clues", Json.Encode.list encodeClue puzzle.clues)
         , ("phase", encodePhase puzzle.phase)
+        , ("timeModified", Json.Encode.int <| Time.posixToMillis <| puzzle.timeModified)
         ]
 
 encodeClue : Clue -> Json.Encode.Value
@@ -256,19 +271,22 @@ decodeModel =
                                                  
 decodePuzzle : Json.Decode.Decoder Puzzle
 decodePuzzle =
-    Json.Decode.map5
-        (\title author quote clues phase ->
+    Json.Decode.map6
+        (\title author quote clues phase timeModified ->
              { title = title
              , author = author
              , quote = quote
              , clues = clues
              , phase = phase
+             , timeModified = timeModified
              })
         (Json.Decode.field "title" Json.Decode.string)
         (Json.Decode.field "author" Json.Decode.string)
         (Json.Decode.field "quote" Json.Decode.string)
         (Json.Decode.field "clues" (Json.Decode.list decodeClue))
         (Json.Decode.field "phase" decodePhase)
+        (Json.Decode.field "timeModified" (Json.Decode.int |>
+                                               Json.Decode.map Time.millisToPosix))
 
 decodeClue : Json.Decode.Decoder Clue
 decodeClue =
@@ -330,10 +348,15 @@ update msg model =
         Hint idx hint -> model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model |> andSave
         Number idx numIdx newNum -> model.puzzle |>  updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model |> andSave
         Phase phase -> model.puzzle |> setPhase phase |> asCurrentPuzzleIn model |> andSave
-        Save -> (model, savePuzzles (encodeModel model))
-
+        Save now ->
+            let newModel = model.puzzle
+                             |> setTimeModified now
+                             |> asCurrentPuzzleIn model
+            in
+            (newModel, savePuzzles (encodeModel newModel))
+                
 andSave : Model -> (Model, Cmd Msg)
-andSave model = (model, savePuzzles (encodeModel model))
+andSave model = (model, Task.perform Save Time.now)
 
 -- VIEW
                 
