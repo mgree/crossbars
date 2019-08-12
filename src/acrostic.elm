@@ -521,7 +521,7 @@ view model =
                 |> List.map clueAnswer
                 |> addInitials (String.toList initials) 
                 |> addIndex 
-                |> List.map (clueEntry answersFixed))
+                |> List.map (clueEntry model answersFixed))
 
         , section [id "clue-info"]
             (case model.selectedClue of
@@ -677,8 +677,8 @@ stringOfPhase p =
 phases : List Phase
 phases = [QuoteEntry, Anagramming, CluingLettering]
          
-clueEntry : Bool -> (Int, (Char, String)) -> Html Msg
-clueEntry answersFixed (index, (initial, clue)) =
+clueEntry : Model -> Bool -> (Int, (Char, String)) -> Html Msg
+clueEntry model answersFixed (index, (initial, clue)) =
     let 
 
         initialStr = String.fromChar initial
@@ -689,9 +689,13 @@ clueEntry answersFixed (index, (initial, clue)) =
                             then "valid"
                             else "invalid"
 
+        selectedCls = if model.selectedClue == Just index
+                       then [ class "selected" ]
+                       else []
+                                
         lbl = "clue-" ++ letter
     in
-        div [onClick (Select index)]
+        div ([onClick (Select index)] ++ selectedCls)
             [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
             , textInput [tabindex (index + baseTabs)
                         , name lbl
