@@ -2,7 +2,7 @@ port module Main exposing (..)
 
 {- TODO
 
-   bug with spaces in answers
+   different ways to sort saved puzzles
 
    way to delete puzzles
 
@@ -10,7 +10,7 @@ port module Main exposing (..)
 
    section headers; dividers?
 
-   cleaner puzzle display
+   puzzle display in fixed phases
 
    autonumbering (SAT/SMT? CLP (since there may not exist an optimal solution)?)
 
@@ -598,19 +598,26 @@ view model =
                                    (List.indexedMap 
                                         (\numIndex (_, c) ->
                                              let
+                                                 {- FIXME hide/show certain characters? -}
+                                                 fakeCharClasses =
+                                                     if Char.isAlphaNum c
+                                                     then [ ]
+                                                     else [ class "excluded" ]
+                                                 
                                                  dupClasses =
                                                      if List.member numIndex dupLetters
                                                      then [ class "double-dipped" ]
                                                      else []
                                              
                                              in
-                                                 td ([class "clue-numbering-letter"] ++ dupClasses)
+                                                 td ([class "clue-numbering-letter"] ++ fakeCharClasses ++ dupClasses)
                                                     [c |> String.fromChar |> text])
                                         clue.answer)
                              , tr []
                                    (List.indexedMap
                                         (\numIndex (mNum, rawC) ->
                                              let
+                                                 
                                                  c = Char.toUpper rawC
 
                                                  validCls = 
@@ -625,7 +632,7 @@ view model =
                                                                                     
                                              in
                                              td [class "clue-numbering-number", class validCls]
-                                                [numberingFor numIndex mNum c])
+                                                (if Char.isAlphaNum c then [numberingFor numIndex mNum c] else []))
                                         clue.answer)
                              ]
                          , let
