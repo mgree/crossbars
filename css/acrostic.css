@@ -151,6 +151,10 @@
     margin: .1em;
 }
 
+#clues .selected {
+    background-color: lightblue;
+}
+
 #footer {
     margin-top: 1.5em;
     text-align: center;
