@@ -195,6 +195,10 @@
     border-bottom: 2px solid black;
 }
 
+#clue-info .clue-numbering-letter.excluded {
+    border-bottom: none;
+}
+
 #clue-info .clue-numbering-letter.double-dipped {
     color: darkorange;
 }
