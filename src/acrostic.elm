@@ -1,6 +1,13 @@
 port module Main exposing (..)
 
 {- TODO
+
+   bug with spaces in answers
+
+   way to delete puzzles
+
+   prompt to save when no title is given?
+
    section headers; dividers?
 
    cleaner puzzle display
@@ -81,13 +88,6 @@ defaultClue : String -> Clue
 defaultClue s = { hint = ""
                 , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
                 }
-
-{- PICK UP HERE
-
-   way to delete puzzles
-   prompt to save when no title is given?
-
- -}
 
 type alias Puzzle =
     { title : String
