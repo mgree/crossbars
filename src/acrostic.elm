@@ -486,12 +486,12 @@ view model =
                      model.savedPuzzles)
             ]
         , section [id "quote"]
-            [ textInput [tabindex 1, size 60, disabled quoteFixed]
+            [ textInput [tabindex 1, size 60, readonly quoteFixed]
                 "Title" puzzle.title Title
-            , textInput [tabindex 2, size 60, disabled quoteFixed]
+            , textInput [tabindex 2, size 60, readonly quoteFixed]
                 "Author" puzzle.author Author
             , textarea [ tabindex 3 {- see baseTabs below -}
-                       , disabled quoteFixed
+                       , readonly quoteFixed
                        , placeholder "Quote"
                        , onInput Quote
                        , rows 6
@@ -598,7 +598,6 @@ view model =
                                    (List.indexedMap 
                                         (\numIndex (_, c) ->
                                              let
-
                                                  dupClasses =
                                                      if List.member numIndex dupLetters
                                                      then [ class "double-dipped" ]
@@ -679,7 +678,7 @@ clueEntry answersFixed (index, (initial, clue)) =
 
         letter = letterFor index 
                  
-        validCls = class <| if String.startsWith initialStr clue
+        validCls = class <| if String.startsWith (String.toUpper initialStr) (String.toUpper clue)
                             then "valid"
                             else "invalid"
 
@@ -687,8 +686,13 @@ clueEntry answersFixed (index, (initial, clue)) =
     in
         div [onClick (Select index)]
             [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
-            , textInput [tabindex (index + baseTabs), name lbl, validCls, 
-                         onFocus (Select index), disabled answersFixed] 
+            , textInput [tabindex (index + baseTabs)
+                        , name lbl
+                        , validCls
+                        , onFocus (Select index)
+                        , onClick (Select index)
+                        , readonly answersFixed
+                        ] 
                 (initialStr ++ "...") clue (Answer index)
             ] 
 
