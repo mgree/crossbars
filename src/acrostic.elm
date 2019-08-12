@@ -21,6 +21,7 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onFocus)
+import Html.Keyed as Keyed
 
 import Svg
 import Svg.Attributes
@@ -57,6 +58,8 @@ type Msg =
   | Number Int Int String
   | Phase Phase
   | Save Time.Posix
+  | NewPuzzle
+  | Load Puzzle
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
 
@@ -81,12 +84,8 @@ defaultClue s = { hint = ""
 
 {- PICK UP HERE
 
-   new puzzle button (saves old one)
-   saved puzzle display
-   load puzzle (saves old one)
-
    way to delete puzzles
-   prompt to save?
+   prompt to save when no title is given?
 
  -}
 
@@ -108,6 +107,18 @@ emptyPuzzle =
     , phase = QuoteEntry
     , timeModified = Time.millisToPosix 0
     }
+
+puzzleDescription : Puzzle -> String
+puzzleDescription puzzle =
+    {- FIXME need Time.here to render modified time -}
+    String.toUpper puzzle.author ++ " — " ++ String.toUpper puzzle.title
+    
+comparePuzzles : Puzzle -> Puzzle -> Order
+comparePuzzles puz1 puz2 =
+    compare (Time.posixToMillis puz1.timeModified) (Time.posixToMillis puz2.timeModified)
+
+samePuzzle : Puzzle -> Puzzle -> Bool
+samePuzzle puz1 puz2 = comparePuzzles puz1 puz2 == EQ
 
 -- Puzzle setters
     
@@ -346,15 +357,36 @@ update msg model =
                             then Just idx
                             else Nothing } |> andSave
         Hint idx hint -> model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model |> andSave
-        Number idx numIdx newNum -> model.puzzle |>  updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model |> andSave
+        Number idx numIdx newNum -> model.puzzle |> updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model |> andSave
         Phase phase -> model.puzzle |> setPhase phase |> asCurrentPuzzleIn model |> andSave
         Save now ->
-            let newModel = model.puzzle
-                             |> setTimeModified now
-                             |> asCurrentPuzzleIn model
-            in
+            let newModel = model.puzzle |> setTimeModified now |> asCurrentPuzzleIn model in
             (newModel, savePuzzles (encodeModel newModel))
+        NewPuzzle -> model |> popCurrentPuzzle emptyPuzzle |> andSave
+        Load savedPuzzle -> model |> loadPuzzle savedPuzzle |> andSave
+
+loadPuzzle : Puzzle -> Model -> Model
+loadPuzzle puzzle model =
+    { model
+        | savedPuzzles = model.savedPuzzles
+                           |> List.filter (not << samePuzzle puzzle)
+                           |> trySave model.puzzle
+        , puzzle = puzzle
+    }
                 
+popCurrentPuzzle : Puzzle -> Model -> Model
+popCurrentPuzzle newPuzzle model =
+    { model
+        | savedPuzzles = trySave model.puzzle model.savedPuzzles
+        , puzzle = newPuzzle
+    }
+
+trySave : Puzzle -> List Puzzle -> List Puzzle
+trySave puzzle savedPuzzles =
+    if List.all String.isEmpty [puzzle.title, puzzle.author]
+    then savedPuzzles
+    else insertWith comparePuzzles puzzle savedPuzzles
+    
 andSave : Model -> (Model, Cmd Msg)
 andSave model = (model, Task.perform Save Time.now)
 
@@ -436,11 +468,28 @@ view model =
                                             [])
                                  phases))
               ]
+        , section [id "saved"]
+            [ div [ id "saved-puzzles" ]
+                ([ div [id "saved-puzzles-header"] [ h3 [] [text "Saved puzzles"]
+                          , input [ type_ "button"
+                                  , onClick NewPuzzle
+                                  , value "New puzzle"
+                                  ]
+                                []
+                          ]
+                 , a [] [model.puzzle |> puzzleDescription |> text]
+                 ] ++
+                 List.map
+                     (\savedPuzzle ->
+                          a [onClick (Load savedPuzzle), href "#"]
+                          [savedPuzzle |> puzzleDescription |> text])
+                     model.savedPuzzles)
+            ]
         , section [id "quote"]
             [ textInput [tabindex 1, size 60, disabled quoteFixed]
-                  "Title" puzzle.title Title
+                "Title" puzzle.title Title
             , textInput [tabindex 2, size 60, disabled quoteFixed]
-                  "Author" puzzle.author Author
+                "Author" puzzle.author Author
             , textarea [ tabindex 3 {- see baseTabs below -}
                        , disabled quoteFixed
                        , placeholder "Quote"
@@ -448,21 +497,22 @@ view model =
                        , rows 6
                        , cols 60
                        , attribute "autocapitalize" "character"
+                       , value (puzzle.quote)
                        ] 
-                  [text puzzle.quote]
+                  []
             , div [id "summary"]
-                [ span [id "viability"]
-                      [ if viable
-                        then text "Quote has all of the initialism's letters"
-                        else text ("The quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
-                      ]
-                , span [class "count"] 
-                    [ text "Total letters: "
-                    , quoteHist |> countHist |> String.fromInt |> text]
-                , span [class "count"] 
-                    [ text "Remaining letters: "
-                    , remainingHist |> countHist |> String.fromInt |> text]
-                ]
+                  [ span [id "viability"]
+                        [ if viable
+                          then text "Quote has all of the initialism's letters"
+                          else text ("The quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
+                        ]
+                  , span [class "count"] 
+                      [ text "Total letters: "
+                      , quoteHist |> countHist |> String.fromInt |> text]
+                  , span [class "count"] 
+                      [ text "Remaining letters: "
+                      , remainingHist |> countHist |> String.fromInt |> text]
+                  ]
             ]
         , section [id "stats"]
             [ histToSVG quoteHist remainingHist ]
@@ -888,3 +938,13 @@ mergeConsMany l =
         [] -> Dict.empty
         [d] -> d
         d::ds -> mergeCons d (mergeConsMany ds)
+
+insertWith : (a -> a -> Order) -> a -> List a -> List a
+insertWith cmp x l =
+    case l of
+        [] -> [x]
+        y::rest ->
+            case cmp x y of
+                LT -> x::y::rest
+                EQ -> x::y::rest
+                GT -> y::insertWith cmp x rest
