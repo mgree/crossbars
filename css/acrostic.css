@@ -70,6 +70,32 @@
     font-size: 13px;
 }
 
+#quote svg#board .board-square {
+    stroke: black;
+}
+
+#quote svg#board .board-space {
+    fill: black;
+}
+
+#quote svg#board .board-letter {
+    fill: white;
+}
+
+#quote svg#board .number {
+    font-size: 2.5pt;
+}
+
+#quote svg#board .clue-letter {
+    font-size: 2.5pt;
+}
+
+#quote svg#board .letter {
+    font-size: 6.5pt;
+    font-family: monospace;
+    text-transform: uppercase;
+}
+
 #quote #summary {
     display: flex;
     flex-wrap: wrap;
@@ -91,41 +117,41 @@
     grid-row: 2;
 }
 
-#stats svg {
+#stats svg#remaining {
     display: block;
     width: 90%;
 }
 
-#stats svg text {
+#stats svg#remaining text {
     font-size: 6pt;
 }
 
-#stats svg text.label {
+#stats svg#remaining text.label {
     font-family: monospace;
 }
 
-#stats svg .quote rect {
+#stats svg#remaining .quote rect {
     fill: aliceblue;
 }
 
-#stats svg .quote text {
+#stats svg#remaining .quote text {
     fill: aliceblue;
 }
 
-#stats svg .remaining rect {
+#stats svg#remaining .remaining rect {
     fill: lightblue;
     stroke: lightblue;
 }
 
-#stats svg .remaining text.valid {
+#stats svg#remaining .remaining text.valid {
     fill: lightblue;
 }
 
-#stats svg .remaining text.invalid {
+#stats svg#remaining .remaining text.invalid {
     fill: red;
 }
 
-#stats svg .hooray {
+#stats svg#remaining .hooray {
     font-size: 32pt;
 }
 
@@ -192,6 +218,10 @@
 #clue-info table.clue-numbering {
     margin-top: 1em;
     border-spacing: 2em 0;
+}
+
+#clue-info .clue-numbering select {
+    width: 5em;
 }
 
 #clue-info .clue-numbering-letter {
