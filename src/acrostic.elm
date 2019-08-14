@@ -942,13 +942,19 @@ boardToSVG numCols quoteIndexUses puzzle =
 
         numberedQuoteText =
             let number idx count l =
+                    let row = count // numCols in
                     case l of
-                        [] -> []
+                        [] -> List.range (remainderBy numCols count) numCols
+                              |> List.map (\col -> { char = ' '
+                                                   , qIndex = -1
+                                                   , col = col
+                                                   , row = row
+                                                   })
                         (c::rest) ->
                             let square = { char = c
                                          , qIndex = if c == ' ' then -1 else idx
                                          , col = remainderBy numCols count
-                                         , row = count // numCols}
+                                         , row = row}
                             in
                                 square :: number (idx + if c == ' ' then 0 else 1) (count + 1) rest
             in
