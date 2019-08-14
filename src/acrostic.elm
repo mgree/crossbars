@@ -748,6 +748,8 @@ quoteIndex puzzle index =
                  |> List.drop index
                  |> List.head
 
+-- HISTOGRAMS
+                    
 type alias Hist = Dict Char Int
 
 cleanChars : String -> List Char
@@ -790,6 +792,30 @@ letterHist s =
 cleanLetterHist : Hist -> Hist
 cleanLetterHist h = Dict.union h emptyLetterHist 
 
+countHist : Hist -> Int
+countHist h = List.sum (Dict.values h)
+
+histDifference : Hist -> Hist -> Hist
+histDifference hSub hSup = 
+    Dict.merge
+        (\c cSub      d -> Dict.insert c (-cSub) d)
+        (\c cSub cSup d -> Dict.insert c (cSup - cSub) d)
+        (\c      cSup d -> Dict.insert c cSup d)
+        hSub hSup
+        Dict.empty
+
+isExhaustedHist : Hist -> Bool
+isExhaustedHist h = 
+    h |> Dict.filter (\c cnt -> cnt > 0)
+      |> Dict.isEmpty
+  
+isEmptyHist : Hist -> Bool
+isEmptyHist h =
+    h |> Dict.values
+      |> List.all (\cnt -> cnt == 0)
+
+-- HISTOGRAM RENDERING
+         
 histToShortString : Hist -> String
 histToShortString h =
     h |> Dict.filter (\c cnt -> cnt > 0)
@@ -887,33 +913,6 @@ histToSVG hQuote hRemaining =
              hooray ++
              [ Svg.title [] [Svg.text "Letters remaining"]
              ])
-    
-
-histEntryTD : Int -> Html msg -> Html msg
-histEntryTD cnt inner = 
-    td (if cnt <= 0 then [class "exhausted"] else []) [inner]
-
-countHist : Hist -> Int
-countHist h = List.sum (Dict.values h)
-
-histDifference : Hist -> Hist -> Hist
-histDifference hSub hSup = 
-    Dict.merge
-        (\c cSub      d -> Dict.insert c (-cSub) d)
-        (\c cSub cSup d -> Dict.insert c (cSup - cSub) d)
-        (\c      cSup d -> Dict.insert c cSup d)
-        hSub hSup
-        Dict.empty
-
-isExhaustedHist : Hist -> Bool
-isExhaustedHist h = 
-    h |> Dict.filter (\c cnt -> cnt > 0)
-      |> Dict.isEmpty
-  
-isEmptyHist : Hist -> Bool
-isEmptyHist h =
-    h |> Dict.values
-      |> List.all (\cnt -> cnt == 0)
 
 {- utility functions -}
 
