@@ -45,6 +45,10 @@
     display: inline-block;
 }
 
+#saved-puzzles-header input {
+    height: max-content;
+}
+
 #quote {
     grid-column: 1;
     grid-row: 2;
