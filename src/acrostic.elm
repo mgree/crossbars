@@ -914,7 +914,25 @@ histToSVG hQuote hRemaining =
              [ Svg.title [] [Svg.text "Letters remaining"]
              ])
 
-{- utility functions -}
+-- BOARD RENDERING
+
+boardToSVG : Int {- num columns -} -> Puzzle -> Html msg
+boardToSVG numCols puzzle =
+    let 
+
+        width = 300
+        height = 120
+
+    in
+
+        Svg.svg
+            [ Svg.Attributes.viewBox 
+                  ("0 0 " ++ String.fromInt width ++ " " ++ String.fromInt height)
+            , id "board" ]
+            [
+            ]
+
+-- UTILITY FUNCTIONS
 
 updateIndex : Int -> (a -> a) -> List a -> List a
 updateIndex index f l =
