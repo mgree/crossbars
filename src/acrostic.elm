@@ -10,8 +10,6 @@ port module Main exposing (..)
 
    section headers; dividers?
 
-   puzzle display in fixed phases
-
    autonumbering (SAT/SMT? CLP (since there may not exist an optimal solution)?)
 
    answer search
@@ -427,17 +425,17 @@ view model =
                         
         quoteIndices =     
             puzzle.quote |> cleanChars
-                        |> List.indexedMap (\i c -> (c, i))
-                        |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
+                         |> List.indexedMap (\i c -> (c, i))
+                         |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
 
         quoteIndexWords =
             puzzle.quote |> String.words
-                        |> List.map cleanChars
-                        |> List.filter (not << List.isEmpty)
-                        |> List.indexedMap (\i w -> List.repeat (List.length w) i)
-                        |> List.concat
-                        |> List.indexedMap Tuple.pair
-                        |> Dict.fromList
+                         |> List.map cleanChars
+                         |> List.filter (not << List.isEmpty)
+                         |> List.indexedMap (\i w -> List.repeat (List.length w) i)
+                         |> List.concat
+                         |> List.indexedMap Tuple.pair
+                         |> Dict.fromList
                            
         quoteIndexUses = 
             puzzle.clues |> List.indexedMap (\i clue -> 
@@ -486,34 +484,37 @@ view model =
                      model.savedPuzzles)
             ]
         , section [id "quote"]
-            [ textInput [tabindex 1, size 60, readonly quoteFixed]
-                "Title" puzzle.title Title
-            , textInput [tabindex 2, size 60, readonly quoteFixed]
-                "Author" puzzle.author Author
-            , textarea [ tabindex 3 {- see baseTabs below -}
-                       , readonly quoteFixed
-                       , placeholder "Quote"
-                       , onInput Quote
-                       , rows 6
-                       , cols 60
-                       , attribute "autocapitalize" "character"
-                       , value (puzzle.quote)
-                       ] 
-                  []
-            , div [id "summary"]
-                  [ span [id "viability"]
-                        [ if viable
-                          then text "Quote has all of the initialism's letters"
-                          else text ("The quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
-                        ]
-                  , span [class "count"] 
-                      [ text "Total letters: "
-                      , quoteHist |> countHist |> String.fromInt |> text]
-                  , span [class "count"] 
-                      [ text "Remaining letters: "
-                      , remainingHist |> countHist |> String.fromInt |> text]
-                  ]
-            ]
+            (if quoteFixed
+             then [ boardToSVG 24 quoteIndexUses model.puzzle ]
+             else
+                 [ textInput [tabindex 1, size 60, readonly quoteFixed]
+                     "Title" puzzle.title Title
+                 , textInput [tabindex 2, size 60, readonly quoteFixed]
+                     "Author" puzzle.author Author
+                 , textarea [ tabindex 3 {- see baseTabs below -}
+                            , readonly quoteFixed
+                            , placeholder "Quote"
+                            , onInput Quote
+                            , rows 6
+                            , cols 60
+                            , attribute "autocapitalize" "character"
+                            , value (puzzle.quote)
+                            ] 
+                       []
+                 , div [id "summary"]
+                       [ span [id "viability"]
+                             [ if viable
+                               then text "Quote has all of the initialism's letters"
+                               else text ("The quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
+                             ]
+                       , span [class "count"] 
+                           [ text "Total letters: "
+                           , quoteHist |> countHist |> String.fromInt |> text]
+                       , span [class "count"] 
+                           [ text "Remaining letters: "
+                           , remainingHist |> countHist |> String.fromInt |> text]
+                       ]
+                 ])
         , section [id "stats"]
             [ histToSVG quoteHist remainingHist ]
         , section [id "clues"]
@@ -593,6 +594,8 @@ view model =
                                "Clue hint text"
                                clue.hint
                                (Hint index)
+
+                         {- PICK UP HERE use flex layout rather than table for right wrapping -}
                          , table [class "clue-numbering"]
                              [ tr []
                                    (List.indexedMap 
@@ -752,13 +755,15 @@ quoteIndex puzzle index =
                     
 type alias Hist = Dict Char Int
 
-cleanChars : String -> List Char
-cleanChars s =
+cleanString : String -> String
+cleanString s =
     s |> String.toUpper 
-      |> String.toList
-      |> List.filter Char.isAlphaNum         
+      |> String.filter Char.isAlphaNum         
       {- FIXME doesn't work with diacritics, Greek, etc. -}
 
+cleanChars : String -> List Char
+cleanChars s = s |> cleanString |> String.toList
+         
 initialism : Puzzle -> String
 initialism puzzle = puzzle.author ++ puzzle.title |> String.filter Char.isAlphaNum
 
@@ -916,21 +921,108 @@ histToSVG hQuote hRemaining =
 
 -- BOARD RENDERING
 
-boardToSVG : Int {- num columns -} -> Puzzle -> Html msg
-boardToSVG numCols puzzle =
-    let 
+type alias Square =
+    { char : Char
+    , qIndex : Int
+    , col : Int
+    , row : Int
+    }
 
+boardToSVG : Int -> Dict Int (List (Int, Int)) -> Puzzle -> Html msg
+boardToSVG numCols quoteIndexUses puzzle =
+    let
         width = 300
-        height = 120
 
+        quoteWords = puzzle.quote
+                   |> String.words
+                   |> List.filter (not << String.isEmpty)
+                   |> List.map cleanString
+
+        quoteText = String.join " " quoteWords |> String.toList
+
+        numberedQuoteText =
+            let number idx count l =
+                    case l of
+                        [] -> []
+                        (c::rest) ->
+                            let square = { char = c
+                                         , qIndex = if c == ' ' then -1 else idx
+                                         , col = remainderBy numCols count
+                                         , row = count // numCols}
+                            in
+                                square :: number (idx + if c == ' ' then 0 else 1) (count + 1) rest
+            in
+                number 0 0 quoteText
+                    
+        numBoxes = List.length quoteText
+                 
+        boxWidth = width / (toFloat numCols)
+
+        numRows = (numBoxes // numCols) +
+                  if remainderBy numCols numBoxes == 0 then 0 else 1
+
+        height = (toFloat numRows) * boxWidth
+                    
+        quoteRows =
+            List.map
+                (\square ->
+                     let x = toFloat square.col * boxWidth
+                         y = toFloat square.row * boxWidth
+                         thirdBox = boxWidth / 3
+                         textLength = thirdBox |> String.fromFloat
+                     in
+
+                     {- PICK UP HERE onClick to jump to mapping (if it exists and is unique) -}
+                     Svg.g [ Svg.Attributes.class ("row-" ++ String.fromInt square.row)
+                           , Svg.Attributes.class ("qIndex-" ++ String.fromInt square.qIndex)]
+                     ([ Svg.rect
+                           [ x |> String.fromFloat |> Svg.Attributes.x
+                           , y |> String.fromFloat |> Svg.Attributes.y
+                           , boxWidth |> String.fromFloat |> Svg.Attributes.width
+                           , boxWidth |> String.fromFloat |> Svg.Attributes.height
+                           , Svg.Attributes.class "board-square"
+                           , Svg.Attributes.class
+                               (if square.char == ' ' then "board-space" else "board-letter")
+                           ]
+                           []
+                      ] ++ (if square.char == ' ' then []
+                            else [ Svg.text_
+                                       [ x + 1 |> String.fromFloat |> Svg.Attributes.x
+                                       , y + thirdBox |> String.fromFloat |> Svg.Attributes.y
+                                       , Svg.Attributes.textAnchor "start"
+                                       , Svg.Attributes.class "number"
+                                       ]
+                                       [ square.qIndex + 1 |> String.fromInt |> Svg.text ]
+                                 , Svg.text_
+                                       [ x + boxWidth - 1 |> String.fromFloat |> Svg.Attributes.x
+                                       , y + thirdBox |> String.fromFloat |> Svg.Attributes.y
+                                       , Svg.Attributes.textAnchor "end"
+                                       , Svg.Attributes.class "clue-letter"
+                                       ]
+                                       [ Dict.get square.qIndex quoteIndexUses
+                                         |> Maybe.withDefault [] {- PICK UP HERE warning when there's more than one -}
+                                         |> List.map (\(clueIndex, _) -> letterFor clueIndex)
+                                         |> String.concat
+                                         |> Svg.text
+                                       ]
+                                 , Svg.text_
+                                       [ x + (boxWidth / 2) |> String.fromFloat |> Svg.Attributes.x
+                                       , y + boxWidth - 2 |> String.fromFloat |> Svg.Attributes.y
+                                       , Svg.Attributes.textAnchor "middle"
+                                       , Svg.Attributes.class "letter"
+                                       ]
+                                       [ square.char |> String.fromChar |> Svg.text ]
+                                 ]))
+                )
+                numberedQuoteText
+        
     in
 
         Svg.svg
             [ Svg.Attributes.viewBox 
-                  ("0 0 " ++ String.fromInt width ++ " " ++ String.fromInt height)
+                  ("0 0 " ++ String.fromFloat width ++ " " ++ String.fromFloat height)
             , id "board" ]
-            [
-            ]
+            quoteRows
 
 -- UTILITY FUNCTIONS
 
