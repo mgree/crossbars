@@ -542,6 +542,8 @@ view model =
 
                          clue = clueFor index puzzle
 
+                         answer = clue.answer |> List.filter (Tuple.second >> Char.isAlphaNum)
+
                          numberingFor numIndex mNum c = 
                              select [id ("clue-numbering-" ++ String.fromInt index ++ "-" ++ String.fromInt numIndex)
                                     , onInput (Number index numIndex)]
@@ -571,12 +573,12 @@ view model =
                                                    [text ((qIndex + 1 |> String.fromInt) ++ useText)])
                                        (Dict.get c quoteIndices |> Maybe.withDefault [])))
 
-                         clueNumbers = clue.answer |> List.indexedMap Tuple.pair
-                                                   |> List.filterMap (\(ansIndex,(mNumIndex,_)) -> Maybe.map (Tuple.pair ansIndex) mNumIndex)
+                         clueNumbers = answer |> List.indexedMap Tuple.pair
+                                              |> List.filterMap (\(ansIndex,(mNumIndex,_)) -> Maybe.map (Tuple.pair ansIndex) mNumIndex)
 
                          unindexedClueNumbers = clueNumbers |> List.map Tuple.second
                  
-                         fullyNumbered = List.map (Tuple.second >> Just) clueNumbers == List.map Tuple.first clue.answer
+                         fullyNumbered = List.map (Tuple.second >> Just) clueNumbers == List.map Tuple.first answer
 
                          clueWords = List.filterMap
                                        (\(ansIndex, numIndex) ->
@@ -623,13 +625,18 @@ view model =
                                              in
                                                  td ([class "clue-numbering-letter"] ++ fakeCharClasses ++ dupClasses)
                                                     [c |> String.fromChar |> text])
-                                        clue.answer)
+                                        answer)
                              , tr []
                                    (List.indexedMap
                                         (\numIndex (mNum, rawC) ->
                                              let
                                                  
                                                  c = Char.toUpper rawC
+
+                                                 fakeCharClasses =
+                                                     if Char.isAlphaNum c
+                                                     then [ ]
+                                                     else [ class "excluded" ]
 
                                                  validCls = 
                                                      case mNum of
@@ -642,9 +649,9 @@ view model =
                                                              else "invalid"
                                                                                     
                                              in
-                                             td [class "clue-numbering-number", class validCls]
+                                             td ([class "clue-numbering-number", class validCls] ++ fakeCharClasses)
                                                 (if Char.isAlphaNum c then [numberingFor numIndex mNum c] else []))
-                                        clue.answer)
+                                        answer)
                              ]
                          , let
 
