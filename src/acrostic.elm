@@ -22,6 +22,7 @@ port module Main exposing (..)
 -}
 
 import Dict exposing (Dict)
+import Set exposing (Set)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -59,6 +60,7 @@ type Msg =
   | Quote String
   | Answer Int String
   | SelectClue Int
+  | SelectClues (List Int)
   | Hint Int String
   | Number Int Int String
   | Phase Phase
@@ -355,6 +357,12 @@ update msg model =
                                 not (List.member idx model.selectedClues)
                             then [idx]
                             else model.selectedClues } |> andSave
+        SelectClues idxs -> { model | selectedClues =
+                                  idxs |> List.filter
+                                          (\idx ->
+                                               0 <= idx &&
+                                               idx < List.length model.puzzle.clues)
+                            } |> andSave
         Hint idx hint -> model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model |> andSave
         Number idx numIdx newNum -> model.puzzle |> updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model |> andSave
         Phase phase -> model.puzzle |> setPhase phase |> asCurrentPuzzleIn model |> andSave
@@ -928,7 +936,7 @@ type alias Square =
     , row : Int
     }
 
-boardToSVG : Int -> Dict Int (List (Int, Int)) -> Puzzle -> Html msg
+boardToSVG : Int -> Dict Int (List (Int, Int)) -> Puzzle -> Html Msg
 boardToSVG numCols quoteIndexUses puzzle =
     let
         width = 300
@@ -976,11 +984,18 @@ boardToSVG numCols quoteIndexUses puzzle =
                          y = toFloat square.row * boxWidth
                          thirdBox = boxWidth / 3
                          textLength = thirdBox |> String.fromFloat
+
+                         usedIn = Dict.get square.qIndex quoteIndexUses
+                                  |> Maybe.withDefault []
+                                  |> List.map Tuple.first
+                                  |> Set.fromList |> Set.toList
+                                  {- PICK UP HERE warning when there's more than one -}
                      in
 
-                     {- PICK UP HERE onClick to jump to mapping (if it exists and is unique) -}
                      Svg.g [ Svg.Attributes.class ("row-" ++ String.fromInt square.row)
-                           , Svg.Attributes.class ("qIndex-" ++ String.fromInt square.qIndex)]
+                           , Svg.Attributes.class ("qIndex-" ++ String.fromInt square.qIndex)
+                           , onClick (SelectClues usedIn)
+                           ]
                      ([ Svg.rect
                            [ x |> String.fromFloat |> Svg.Attributes.x
                            , y |> String.fromFloat |> Svg.Attributes.y
@@ -988,7 +1003,13 @@ boardToSVG numCols quoteIndexUses puzzle =
                            , boxWidth |> String.fromFloat |> Svg.Attributes.height
                            , Svg.Attributes.class "board-square"
                            , Svg.Attributes.class
-                               (if square.char == ' ' then "board-space" else "board-letter")
+                               (if square.char == ' '
+                                then "board-space"
+                                else "board-letter")
+                           , Svg.Attributes.class
+                               (if List.length usedIn > 1
+                                then "board-number-conflict"
+                                else "")
                            ]
                            []
                       ] ++ (if square.char == ' ' then []
@@ -1005,9 +1026,8 @@ boardToSVG numCols quoteIndexUses puzzle =
                                        , Svg.Attributes.textAnchor "end"
                                        , Svg.Attributes.class "clue-letter"
                                        ]
-                                       [ Dict.get square.qIndex quoteIndexUses
-                                         |> Maybe.withDefault [] {- PICK UP HERE warning when there's more than one -}
-                                         |> List.map (\(clueIndex, _) -> letterFor clueIndex)
+                                       [ usedIn 
+                                         |> List.map letterFor
                                          |> String.concat
                                          |> Svg.text
                                        ]
