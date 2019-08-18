@@ -221,7 +221,7 @@
 
 #clue-info table.clue-numbering {
     margin-top: 1em;
-    border-spacing: 2em 0;
+    border-spacing: 1.1em 0;
 }
 
 #clue-info .clue-numbering select {
@@ -235,10 +235,6 @@
     text-align: center;
     font-size: 22pt;
     border-bottom: 2px solid black;
-}
-
-#clue-info .clue-numbering-letter.excluded {
-    border-bottom: none;
 }
 
 #clue-info .clue-numbering-letter.double-dipped {
