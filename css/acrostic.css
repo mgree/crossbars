@@ -267,3 +267,8 @@
     color: darkred;
                 
 }
+
+#debug {
+    grid-column: 1 / span 2;
+    grid-row: 5;
+}
