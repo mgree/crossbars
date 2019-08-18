@@ -432,7 +432,7 @@ view model =
                                        not (isEmptyHist quoteHist) &&
                                        isEmptyHist remainingHist
                         
-        quoteIndices =     
+        quoteIndices =
             puzzle.quote |> cleanChars
                          |> List.indexedMap (\i c -> (c, i))
                          |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
@@ -457,9 +457,11 @@ view model =
                                                   (clue.answer |> List.indexedMap Tuple.pair))
                         |> mergeConsMany
 
+        constraints = constraintsOfPuzzle quoteIndices puzzle
+                           
     in
 
-    div [id "crossbars-wrapper"] 
+    div [id "crossbars-wrapper"]
         [ section [id "overview"]
               [ h1 [] [text "Crossbars — Acrostic Constructor"]
               , div [] (List.intersperse (span [] [text " → "])
@@ -676,6 +678,8 @@ view model =
                            in
                                div [class "warnings"] (List.filterMap identity warnings)
                          ]))
+        , section [id "debug"]
+            [ constraints |> Debug.toString |> text ]
         ]
 
 baseTabs : Int
@@ -1056,6 +1060,64 @@ boardToSVG numCols quoteIndexUses puzzle =
                   ("0 0 " ++ String.fromFloat width ++ " " ++ String.fromFloat height)
             , id "board" ]
             quoteRows
+
+-- NUMBERING VIA SMT
+
+type alias ConstraintVar = String
+
+type alias ConstraintProblem = (List ConstraintVar, List Constraint)
+    
+type Constraint = IsInt ConstraintVar
+                | OneOf ConstraintVar (List Int)
+                | Disjoint (List ConstraintVar)
+                | NotAscending (List ConstraintVar)
+                | NotSameWord (List ConstraintVar)
+               
+constraintsOfPuzzle : Dict Char (List Int) -> Puzzle -> List Constraint
+constraintsOfPuzzle quoteIndices puzzle =
+    let
+        varName clueIndex numIndex =
+            "clue" ++ letterFor clueIndex ++ "_" ++
+            "letter" ++ String.fromInt numIndex
+
+        clueVarsByClue =
+            puzzle.clues |>
+            List.indexedMap
+                (\clueIndex clue ->
+                     clue.answer |>
+                     List.filter (Tuple.second >> Char.isAlphaNum) |> {- FIXME way to consider existing numbers? -}
+                     List.indexedMap Tuple.pair |>
+                     List.map (\(numIndex, (_, c)) -> (varName clueIndex numIndex, c)))
+                
+        clueVars = List.concat clueVarsByClue
+                
+        charConstraints =
+            clueVars |> List.concatMap
+                (\(v, c) ->
+                     let uses = Dict.get (Char.toUpper c) quoteIndices |>
+                                Maybe.withDefault [] {- yikes -}
+                     in
+                         [IsInt v, OneOf v uses])
+
+        charUses = List.foldr (\(v,c) d -> updateCons c v d) Dict.empty clueVars
+
+        disjointnessConstraints = charUses |>
+                                  Dict.values |>
+                                  List.map (Disjoint)
+
+        numberingConstraints =
+            clueVarsByClue |>
+            List.concatMap
+                (\vs ->
+                    let vars = List.map Tuple.first vs in 
+                     [ NotAscending vars
+                     , NotAscending (List.reverse vars)
+                     , NotSameWord vars
+                     ])
+            
+    in
+    
+    charConstraints ++ disjointnessConstraints ++ numberingConstraints
 
 -- UTILITY FUNCTIONS
 
