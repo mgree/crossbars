@@ -204,14 +204,14 @@ fixupAnswerInitials puzzle =
 
 type alias Model = 
     { puzzle : Puzzle
-    , selectedClue : Maybe Int
+    , selectedClues : List Int
     , savedPuzzles : List Puzzle
     }
 
 emptyModel : Model
 emptyModel =
     { puzzle = emptyPuzzle
-    , selectedClue = Nothing
+    , selectedClues = []
     , savedPuzzles = []
     }
     
@@ -224,7 +224,7 @@ encodeModel : Model -> Json.Encode.Value
 encodeModel model =
     Json.Encode.object
         [ ("puzzle", encodePuzzle model.puzzle)
-        , ("selectedClue", encodeNullable Json.Encode.int model.selectedClue)
+        , ("selectedClues", Json.Encode.list Json.Encode.int model.selectedClues)
         , ("savedPuzzles", Json.Encode.list encodePuzzle model.savedPuzzles)
         ]
               
@@ -269,13 +269,13 @@ encodeNullable encode ma =
 decodeModel : Json.Decode.Decoder Model
 decodeModel =
     Json.Decode.map3
-        (\puzzle selectedClue savedPuzzles ->
+        (\puzzle selectedClues savedPuzzles ->
              { puzzle = puzzle
-             , selectedClue = selectedClue
+             , selectedClues = selectedClues
              , savedPuzzles = savedPuzzles
              })
         (Json.Decode.field "puzzle" decodePuzzle)
-        (Json.Decode.field "selectedClue" (Json.Decode.nullable Json.Decode.int))
+        (Json.Decode.field "selectedClues" (Json.Decode.list Json.Decode.int))
         (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
                                                  
 decodePuzzle : Json.Decode.Decoder Puzzle
@@ -350,10 +350,10 @@ update msg model =
         Author author -> model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Quote quote -> model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Answer idx answer -> model.puzzle |> updateAnswer idx answer |> asCurrentPuzzleIn model |> andSave
-        Select idx -> { model | selectedClue = 
+        Select idx -> { model | selectedClues = 
                             if 0 <= idx && idx < List.length model.puzzle.clues
-                            then Just idx
-                            else Nothing } |> andSave
+                            then [idx]
+                            else model.selectedClues } |> andSave
         Hint idx hint -> model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model |> andSave
         Number idx numIdx newNum -> model.puzzle |> updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model |> andSave
         Phase phase -> model.puzzle |> setPhase phase |> asCurrentPuzzleIn model |> andSave
@@ -525,10 +525,9 @@ view model =
                 |> List.map (clueEntry model answersFixed))
 
         , section [id "clue-info"]
-            (case model.selectedClue of
-                 Nothing -> []
-                 Just index -> 
-                     let 
+            (model.selectedClues |> List.map
+                 (\index ->
+                      let 
                         
                          clueLetter = letterFor index
 
@@ -585,7 +584,7 @@ view model =
                          dupLetters = List.map Tuple.first dupWords
 
                      in
-
+                         div [class "clue-detail"]
                          [ h3 [] [ clueLetter ++ ". " |> text ]
                          , textInput [ tabindex (baseTabs + List.length puzzle.clues + 1)
                                      , class "clue-hint"
@@ -660,7 +659,7 @@ view model =
 
                            in
                                div [class "warnings"] (List.filterMap identity warnings)
-                         ])
+                         ]))
         ]
 
 baseTabs : Int
@@ -692,7 +691,7 @@ clueEntry model answersFixed (index, (initial, clue)) =
                             then "valid"
                             else "invalid"
 
-        selectedCls = if model.selectedClue == Just index
+        selectedCls = if List.member index model.selectedClues
                        then [ class "selected" ]
                        else []
                                 
