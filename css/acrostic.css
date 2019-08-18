@@ -82,6 +82,10 @@
     fill: white;
 }
 
+#quote svg#board .board-number-conflict {
+    fill: pink;
+}
+
 #quote svg#board .number {
     font-size: 2.5pt;
 }
