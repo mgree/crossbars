@@ -58,7 +58,7 @@ type Msg =
   | Author String
   | Quote String
   | Answer Int String
-  | Select Int
+  | SelectClue Int
   | Hint Int String
   | Number Int Int String
   | Phase Phase
@@ -350,8 +350,9 @@ update msg model =
         Author author -> model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Quote quote -> model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Answer idx answer -> model.puzzle |> updateAnswer idx answer |> asCurrentPuzzleIn model |> andSave
-        Select idx -> { model | selectedClues = 
-                            if 0 <= idx && idx < List.length model.puzzle.clues
+        SelectClue idx -> { model | selectedClues = 
+                            if 0 <= idx && idx < List.length model.puzzle.clues &&
+                                not (List.member idx model.selectedClues)
                             then [idx]
                             else model.selectedClues } |> andSave
         Hint idx hint -> model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model |> andSave
@@ -697,13 +698,13 @@ clueEntry model answersFixed (index, (initial, clue)) =
                                 
         lbl = "clue-" ++ letter
     in
-        div ([onClick (Select index)] ++ selectedCls)
+        div ([onClick (SelectClue index)] ++ selectedCls)
             [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
             , textInput [tabindex (index + baseTabs)
                         , name lbl
                         , validCls
-                        , onFocus (Select index)
-                        , onClick (Select index)
+                        , onFocus (SelectClue index)
+                        , onClick (SelectClue index)
                         , readonly answersFixed
                         ] 
                 (initialStr ++ "...") clue (Answer index)
