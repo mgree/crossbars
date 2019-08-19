@@ -1083,7 +1083,7 @@ constraintsOfPuzzle : Dict Char (List Int) -> Puzzle -> List Constraint
 constraintsOfPuzzle quoteIndices puzzle =
     let
         varName clueIndex numIndex =
-            "clue" ++ letterFor clueIndex ++ "_" ++
+            "clue" ++ String.fromInt clueIndex ++ "_" ++
             "letter" ++ String.fromInt numIndex
 
         clueVarsByClue =
@@ -1202,11 +1202,19 @@ smt2OfConstraints quoteIndexWords constraints =
 
         (defnConstraints, assertConstraints) = List.partition isDefn constraints
 
+        vars = defnConstraints |>
+               List.filterMap
+                   (\c ->
+                        case c of
+                            IsInt v -> Just v
+                            _ -> Nothing)
+                                               
         defns = defnConstraints |>
                 List.map smt2OfConstraint
 
         wordFun =
             let
+                {- METHOD 1: axiomatize (currently used, works much better) -}
                 decl = "(declare-fun " ++ smtWordFun ++ " (Int) Int)"
 
                 vals =
@@ -1218,13 +1226,26 @@ smt2OfConstraints quoteIndexWords constraints =
                     smtAnd |>
                     smtAssert
 
+                {- METHOD 2: define as a function/macro -}
+                conds =
+                    quoteIndexWords |>
+                    Dict.foldr
+                        (\x wordNum otw ->
+                             "(ite (= n " ++ String.fromInt x ++ ") " ++ (String.fromInt wordNum) ++ " " ++ otw ++ ")")
+                        "-1"
+
+                        
+                defn = "(define-fun " ++ smtWordFun ++ " ((n Int)) Int " ++ conds ++ ")"
+                        
             in
-                [decl, vals]
+                [decl, vals] -- [defn]
                                           
         assertions = assertConstraints |>
                      List.map smt2OfConstraint
                         
-        commands = defns ++ wordFun ++ assertions ++ ["(check-sat)", "(get-model)"]
+        commands = ["(set-option :produce-models true)"] ++
+                   defns ++ wordFun ++ assertions ++
+                   ["(check-sat)", "(get-value (" ++ String.join " " vars ++ "))"]
                            
     in
         String.join "\n" commands
