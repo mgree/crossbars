@@ -10,7 +10,14 @@ port module Main exposing (..)
 
    section headers; dividers?
 
-   autonumbering (SAT/SMT? CLP (since there may not exist an optimal solution)?)
+   autonumbering 
+     actually hook up to z3.wasm!
+     set timeouts?
+     error messages on unsat/unknown?
+
+     how good can a greedy algorithm do?
+       might be faster, sometimes? (z3 is a few secs in native code)
+       can we do it ensemble style?
 
    answer search
      /usr/share/dict/words
