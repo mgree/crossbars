@@ -35,6 +35,8 @@ import Svg.Attributes
 import Json.Encode
 import Json.Decode
 
+import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces)
+
 import Task
 
 import Time
@@ -679,7 +681,9 @@ view model =
                                div [class "warnings"] (List.filterMap identity warnings)
                          ]))
         , pre [id "debug"]
-            [ constraints |> smt2OfConstraints quoteIndexWords |> text ]
+            [ {- constraints |> smt2OfConstraints quoteIndexWords |> text
+            , -} Parser.run smtModelParser wcwModel |> Debug.toString |> text
+            ]
         ]
 
 baseTabs : Int
@@ -1162,7 +1166,53 @@ smtAscending vars =
         [var1,var2] -> "(< " ++ var1 ++ " " ++ var2 ++ ")"
         var1::var2::rest ->
             "(and (< " ++ var1 ++ " " ++ var2 ++ ")" ++ smtAscending (var2::rest) ++ ")"
-              
+
+type alias SMTNumbering =
+    { clue : Int
+    , letter : Int
+    , number : Int
+    }
+
+listOf : Parser a -> Parser (List a)
+listOf item =
+    Parser.oneOf
+        [ succeed (\hd tl -> hd :: tl)
+            |. spaces
+            |= item
+            |. spaces
+            |= Parser.lazy (\_ -> listOf item)
+        , succeed []
+        ]
+
+smtModelParser : Parser (List SMTNumbering)
+smtModelParser =
+    succeed identity
+        |. spaces
+        |. symbol "("
+        |. spaces
+        |= listOf smtValueParser
+        |. spaces
+        |. symbol ")"
+        |. spaces
+        |. end
+
+smtValueParser : Parser SMTNumbering
+smtValueParser =
+    succeed (\clue letter number ->
+                 { clue = clue
+                 , letter = letter
+                 , number = number
+                 })
+        |. spaces
+        |. symbol "("
+        |. symbol "clue"
+        |= Parser.int
+        |. symbol "_letter"
+        |= Parser.int
+        |. spaces
+        |= Parser.int
+        |. symbol ")"
+
 smt2OfConstraint : Constraint -> String
 smt2OfConstraint c =
     case c of
@@ -1305,3 +1355,227 @@ allPairs l =
     case l of
         [] -> []
         hd::tl -> List.map (Tuple.pair hd) tl ++ allPairs tl
+
+wcwModel : String
+wcwModel = """((clue0_letter0 62)
+ (clue0_letter1 78)
+ (clue0_letter2 154)
+ (clue0_letter3 116)
+ (clue0_letter4 210)
+ (clue0_letter5 67)
+ (clue0_letter6 127)
+ (clue0_letter7 170)
+ (clue0_letter8 156)
+ (clue0_letter9 137)
+ (clue0_letter10 130)
+ (clue1_letter0 128)
+ (clue1_letter1 92)
+ (clue1_letter2 99)
+ (clue1_letter3 139)
+ (clue1_letter4 4)
+ (clue1_letter5 192)
+ (clue1_letter6 59)
+ (clue2_letter0 31)
+ (clue2_letter1 71)
+ (clue2_letter2 11)
+ (clue2_letter3 33)
+ (clue2_letter4 50)
+ (clue3_letter0 20)
+ (clue3_letter1 179)
+ (clue3_letter2 42)
+ (clue3_letter3 103)
+ (clue3_letter4 63)
+ (clue3_letter5 66)
+ (clue3_letter6 105)
+ (clue3_letter7 204)
+ (clue3_letter8 141)
+ (clue4_letter0 200)
+ (clue4_letter1 72)
+ (clue4_letter2 84)
+ (clue4_letter3 18)
+ (clue4_letter4 37)
+ (clue4_letter5 98)
+ (clue4_letter6 29)
+ (clue4_letter7 182)
+ (clue4_letter8 97)
+ (clue4_letter9 196)
+ (clue4_letter10 209)
+ (clue4_letter11 112)
+ (clue4_letter12 7)
+ (clue5_letter0 189)
+ (clue5_letter1 22)
+ (clue5_letter2 107)
+ (clue5_letter3 86)
+ (clue5_letter4 57)
+ (clue5_letter5 175)
+ (clue5_letter6 16)
+ (clue5_letter7 75)
+ (clue5_letter8 5)
+ (clue6_letter0 166)
+ (clue6_letter1 12)
+ (clue6_letter2 104)
+ (clue6_letter3 40)
+ (clue6_letter4 55)
+ (clue6_letter5 82)
+ (clue6_letter6 160)
+ (clue6_letter7 186)
+ (clue6_letter8 19)
+ (clue6_letter9 80)
+ (clue6_letter10 122)
+ (clue6_letter11 220)
+ (clue6_letter12 195)
+ (clue6_letter13 145)
+ (clue7_letter0 207)
+ (clue7_letter1 149)
+ (clue7_letter2 217)
+ (clue7_letter3 193)
+ (clue7_letter4 30)
+ (clue7_letter5 191)
+ (clue7_letter6 36)
+ (clue8_letter0 35)
+ (clue8_letter1 26)
+ (clue8_letter2 70)
+ (clue8_letter3 109)
+ (clue9_letter0 61)
+ (clue9_letter1 69)
+ (clue9_letter2 25)
+ (clue10_letter0 91)
+ (clue10_letter1 136)
+ (clue10_letter2 147)
+ (clue10_letter3 43)
+ (clue10_letter4 38)
+ (clue10_letter5 162)
+ (clue10_letter6 121)
+ (clue10_letter7 118)
+ (clue10_letter8 111)
+ (clue10_letter9 64)
+ (clue11_letter0 134)
+ (clue11_letter1 27)
+ (clue11_letter2 6)
+ (clue11_letter3 49)
+ (clue11_letter4 89)
+ (clue11_letter5 142)
+ (clue11_letter6 168)
+ (clue11_letter7 205)
+ (clue11_letter8 198)
+ (clue12_letter0 214)
+ (clue12_letter1 124)
+ (clue12_letter2 14)
+ (clue12_letter3 202)
+ (clue12_letter4 88)
+ (clue12_letter5 81)
+ (clue12_letter6 187)
+ (clue12_letter7 140)
+ (clue13_letter0 203)
+ (clue13_letter1 215)
+ (clue13_letter2 76)
+ (clue13_letter3 34)
+ (clue13_letter4 23)
+ (clue13_letter5 1)
+ (clue13_letter6 113)
+ (clue13_letter7 123)
+ (clue13_letter8 165)
+ (clue13_letter9 180)
+ (clue14_letter0 129)
+ (clue14_letter1 10)
+ (clue14_letter2 21)
+ (clue14_letter3 108)
+ (clue14_letter4 94)
+ (clue14_letter5 2)
+ (clue14_letter6 167)
+ (clue14_letter7 45)
+ (clue15_letter0 152)
+ (clue15_letter1 184)
+ (clue15_letter2 125)
+ (clue15_letter3 58)
+ (clue15_letter4 135)
+ (clue15_letter5 0)
+ (clue15_letter6 132)
+ (clue15_letter7 171)
+ (clue15_letter8 53)
+ (clue16_letter0 153)
+ (clue16_letter1 216)
+ (clue16_letter2 32)
+ (clue16_letter3 161)
+ (clue16_letter4 15)
+ (clue16_letter5 83)
+ (clue16_letter6 90)
+ (clue16_letter7 197)
+ (clue17_letter0 44)
+ (clue17_letter1 173)
+ (clue17_letter2 201)
+ (clue17_letter3 24)
+ (clue17_letter4 117)
+ (clue17_letter5 158)
+ (clue17_letter6 51)
+ (clue17_letter7 183)
+ (clue17_letter8 150)
+ (clue18_letter0 133)
+ (clue18_letter1 176)
+ (clue18_letter2 3)
+ (clue18_letter3 163)
+ (clue18_letter4 106)
+ (clue18_letter5 211)
+ (clue18_letter6 188)
+ (clue18_letter7 56)
+ (clue18_letter8 54)
+ (clue18_letter9 101)
+ (clue18_letter10 159)
+ (clue19_letter0 93)
+ (clue19_letter1 155)
+ (clue19_letter2 169)
+ (clue19_letter3 143)
+ (clue19_letter4 115)
+ (clue19_letter5 178)
+ (clue19_letter6 13)
+ (clue19_letter7 208)
+ (clue19_letter8 100)
+ (clue20_letter0 41)
+ (clue20_letter1 60)
+ (clue20_letter2 9)
+ (clue20_letter3 219)
+ (clue20_letter4 114)
+ (clue20_letter5 96)
+ (clue20_letter6 8)
+ (clue20_letter7 77)
+ (clue20_letter8 65)
+ (clue20_letter9 144)
+ (clue21_letter0 174)
+ (clue21_letter1 39)
+ (clue21_letter2 218)
+ (clue21_letter3 138)
+ (clue22_letter0 164)
+ (clue22_letter1 47)
+ (clue22_letter2 120)
+ (clue22_letter3 181)
+ (clue22_letter4 87)
+ (clue22_letter5 68)
+ (clue22_letter6 212)
+ (clue22_letter7 110)
+ (clue22_letter8 148)
+ (clue22_letter9 17)
+ (clue23_letter0 102)
+ (clue23_letter1 85)
+ (clue23_letter2 52)
+ (clue23_letter3 199)
+ (clue23_letter4 79)
+ (clue23_letter5 213)
+ (clue23_letter6 177)
+ (clue23_letter7 190)
+ (clue23_letter8 157)
+ (clue23_letter9 206)
+ (clue23_letter10 48)
+ (clue24_letter0 119)
+ (clue24_letter1 194)
+ (clue24_letter2 146)
+ (clue24_letter3 74)
+ (clue24_letter4 95)
+ (clue24_letter5 126)
+ (clue25_letter0 73)
+ (clue25_letter1 185)
+ (clue25_letter2 28)
+ (clue25_letter3 151)
+ (clue25_letter4 172)
+ (clue25_letter5 46)
+ (clue25_letter6 131))
+"""
