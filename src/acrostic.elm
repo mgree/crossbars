@@ -678,8 +678,8 @@ view model =
                            in
                                div [class "warnings"] (List.filterMap identity warnings)
                          ]))
-        , section [id "debug"]
-            [ constraints |> Debug.toString |> text ]
+        , pre [id "debug"]
+            [ constraints |> smt2OfConstraints |> text ]
         ]
 
 baseTabs : Int
@@ -1072,7 +1072,13 @@ type Constraint = IsInt ConstraintVar
                 | Disjoint (List ConstraintVar)
                 | NotAscending (List ConstraintVar)
                 | NotSameWord (List ConstraintVar)
-               
+
+isDefn : Constraint -> Bool
+isDefn c =
+    case c of
+        IsInt _ -> True
+        _ -> False
+                  
 constraintsOfPuzzle : Dict Char (List Int) -> Puzzle -> List Constraint
 constraintsOfPuzzle quoteIndices puzzle =
     let
@@ -1118,6 +1124,88 @@ constraintsOfPuzzle quoteIndices puzzle =
     in
     
     charConstraints ++ disjointnessConstraints ++ numberingConstraints
+
+smtAssert : String -> String
+smtAssert prop = "(assert " ++ prop ++ ")"
+
+smtWordFun : String
+smtWordFun = "word-of"
+                 
+smtEq : String -> String -> String
+smtEq l r = "(= " ++ l ++ " " ++ r ++ ")"
+                 
+smtOr : List String -> String
+smtOr props =
+    case props of
+        [] -> "true"
+        [prop] -> prop
+        _ -> "(or " ++ String.join " " props ++ ")"
+
+smtAnd : List String -> String
+smtAnd props =
+    case props of
+        [] -> "true" -- weird, I know, but probably the right default for our case. shouldn't come up.
+        [prop] -> prop
+        _ -> "(and " ++ String.join " " props ++ ")"
+
+smtNot : String -> String
+smtNot prop = "(not " ++ prop ++ ")"
+
+smtAscending : List ConstraintVar -> String
+smtAscending vars =
+    case vars of
+        [] -> "true"
+        [var] -> "true"
+        [var1,var2] -> "(< " ++ var1 ++ " " ++ var2 ++ ")"
+        var1::var2::rest ->
+            "(and (< " ++ var1 ++ " " ++ var2 ++ ")" ++ smtAscending (var2::rest) ++ ")"
+              
+smt2OfConstraint : Constraint -> String
+smt2OfConstraint c =
+    case c of
+        IsInt var -> ("(declare-const " ++ var ++ " Int)")
+
+        OneOf var ns ->
+            ns |>
+            List.map (\n -> smtEq var (String.fromInt n)) |>
+            smtOr |>
+            smtAssert
+
+        Disjoint vars ->
+            vars |>
+            allPairs |>
+            List.map (\(v1,v2) -> smtEq v1 v2) |>
+            smtOr |>
+            smtNot |>
+            smtAssert
+
+        NotAscending vars ->
+            vars |>
+            smtAscending |>
+            smtNot |>
+            smtAssert
+                              
+        _ -> smtAssert <| "true"
+                      
+smt2OfConstraints : List Constraint -> String
+smt2OfConstraints constraints =
+    let
+
+        (defnConstraints, assertConstraints) = List.partition isDefn constraints
+
+        defns = defnConstraints |>
+                List.map smt2OfConstraint
+
+        wordFun = "(declare-fun " ++ smtWordFun ++ " (Int) Int)"
+                    
+        assertions = assertConstraints |>
+                     List.map smt2OfConstraint
+                        
+        commands = defns ++ [wordFun] ++ assertions ++ ["(check-sat)", "(get-model)"]
+                           
+    in
+        String.join "\n" commands
+        
 
 -- UTILITY FUNCTIONS
 
@@ -1167,3 +1255,9 @@ insertWith cmp x l =
                 LT -> x::y::rest
                 EQ -> x::y::rest
                 GT -> y::insertWith cmp x rest
+
+allPairs : List a -> List (a,a)
+allPairs l =
+    case l of
+        [] -> []
+        hd::tl -> List.map (Tuple.pair hd) tl ++ allPairs tl
