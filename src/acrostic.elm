@@ -69,6 +69,7 @@ type Msg =
   | Save Time.Posix
   | NewPuzzle
   | Load Puzzle
+  | ApplyNumbering SMTNumbering
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
 
@@ -373,7 +374,8 @@ update msg model =
             (newModel, savePuzzles (encodeModel newModel))
         NewPuzzle -> model |> popCurrentPuzzle emptyPuzzle |> andSave
         Load savedPuzzle -> model |> loadPuzzle savedPuzzle |> andSave
-
+        ApplyNumbering nums -> model.puzzle |> applySMTNumbering nums |> asCurrentPuzzleIn model |> andSave
+                            
 loadPuzzle : Puzzle -> Model -> Model
 loadPuzzle puzzle model =
     { model
@@ -680,9 +682,16 @@ view model =
                            in
                                div [class "warnings"] (List.filterMap identity warnings)
                          ]))
-        , pre [id "debug"]
+        , section [id "debug"]
             [ {- constraints |> smt2OfConstraints quoteIndexWords |> text
-            , -} Parser.run smtModelParser wcwModel |> Debug.toString |> text
+            , Parser.run smtModelParser wcwModel |> Debug.toString |> text -}
+              input [ type_ "button"
+                    , onClick (Parser.run smtModelParser wcwModel |>
+                               Result.withDefault [] |>
+                               ApplyNumbering)
+                    , value "Apply numbering"
+                    ]
+                    [ ]
             ]
         ]
 
@@ -1167,24 +1176,22 @@ smtAscending vars =
         var1::var2::rest ->
             "(and (< " ++ var1 ++ " " ++ var2 ++ ")" ++ smtAscending (var2::rest) ++ ")"
 
-type alias SMTNumbering =
+type alias SMTNumbering = List SMTNumberEntry
+                
+type alias SMTNumberEntry =
     { clue : Int
     , letter : Int
     , number : Int
     }
 
-listOf : Parser a -> Parser (List a)
-listOf item =
-    Parser.oneOf
-        [ succeed (\hd tl -> hd :: tl)
-            |. spaces
-            |= item
-            |. spaces
-            |= Parser.lazy (\_ -> listOf item)
-        , succeed []
-        ]
-
-smtModelParser : Parser (List SMTNumbering)
+applySMTNumbering : SMTNumbering -> Puzzle -> Puzzle
+applySMTNumbering nums puz =
+    let apply num newPuz =
+            updateNumbering num.clue num.letter (Just num.number) newPuz
+    in
+        List.foldr apply puz nums
+        
+smtModelParser : Parser SMTNumbering
 smtModelParser =
     succeed identity
         |. spaces
@@ -1196,7 +1203,7 @@ smtModelParser =
         |. spaces
         |. end
 
-smtValueParser : Parser SMTNumbering
+smtValueParser : Parser SMTNumberEntry
 smtValueParser =
     succeed (\clue letter number ->
                  { clue = clue
@@ -1356,6 +1363,17 @@ allPairs l =
         [] -> []
         hd::tl -> List.map (Tuple.pair hd) tl ++ allPairs tl
 
+listOf : Parser a -> Parser (List a)
+listOf item =
+    Parser.oneOf
+        [ succeed (\hd tl -> hd :: tl)
+            |. spaces
+            |= item
+            |. spaces
+            |= Parser.lazy (\_ -> listOf item)
+        , succeed []
+        ]
+                  
 wcwModel : String
 wcwModel = """((clue0_letter0 62)
  (clue0_letter1 78)
