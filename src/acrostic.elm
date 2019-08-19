@@ -679,7 +679,7 @@ view model =
                                div [class "warnings"] (List.filterMap identity warnings)
                          ]))
         , pre [id "debug"]
-            [ constraints |> smt2OfConstraints |> text ]
+            [ constraints |> smt2OfConstraints quoteIndexWords |> text ]
         ]
 
 baseTabs : Int
@@ -1130,7 +1130,10 @@ smtAssert prop = "(assert " ++ prop ++ ")"
 
 smtWordFun : String
 smtWordFun = "word-of"
-                 
+
+smtWordOf : String -> String
+smtWordOf x = "(" ++ smtWordFun ++ " " ++ x ++")"
+             
 smtEq : String -> String -> String
 smtEq l r = "(= " ++ l ++ " " ++ r ++ ")"
                  
@@ -1185,10 +1188,16 @@ smt2OfConstraint c =
             smtNot |>
             smtAssert
                               
-        _ -> smtAssert <| "true"
+        NotSameWord vars ->
+            vars |>
+            allPairs |>
+            List.map (\(v1,v2) -> smtEq (smtWordOf v1) (smtWordOf v2)) |>
+            smtOr |>
+            smtNot |>                   
+            smtAssert
                       
-smt2OfConstraints : List Constraint -> String
-smt2OfConstraints constraints =
+smt2OfConstraints : Dict Int Int -> List Constraint -> String
+smt2OfConstraints quoteIndexWords constraints =
     let
 
         (defnConstraints, assertConstraints) = List.partition isDefn constraints
@@ -1196,12 +1205,26 @@ smt2OfConstraints constraints =
         defns = defnConstraints |>
                 List.map smt2OfConstraint
 
-        wordFun = "(declare-fun " ++ smtWordFun ++ " (Int) Int)"
-                    
+        wordFun =
+            let
+                decl = "(declare-fun " ++ smtWordFun ++ " (Int) Int)"
+
+                vals =
+                    quoteIndexWords |>
+                    Dict.foldr
+                        (\x wordNum eqs ->
+                             ("(= " ++ smtWordOf (String.fromInt x) ++ " " ++ (String.fromInt wordNum) ++ ")") :: eqs)
+                        [] |>
+                    smtAnd |>
+                    smtAssert
+
+            in
+                [decl, vals]
+                                          
         assertions = assertConstraints |>
                      List.map smt2OfConstraint
                         
-        commands = defns ++ [wordFun] ++ assertions ++ ["(check-sat)", "(get-model)"]
+        commands = defns ++ wordFun ++ assertions ++ ["(check-sat)", "(get-model)"]
                            
     in
         String.join "\n" commands
