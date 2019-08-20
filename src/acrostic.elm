@@ -21,8 +21,10 @@ port module Main exposing (..)
 
    answer search
      /usr/share/dict/words
+     Webster's 1913 -- adapt https://github.com/ponychicken/WebsterParser
      Wikipedia/Wiktionary titles
      generic JSON API?
+       enter a URL
      tie in to autocomplete?
 
    way to control escaped characters in the quote
@@ -77,8 +79,11 @@ type Msg =
   | NewPuzzle
   | Load Puzzle
   | ApplyNumbering SMTNumbering
+  | SolverStateChanged Json.Encode.Value
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
+
+port solverStateChanged : (Json.Encode.Value -> msg) -> Sub msg
 
 -- TYPES, HELPERS                
                    
@@ -214,10 +219,30 @@ fixupAnswerInitials puzzle =
 
         { puzzle | clues = clues }
 
+type SolverState = SolverUnloaded
+                 | SolverDownloading
+                 | SolverInitializing
+                 | SolverReady
+                 | SolverRunning
+
+decodeSolverState : Json.Decode.Decoder SolverState
+decodeSolverState =
+    Json.Decode.string |>
+    Json.Decode.andThen
+        (\s ->
+             case s of
+                 "SolverUnloaded" -> Json.Decode.succeed SolverUnloaded
+                 "SolverDownloading" -> Json.Decode.succeed SolverDownloading
+                 "SolverInitializing" -> Json.Decode.succeed SolverInitializing
+                 "SolverReady" -> Json.Decode.succeed SolverReady
+                 "SolverRunning" -> Json.Decode.succeed SolverRunning
+                 _ -> Json.Decode.fail ("expected solver state, found '" ++ s ++ "'"))
+                   
 type alias Model = 
     { puzzle : Puzzle
     , selectedClues : List Int
     , savedPuzzles : List Puzzle
+    , solverState : SolverState
     }
 
 emptyModel : Model
@@ -225,10 +250,14 @@ emptyModel =
     { puzzle = emptyPuzzle
     , selectedClues = []
     , savedPuzzles = []
+    , solverState = SolverUnloaded
     }
     
 asCurrentPuzzleIn : Model -> Puzzle -> Model
 asCurrentPuzzleIn model puzzle = { model | puzzle = puzzle }    
+
+asSolverStateIn : Model -> SolverState -> Model
+asSolverStateIn model solverState = { model | solverState = solverState }    
 
 -- PUZZLE SAVING
 
@@ -285,6 +314,7 @@ decodeModel =
              { puzzle = puzzle
              , selectedClues = selectedClues
              , savedPuzzles = savedPuzzles
+             , solverState = SolverUnloaded
              })
         (Json.Decode.field "puzzle" decodePuzzle)
         (Json.Decode.field "selectedClues" (Json.Decode.list Json.Decode.int))
@@ -351,7 +381,10 @@ init savedPuzzleJSON =
     )
     
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+subscriptions model =
+    Sub.batch
+        [ solverStateChanged SolverStateChanged
+        ]
 
 -- UPDATE
                       
@@ -382,6 +415,12 @@ update msg model =
         NewPuzzle -> model |> popCurrentPuzzle emptyPuzzle |> andSave
         Load savedPuzzle -> model |> loadPuzzle savedPuzzle |> andSave
         ApplyNumbering nums -> model.puzzle |> applySMTNumbering nums |> asCurrentPuzzleIn model |> andSave
+        SolverStateChanged json -> (json |>
+                                    Json.Decode.decodeValue decodeSolverState |>
+                                    Result.withDefault SolverUnloaded |>
+                                    Debug.log "solverState" |>
+                                    asSolverStateIn model, Cmd.none)
+                                   {- FIXME display error -}
                             
 loadPuzzle : Puzzle -> Model -> Model
 loadPuzzle puzzle model =

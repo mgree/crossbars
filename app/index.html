@@ -9,6 +9,7 @@
   </head>
   <body>
     <div id="elm"></div>
+    <script src="./protocol.js"></script>
     <script>
       let app = Elm.Main.init({
           node: document.getElementById('elm'),
@@ -19,6 +20,43 @@
           localStorage.setItem('puzzles', JSON.stringify(puzzles));
       });
 
+      var worker;
+      var verification_start;
+      
+      function postZ3Message(query, payload) {
+        console.info("[Window] → Z3 (" + query + "):", payload);
+        worker.postMessage({ kind: query, payload: payload });
+      }
+
+      function logOutput(message, cssClass) {
+        console.log(message);
+      }
+
+      function onZ3Message(event) {
+        console.info("Z3 → [Window]:", event);
+        var kind = event.data.kind;
+        var payload = event.data.payload;
+        switch (kind) {
+        case responses.PROGRESS:
+            app.ports.solverStateChanged.send(event.data.payload);
+            break;
+        case responses.READY:
+            break;
+        case responses.STDOUT:
+            logOutput(payload, "stdout-msg");
+            break;
+        case responses.STDERR:
+            logOutput(payload, "stderr-msg")
+            break;
+        case responses.VERIFICATION_COMPLETE:
+            var elapsed = Math.round(window.performance.now() - verification_start);
+            logOutput ("-- Verification complete (" + elapsed + "ms)", "info-msg");
+            break;
+        }
+      }
+
+      worker = new window.Worker('worker.js');
+      worker.onmessage = onZ3Message;
     </script>
     <div id="footer">
       <div>Crossbars is open source under GPLv3; you can find the <a href="https://github.com/mgree/crossbars"> source code on GitHub</a>.</div>
