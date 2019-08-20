@@ -727,18 +727,7 @@ view model =
 
                            in
                                div [class "warnings"] (List.filterMap identity warnings)
-                         ]))
-        , section [id "debug"]
-            [ {- constraints |> smt2OfConstraints quoteIndexWords |> text
-            , Parser.run smtModelParser wcwModel |> Debug.toString |> text -}
-              input [ type_ "button"
-                    , onClick (Parser.run smtModelParser wcwModel |>
-                               Result.withDefault [] |>
-                               ApplyNumbering)
-                    , value "Apply numbering"
-                    ]
-                    [ ]
-            ]
+                         ]))        
         , section [id "messages"]
             [ div [id "solver-state"]
                   [text <| case model.solverState of
@@ -749,6 +738,8 @@ view model =
                        SolverRunning -> "Numbering solver running..."
                   ]
             ]
+{-        , section [id "debug"]
+            [ ]             -}
         ]
 
 baseTabs : Int
