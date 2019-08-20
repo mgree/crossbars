@@ -22,11 +22,23 @@
 
       var worker;
       var verification_start;
-      
+      var stdout;
+      var stderr;
+
       function postZ3Message(query, payload) {
         console.info("[Window] → Z3 (" + query + "):", payload);
         worker.postMessage({ kind: query, payload: payload });
       }
+
+      app.ports.solveNumbering.subscribe(function (input) {
+        verification_start = window.performance.now();
+        stdout = [];
+        stderr = [];
+        postZ3Message(queries.VERIFY,
+          { args: [ "-smt2" ]
+          , input: input 
+          });
+      });
 
       function logOutput(message, cssClass) {
         console.log(message);
@@ -40,17 +52,21 @@
         case responses.PROGRESS:
             app.ports.solverStateChanged.send(event.data.payload);
             break;
-        case responses.READY:
-            break;
         case responses.STDOUT:
-            logOutput(payload, "stdout-msg");
+            stdout.push(payload);
             break;
         case responses.STDERR:
-            logOutput(payload, "stderr-msg")
+            stderr.push(payload);
             break;
         case responses.VERIFICATION_COMPLETE:
-            var elapsed = Math.round(window.performance.now() - verification_start);
-            logOutput ("-- Verification complete (" + elapsed + "ms)", "info-msg");
+            let elapsed = Math.round(window.performance.now() - verification_start);
+            let results = { 
+              elapsed : elapsed
+              , stdout : stdout
+              , stderr : stderr
+              };
+            console.log(results);
+            app.ports.solverResults.send(results);
             break;
         }
       }
@@ -60,6 +76,11 @@
     </script>
     <div id="footer">
       <div>Crossbars is open source under GPLv3; you can find the <a href="https://github.com/mgree/crossbars"> source code on GitHub</a>.</div>
+      <div>The numbering solver
+      is <a href="https://github.com/Z3Prover/z3">Z3</a>
+      as <a href="https://github.com/cpitclaudel/z3.wasm">compiled for
+      WASM</a> by <a href="http://pit-claudel.fr/clement/">Clément
+      Pit-Claudel</a>; these works are under the MIT license.</div>
       <div>Copyright &copy; 2019 <a href="https://mgree.github.io/">Michael Greenberg</a>.</div>
     </div>
   </body>
