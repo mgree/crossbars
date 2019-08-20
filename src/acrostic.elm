@@ -739,6 +739,16 @@ view model =
                     ]
                     [ ]
             ]
+        , section [id "messages"]
+            [ div [id "solver-state"]
+                  [text <| case model.solverState of
+                       SolverUnloaded -> "Numbering solver not loaded"
+                       SolverDownloading -> "Downloading numbering solver code..."
+                       SolverInitializing -> "Initializing numbering solver..."
+                       SolverReady -> "Numbering solver ready"
+                       SolverRunning -> "Numbering solver running..."
+                  ]
+            ]
         ]
 
 baseTabs : Int

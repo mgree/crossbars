@@ -47,7 +47,7 @@ function makeWorker(self, console, queries, responses, performance) {
 
     function loadSolver() {
         progress("SolverDownloading");
-        self.importScripts("z3smt2w.js");
+        self.importScripts("z3w.js");
         progress("SolverInitializing");
         solver = Z3({ ENVIRONMENT: "WORKER",
                       onRuntimeInitialized: onRuntimeInitialized,
