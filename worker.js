@@ -29,6 +29,7 @@ function makeWorker(self, console, queries, responses, performance) {
         solver.FS.writeFile(INPUT_FNAME, input, { encoding: "utf8" });
         solver.callMain(args);
         postMessage(responses.VERIFICATION_COMPLETE, true);
+        progress("SolverReady");
     }
 
     function onRuntimeInitialized() {
