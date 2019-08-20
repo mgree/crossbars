@@ -1,10 +1,6 @@
 port module Main exposing (..)
 
-{- BUGS
-
-   updateNumbering has indexing problems with multi-word answers
-
-   TODO
+{- TODO
 
    different ways to sort saved puzzles
 
@@ -103,6 +99,7 @@ type Phase = QuoteEntry
 
 type alias Clue =
     { hint : String
+    , text : String
     , answer : List (Maybe Int, Char)
     }
 
@@ -111,6 +108,7 @@ clueAnswer c = c.answer |> List.map Tuple.second |> String.fromList
 
 defaultClue : String -> Clue
 defaultClue s = { hint = ""
+                , text = s |> String.toUpper
                 , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
                 }
 
@@ -174,7 +172,6 @@ clearNumbering puzzle =
                    })
     }
 
-{- !!! FIXME updateNumbering is doing the wrong thing with the SMT indices -}                             
 updateNumbering : Int -> Int -> Maybe Int -> Puzzle -> Puzzle
 updateNumbering index numIndex mQuoteNum puzzle =
     { puzzle | clues =
@@ -205,20 +202,25 @@ updateAnswer index answer puzzle =
                    extendedNumbering = numbering ++ List.repeat (String.length answer - List.length numbering) Nothing
 
                    numberedAnswer = 
-                       answer |> String.toList
-                              |> List.map2 
-                                    (\mnum c ->
-                                         {- FIXME slightly inefficient...  -}
-                                         case mnum of
-                                             Nothing -> (Nothing, c)
-                                             Just num ->
-                                                 if quoteIndex puzzle num == Just c
-                                                 then (Just num, c)
-                                                 else (Nothing, c))
-                                    extendedNumbering
+                       answer |> 
+                       String.toUpper |> 
+                       String.filter Char.isAlphaNum |>
+                       String.toList |> 
+                       List.map2 
+                           (\mnum c ->
+                                {- FIXME slightly inefficient...  -}
+                                case mnum of
+                                    Nothing -> (Nothing, c)
+                                    Just num ->
+                                        if quoteIndex puzzle num == Just c
+                                        then (Just num, c)
+                                        else (Nothing, c))
+                           extendedNumbering
                 in
                     
-                    {clue | answer = numberedAnswer })
+                    {clue | text = answer
+                          , answer = numberedAnswer 
+                    })
             puzzle.clues
     }
 
@@ -307,6 +309,7 @@ encodeClue : Clue -> Json.Encode.Value
 encodeClue clue =
     Json.Encode.object
         [ ("hint", Json.Encode.string clue.hint)
+        , ("text", Json.Encode.string clue.text)
         , ("answer", Json.Encode.list encodeAnswer clue.answer)
         ]
 
@@ -364,12 +367,14 @@ decodePuzzle =
 
 decodeClue : Json.Decode.Decoder Clue
 decodeClue =
-    Json.Decode.map2
-        (\hint answer ->
+    Json.Decode.map3
+        (\hint text answer ->
              { hint = hint
+             , text = text
              , answer = answer
              })
         (Json.Decode.field "hint" Json.Decode.string)
+        (Json.Decode.field "text" Json.Decode.string)
         (Json.Decode.field "answer" (Json.Decode.list decodeAnswer))
 
 decodeAnswer : Json.Decode.Decoder (Maybe Int, Char)
@@ -414,7 +419,7 @@ subscriptions model =
                       
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
-    case msg of
+    case msg |> Debug.log "msg" of
         Title title -> model.puzzle |> setTitle title |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Author author -> model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Quote quote -> model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
@@ -650,7 +655,6 @@ view model =
              else [ histToSVG quoteHist remainingHist ])
         , section [id "clues"]
             (puzzle.clues 
-                |> List.map clueAnswer
                 |> addInitials (String.toList initials) 
                 |> addIndex 
                 |> List.map (clueEntry model answersFixed))
@@ -823,15 +827,17 @@ stringOfPhase p =
 phases : List Phase
 phases = [QuoteEntry, Anagramming, CluingLettering]
          
-clueEntry : Model -> Bool -> (Int, (Char, String)) -> Html Msg
+clueEntry : Model -> Bool -> (Int, (Char, Clue)) -> Html Msg
 clueEntry model answersFixed (index, (initial, clue)) =
     let 
+
+        answer = clueAnswer clue
 
         initialStr = String.fromChar initial
 
         letter = letterFor index 
                  
-        validCls = class <| if String.startsWith (String.toUpper initialStr) (String.toUpper clue)
+        validCls = class <| if String.startsWith (String.toUpper initialStr)  (String.toUpper answer)
                             then "valid"
                             else "invalid"
 
@@ -850,7 +856,7 @@ clueEntry model answersFixed (index, (initial, clue)) =
                         , onClick (SelectClue index)
                         , readonly answersFixed
                         ] 
-                (initialStr ++ "...") clue (Answer index)
+                (initialStr ++ "...") clue.text (Answer index)
             ] 
 
 transpose : List (List a) -> List (List a)
@@ -865,7 +871,7 @@ breakSublists len l =
     then []
     else List.take len l :: breakSublists len (List.drop len l)
 
-addInitials : List Char -> List String -> List (Char, String)
+addInitials : List Char -> List a -> List (Char, a)
 addInitials initial clues = List.map2 Tuple.pair initial clues
 
 addIndex : List a -> List (Int, a)
