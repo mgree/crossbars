@@ -268,12 +268,12 @@
                 
 }
 
-#debug {
+#messages {
     grid-column: 1 / span 2;
     grid-row: 5;
 }
 
-#messages {
-    grid-row: 6;
+#debug {
     grid-column: 1 / span 2;
+    grid-row: 6;
 }
