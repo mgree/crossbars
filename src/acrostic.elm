@@ -1,6 +1,10 @@
 port module Main exposing (..)
 
-{- TODO
+{- BUGS
+
+   updateNumbering has indexing problems with multi-word answers
+
+   TODO
 
    different ways to sort saved puzzles
 
@@ -11,7 +15,6 @@ port module Main exposing (..)
    section headers; dividers?
 
    autonumbering 
-     actually hook up to z3.wasm!
      set timeouts?
      error messages on unsat/unknown?
 
@@ -78,10 +81,17 @@ type Msg =
   | Save Time.Posix
   | NewPuzzle
   | Load Puzzle
+  | ClearNumbering
+  | SolveNumbering
+  | SolverResults Json.Encode.Value
   | ApplyNumbering SMTNumbering
   | SolverStateChanged Json.Encode.Value
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
+
+port solveNumbering : Json.Encode.Value -> Cmd msg
+
+port solverResults : (Json.Encode.Value -> msg) -> Sub msg
 
 port solverStateChanged : (Json.Encode.Value -> msg) -> Sub msg
 
@@ -151,7 +161,20 @@ setPhase phase puzzle = { puzzle | phase = phase }
 
 setTimeModified : Time.Posix -> Puzzle -> Puzzle
 setTimeModified now puzzle = { puzzle | timeModified = now }
-                        
+
+clearNumbering : Puzzle -> Puzzle
+clearNumbering puzzle =
+    { puzzle | clues =
+          puzzle.clues |>
+          List.map
+              (\clue ->
+                   { clue | answer =
+                         clue.answer |>
+                         List.map (\(_, c) -> (Nothing, c))
+                   })
+    }
+
+{- !!! FIXME updateNumbering is doing the wrong thing with the SMT indices -}                             
 updateNumbering : Int -> Int -> Maybe Int -> Puzzle -> Puzzle
 updateNumbering index numIndex mQuoteNum puzzle =
     { puzzle | clues =
@@ -384,6 +407,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ solverStateChanged SolverStateChanged
+        , solverResults SolverResults
         ]
 
 -- UPDATE
@@ -414,6 +438,34 @@ update msg model =
             (newModel, savePuzzles (encodeModel newModel))
         NewPuzzle -> model |> popCurrentPuzzle emptyPuzzle |> andSave
         Load savedPuzzle -> model |> loadPuzzle savedPuzzle |> andSave
+        ClearNumbering -> model.puzzle |> clearNumbering |> asCurrentPuzzleIn model |> andSave
+        SolveNumbering ->
+            {- FIXME copypasta from view... -}
+            let
+                quoteIndices =
+                    model.puzzle.quote |>
+                    cleanChars |>
+                    List.indexedMap (\i c -> (c, i)) |>
+                    List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
+
+                quoteIndexWords =
+                    model.puzzle.quote |>
+                    String.words |>
+                    List.map cleanChars |>
+                    List.filter (not << List.isEmpty) |>
+                    List.indexedMap (\i w -> List.repeat (List.length w) i) |>
+                    List.concat |>
+                    List.indexedMap Tuple.pair |>
+                    Dict.fromList
+
+            in
+            (model, model.puzzle |> constraintsOfPuzzle quoteIndices |> smt2OfConstraints quoteIndexWords |> Json.Encode.string |> solveNumbering)
+        SolverResults json ->
+            json |>
+            Json.Decode.decodeValue decodeSMTResult |>
+            Result.withDefault SMTFailed |>
+            tryApplySMTNumberingTo model.puzzle |>
+            asCurrentPuzzleIn model |> andSave
         ApplyNumbering nums -> model.puzzle |> applySMTNumbering nums |> asCurrentPuzzleIn model |> andSave
         SolverStateChanged json -> (json |>
                                     Json.Decode.decodeValue decodeSolverState |>
@@ -507,8 +559,6 @@ view model =
                                                   (clue.answer |> List.indexedMap Tuple.pair))
                         |> mergeConsMany
 
-        constraints = constraintsOfPuzzle quoteIndices puzzle
-                           
     in
 
     div [id "crossbars-wrapper"]
@@ -576,8 +626,28 @@ view model =
                            , remainingHist |> countHist |> String.fromInt |> text]
                        ]
                  ])
-        , section [id "stats"]
-            [ histToSVG quoteHist remainingHist ]
+        , section [id "detail"]
+            (if puzzle.phase == CluingLettering
+             then [ div [id "solver-state"]
+                        [text <|
+                         case model.solverState of
+                             SolverUnloaded -> "Numbering solver not loaded"
+                             SolverDownloading -> "Downloading numbering solver code..."
+                             SolverInitializing -> "Initializing numbering solver..."
+                             SolverReady -> "Numbering solver ready"
+                             SolverRunning -> "Numbering solver running..."
+                        ]
+                  , input [ type_ "button"
+                          , onClick ClearNumbering
+                          , value "Clear numbering" ]
+                          []
+                  , input [ type_ "button"
+                          , onClick SolveNumbering
+                          , value "Automatically assign numbers"
+                          ]
+                          []
+                  ]
+             else [ histToSVG quoteHist remainingHist ])
         , section [id "clues"]
             (puzzle.clues 
                 |> List.map clueAnswer
@@ -729,17 +799,11 @@ view model =
                                div [class "warnings"] (List.filterMap identity warnings)
                          ]))        
         , section [id "messages"]
-            [ div [id "solver-state"]
-                  [text <| case model.solverState of
-                       SolverUnloaded -> "Numbering solver not loaded"
-                       SolverDownloading -> "Downloading numbering solver code..."
-                       SolverInitializing -> "Initializing numbering solver..."
-                       SolverReady -> "Numbering solver ready"
-                       SolverRunning -> "Numbering solver running..."
-                  ]
+            [ 
             ]
-{-        , section [id "debug"]
-            [ ]             -}
+        , section [id "debug"]
+            [ 
+            ]
         ]
 
 baseTabs : Int
@@ -1223,6 +1287,10 @@ smtAscending vars =
         var1::var2::rest ->
             "(and (< " ++ var1 ++ " " ++ var2 ++ ")" ++ smtAscending (var2::rest) ++ ")"
 
+type SMTResult = SMTOk SMTNumbering
+               | SMTTimeout
+               | SMTFailed
+
 type alias SMTNumbering = List SMTNumberEntry
                 
 type alias SMTNumberEntry =
@@ -1231,12 +1299,41 @@ type alias SMTNumberEntry =
     , number : Int
     }
 
+tryApplySMTNumberingTo : Puzzle -> SMTResult -> Puzzle
+tryApplySMTNumberingTo puzzle result =
+    case result of
+        SMTFailed -> puzzle
+        SMTTimeout -> puzzle
+        SMTOk nums -> applySMTNumbering nums puzzle
+
 applySMTNumbering : SMTNumbering -> Puzzle -> Puzzle
 applySMTNumbering nums puz =
     let apply num newPuz =
             updateNumbering num.clue num.letter (Just num.number) newPuz
     in
         List.foldr apply puz nums
+
+decodeSMTResult : Json.Decode.Decoder SMTResult
+decodeSMTResult = 
+    Json.Decode.field "stdout" (Json.Decode.list Json.Decode.string) |>
+    Json.Decode.map 
+        (\stdout ->
+             let output = String.join "\n" stdout in
+             Parser.run smtResultParser output |>
+             Result.withDefault SMTFailed)
+
+smtResultParser : Parser SMTResult
+smtResultParser =
+  Parser.oneOf
+      [ succeed SMTFailed
+        |. symbol "unsat"
+      , succeed SMTTimeout
+        |. symbol "unknown"
+      , succeed SMTOk
+        |. symbol "sat"
+        |. spaces
+        |= smtModelParser
+      ]
         
 smtModelParser : Parser SMTNumbering
 smtModelParser =

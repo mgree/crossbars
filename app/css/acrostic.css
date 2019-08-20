@@ -116,46 +116,46 @@
     flex-basis: content;
 }
 
-#stats {
+#detail {
     grid-column: 2;
     grid-row: 2;
 }
 
-#stats svg#remaining {
+#detail svg#remaining {
     display: block;
     width: 90%;
 }
 
-#stats svg#remaining text {
+#detail svg#remaining text {
     font-size: 6pt;
 }
 
-#stats svg#remaining text.label {
+#detail svg#remaining text.label {
     font-family: monospace;
 }
 
-#stats svg#remaining .quote rect {
+#detail svg#remaining .quote rect {
     fill: aliceblue;
 }
 
-#stats svg#remaining .quote text {
+#detail svg#remaining .quote text {
     fill: aliceblue;
 }
 
-#stats svg#remaining .remaining rect {
+#detail svg#remaining .remaining rect {
     fill: lightblue;
     stroke: lightblue;
 }
 
-#stats svg#remaining .remaining text.valid {
+#detail svg#remaining .remaining text.valid {
     fill: lightblue;
 }
 
-#stats svg#remaining .remaining text.invalid {
+#detail svg#remaining .remaining text.invalid {
     fill: red;
 }
 
-#stats svg#remaining .hooray {
+#detail svg#remaining .hooray {
     font-size: 32pt;
 }
 
