@@ -27,6 +27,11 @@ port module Main exposing (..)
      tie in to autocomplete?
 
    way to control escaped characters in the quote
+
+   right-aligned wrapping of long clues
+
+   z3 wasm build w/o pthreads
+
 -}
 
 import Dict exposing (Dict)
@@ -698,7 +703,6 @@ view model =
                                clue.hint
                                (Hint index)
 
-                         {- PICK UP HERE use flex layout rather than table for right wrapping -}
                          , table [class "clue-numbering"]
                              [ tr []
                                    (List.indexedMap 
@@ -1446,7 +1450,8 @@ smt2OfConstraints qIndexWords constraints =
         assertions = assertConstraints |>
                      List.map smt2OfConstraint
                         
-        commands = ["(set-option :produce-models true)"] ++
+        commands = [ {- "(set-option :timeout 2000)"
+                   , -} "(set-option :produce-models true)"] ++
                    defns ++ wordFun ++ assertions ++
                    ["(check-sat)", "(get-value (" ++ String.join " " vars ++ "))"]
                            
