@@ -426,7 +426,7 @@ subscriptions model =
                       
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
-    case msg |> Debug.log "msg" of
+    case msg of
         Title title -> model.puzzle |> setTitle title |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Author author -> model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
         Quote quote -> model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
@@ -468,9 +468,8 @@ update msg model =
         SolverStateChanged json -> (json |>
                                     Json.Decode.decodeValue decodeSolverState |>
                                     Result.withDefault SolverUnloaded |>
-                                    Debug.log "solverState" |>
                                     asSolverStateIn model, Cmd.none)
-                                   {- FIXME display error -}
+                                    {- FIXME display error -}
                             
 loadPuzzle : Puzzle -> Model -> Model
 loadPuzzle puzzle model =
@@ -768,7 +767,7 @@ view model =
         , section [id "messages"]
             [ 
             ]
-        , section [id "debug"]
+        , section [id "debug", style "display" "none"]
             [ 
             ]
         ]

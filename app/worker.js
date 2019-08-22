@@ -7,25 +7,22 @@ function makeWorker(self, console, queries, responses, performance) {
     var ready = false;
 
     function postMessage(kind, payload) {
-        console.info("Z3 → Window (" + kind + "):", payload);
         self.postMessage({ kind: kind, payload: payload });
     }
 
     function progress(message) {
         postMessage(responses.PROGRESS, message);
-        console.info("Worker:", message, performance.now());
     }
 
     function runSolver(input, args) {
         if (!ready) {
             console.error("Cannot run SMT solver yet.");
-            postMessage(responses.DONE, false);
+            postMessage(responses.VERIFICATION_COMPLETE, false);
             return;
         }
 
         args.push(INPUT_FNAME);
         progress("SolverRunning");
-        console.log("Running SMT solver with", args);
         solver.FS.writeFile(INPUT_FNAME, input, { encoding: "utf8" });
         solver.callMain(args);
         postMessage(responses.VERIFICATION_COMPLETE, true);
@@ -57,7 +54,6 @@ function makeWorker(self, console, queries, responses, performance) {
     }
 
     function onMessage(event) {
-        console.info("Window → Z3:", event);
         var kind = event.data.kind;
         var payload = event.data.payload;
         switch (kind) {
