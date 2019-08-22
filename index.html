@@ -25,27 +25,19 @@
       var stdout;
       var stderr;
 
-      function postZ3Message(query, payload) {
-        console.info("[Window] → Z3 (" + query + "):", payload);
-        worker.postMessage({ kind: query, payload: payload });
-      }
-
       app.ports.solveNumbering.subscribe(function (input) {
         verification_start = window.performance.now();
         stdout = [];
         stderr = [];
-        postZ3Message(queries.VERIFY,
-          { args: [ "-smt2" ]
-          , input: input 
+        worker.postMessage({ 
+          kind: queries.VERIFY,
+          payload: { args: [ "-smt2" ]
+                   , input: input 
+                   }
           });
       });
 
-      function logOutput(message, cssClass) {
-        console.log(message);
-      }
-
       function onZ3Message(event) {
-        console.info("Z3 → [Window]:", event);
         var kind = event.data.kind;
         var payload = event.data.payload;
         switch (kind) {
@@ -60,12 +52,12 @@
             break;
         case responses.VERIFICATION_COMPLETE:
             let elapsed = Math.round(window.performance.now() - verification_start);
-            let results = { 
-              elapsed : elapsed
-              , stdout : stdout
-              , stderr : stderr
+            let results = 
+              { ran: payload
+              , elapsed: elapsed
+              , stdout: stdout
+              , stderr: stderr
               };
-            console.log(results);
             app.ports.solverResults.send(results);
             break;
         }
