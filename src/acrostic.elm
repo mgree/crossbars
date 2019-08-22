@@ -10,6 +10,8 @@ port module Main exposing (..)
 
    section headers; dividers?
 
+   unified messages/warnings
+
    autonumbering 
      set timeouts?
      error messages on unsat/unknown?
@@ -640,7 +642,7 @@ view model =
 
                          clue = clueFor index puzzle
 
-                         answer = clue.answer |> List.filter (Tuple.second >> Char.isAlphaNum)
+                         answer = clue.answer
 
                          numberingFor numIndex mNum c = 
                              select [id ("clue-numbering-" ++ String.fromInt index ++ "-" ++ String.fromInt numIndex)
@@ -708,11 +710,6 @@ view model =
                                    (List.indexedMap 
                                         (\numIndex (_, c) ->
                                              let
-                                                 {- FIXME hide/show certain characters? -}
-                                                 fakeCharClasses =
-                                                     if Char.isAlphaNum c
-                                                     then [ ]
-                                                     else [ class "excluded" ]
                                                  
                                                  dupClasses =
                                                      if List.member numIndex dupLetters
@@ -720,7 +717,7 @@ view model =
                                                      else []
                                              
                                              in
-                                                 td ([class "clue-numbering-letter"] ++ fakeCharClasses ++ dupClasses)
+                                                 td ([class "clue-numbering-letter"] ++ dupClasses)
                                                     [c |> String.fromChar |> text])
                                         answer)
                              , tr []
@@ -729,11 +726,6 @@ view model =
                                              let
                                                  
                                                  c = Char.toUpper rawC
-
-                                                 fakeCharClasses =
-                                                     if Char.isAlphaNum c
-                                                     then [ ]
-                                                     else [ class "excluded" ]
 
                                                  validCls = 
                                                      case mNum of
@@ -746,8 +738,8 @@ view model =
                                                              else "invalid"
                                                                                     
                                              in
-                                             td ([class "clue-numbering-number", class validCls] ++ fakeCharClasses)
-                                                (if Char.isAlphaNum c then [numberingFor numIndex mNum c] else []))
+                                                 td [class "clue-numbering-number", class validCls]
+                                                    [numberingFor numIndex mNum c])
                                         answer)
                              ]
                          , let
@@ -1220,8 +1212,7 @@ constraintsOfPuzzle qIndices puzzle =
             puzzle.clues |>
             List.indexedMap
                 (\clueIndex clue ->
-                     clue.answer |>
-                     List.filter (Tuple.second >> Char.isAlphaNum) |> {- FIXME way to consider existing numbers? -}
+                     clue.answer |> {- FIXME way to consider existing numbers? -}
                      List.indexedMap Tuple.pair |>
                      List.map (\(numIndex, (_, c)) -> (varName clueIndex numIndex, c)))
                 
