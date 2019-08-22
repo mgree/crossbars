@@ -445,26 +445,12 @@ update msg model =
         Load savedPuzzle -> model |> loadPuzzle savedPuzzle |> andSave
         ClearNumbering -> model.puzzle |> clearNumbering |> asCurrentPuzzleIn model |> andSave
         SolveNumbering ->
-            {- FIXME copypasta from view... -}
-            let
-                quoteIndices =
-                    model.puzzle.quote |>
-                    cleanChars |>
-                    List.indexedMap (\i c -> (c, i)) |>
-                    List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
-
-                quoteIndexWords =
-                    model.puzzle.quote |>
-                    String.words |>
-                    List.map cleanChars |>
-                    List.filter (not << List.isEmpty) |>
-                    List.indexedMap (\i w -> List.repeat (List.length w) i) |>
-                    List.concat |>
-                    List.indexedMap Tuple.pair |>
-                    Dict.fromList
-
-            in
-            (model, model.puzzle |> constraintsOfPuzzle quoteIndices |> smt2OfConstraints quoteIndexWords |> Json.Encode.string |> solveNumbering)
+            (model, 
+             model.puzzle |> 
+             constraintsOfPuzzle (quoteIndices model.puzzle) |> 
+             smt2OfConstraints (quoteIndexWords model.puzzle) |> 
+             Json.Encode.string |> 
+             solveNumbering)
         SolverResults json ->
             json |>
             Json.Decode.decodeValue decodeSMTResult |>
@@ -538,31 +524,12 @@ view model =
                     CluingLettering -> viable &&
                                        not (isEmptyHist quoteHist) &&
                                        isEmptyHist remainingHist
-                        
-        quoteIndices =
-            puzzle.quote |> cleanChars
-                         |> List.indexedMap (\i c -> (c, i))
-                         |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
+                    
+        qIndices = quoteIndices puzzle
 
-        quoteIndexWords =
-            puzzle.quote |> String.words
-                         |> List.map cleanChars
-                         |> List.filter (not << List.isEmpty)
-                         |> List.indexedMap (\i w -> List.repeat (List.length w) i)
-                         |> List.concat
-                         |> List.indexedMap Tuple.pair
-                         |> Dict.fromList
+        qIndexWords = quoteIndexWords puzzle
                            
-        quoteIndexUses = 
-            puzzle.clues |> List.indexedMap (\i clue -> 
-                                                List.foldr 
-                                                  (\(numIndex, (mNum,_)) d ->
-                                                       case mNum of
-                                                           Nothing -> d
-                                                           Just num -> updateCons num (i, numIndex) d)
-                                                  Dict.empty
-                                                  (clue.answer |> List.indexedMap Tuple.pair))
-                        |> mergeConsMany
+        qIndexUses = quoteIndexUses puzzle
 
     in
 
@@ -601,7 +568,7 @@ view model =
             ]
         , section [id "quote"]
             (if quoteFixed
-             then [ boardToSVG 24 quoteIndexUses model.puzzle ]
+             then [ boardToSVG 24 qIndexUses model.puzzle ]
              else
                  [ textInput [tabindex 1, size 60, readonly quoteFixed]
                      "Title" puzzle.title Title
@@ -680,7 +647,7 @@ view model =
                                        (\qIndex ->
                                             let 
 
-                                                uses = Dict.get qIndex quoteIndexUses 
+                                                uses = Dict.get qIndex qIndexUses 
                                                          |> Maybe.withDefault []
                                                          |> List.filter (\(uIdx, uNumIdx) -> uIdx /= index || (uIdx == index && uNumIdx /= numIndex))
 
@@ -697,7 +664,7 @@ view model =
                                                    , selected (mNum == Just qIndex)
                                                    ] 
                                                    [text ((qIndex + 1 |> String.fromInt) ++ useText)])
-                                       (Dict.get c quoteIndices |> Maybe.withDefault [])))
+                                       (Dict.get c qIndices |> Maybe.withDefault [])))
 
                          clueNumbers = answer |> List.indexedMap Tuple.pair
                                               |> List.filterMap (\(ansIndex,(mNumIndex,_)) -> Maybe.map (Tuple.pair ansIndex) mNumIndex)
@@ -708,7 +675,7 @@ view model =
 
                          clueWords = List.filterMap
                                        (\(ansIndex, numIndex) ->
-                                              Dict.get numIndex quoteIndexWords |> Maybe.map (Tuple.pair ansIndex))
+                                              Dict.get numIndex qIndexWords |> Maybe.map (Tuple.pair ansIndex))
                                        clueNumbers
 
                          dupWords = List.filter
@@ -900,6 +867,35 @@ quoteIndex puzzle index =
                  |> List.drop index
                  |> List.head
 
+quoteIndices : Puzzle -> Dict Char (List Int)
+quoteIndices puzzle =
+    puzzle.quote |> cleanChars
+                 |> List.indexedMap (\i c -> (c, i))
+                 |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
+
+quoteIndexWords : Puzzle -> Dict Int Int
+quoteIndexWords puzzle =
+    puzzle.quote |> String.words
+                 |> List.map cleanChars
+                 |> List.filter (not << List.isEmpty)
+                 |> List.indexedMap (\i w -> List.repeat (List.length w) i)
+                 |> List.concat
+                 |> List.indexedMap Tuple.pair
+                 |> Dict.fromList
+
+quoteIndexUses : Puzzle -> Dict Int (List (Int, Int))
+quoteIndexUses puzzle = 
+    puzzle.clues |> List.indexedMap (\i clue -> 
+                                        List.foldr 
+                                          (\(numIndex, (mNum,_)) d ->
+                                               case mNum of
+                                                   Nothing -> d
+                                                   Just num -> updateCons num (i, numIndex) d)
+                                          Dict.empty
+                                          (clue.answer |> List.indexedMap Tuple.pair))
+                |> mergeConsMany
+
+
 -- HISTOGRAMS
                     
 type alias Hist = Dict Char Int
@@ -1078,7 +1074,7 @@ type alias Square =
     }
 
 boardToSVG : Int -> Dict Int (List (Int, Int)) -> Puzzle -> Html Msg
-boardToSVG numCols quoteIndexUses puzzle =
+boardToSVG numCols qIndexUses puzzle =
     let
         width = 300
 
@@ -1126,7 +1122,7 @@ boardToSVG numCols quoteIndexUses puzzle =
                          thirdBox = boxWidth / 3
                          textLength = thirdBox |> String.fromFloat
 
-                         usedIn = Dict.get square.qIndex quoteIndexUses
+                         usedIn = Dict.get square.qIndex qIndexUses
                                   |> Maybe.withDefault []
                                   |> List.map Tuple.first
                                   |> Set.fromList |> Set.toList
@@ -1210,7 +1206,7 @@ isDefn c =
         _ -> False
                   
 constraintsOfPuzzle : Dict Char (List Int) -> Puzzle -> List Constraint
-constraintsOfPuzzle quoteIndices puzzle =
+constraintsOfPuzzle qIndices puzzle =
     let
         varName clueIndex numIndex =
             "clue" ++ String.fromInt clueIndex ++ "_" ++
@@ -1230,7 +1226,7 @@ constraintsOfPuzzle quoteIndices puzzle =
         charConstraints =
             clueVars |> List.concatMap
                 (\(v, c) ->
-                     let uses = Dict.get (Char.toUpper c) quoteIndices |>
+                     let uses = Dict.get (Char.toUpper c) qIndices |>
                                 Maybe.withDefault [] {- yikes -}
                      in
                          [IsInt v, OneOf v uses])
@@ -1404,7 +1400,7 @@ smt2OfConstraint c =
             smtAssert
                       
 smt2OfConstraints : Dict Int Int -> List Constraint -> String
-smt2OfConstraints quoteIndexWords constraints =
+smt2OfConstraints qIndexWords constraints =
     let
 
         (defnConstraints, assertConstraints) = List.partition isDefn constraints
@@ -1425,7 +1421,7 @@ smt2OfConstraints quoteIndexWords constraints =
                 decl = "(declare-fun " ++ smtWordFun ++ " (Int) Int)"
 
                 vals =
-                    quoteIndexWords |>
+                    qIndexWords |>
                     Dict.foldr
                         (\x wordNum eqs ->
                              ("(= " ++ smtWordOf (String.fromInt x) ++ " " ++ (String.fromInt wordNum) ++ ")") :: eqs)
@@ -1435,7 +1431,7 @@ smt2OfConstraints quoteIndexWords constraints =
 
                 {- METHOD 2: define as a function/macro -}
                 conds =
-                    quoteIndexWords |>
+                    qIndexWords |>
                     Dict.foldr
                         (\x wordNum otw ->
                              "(ite (= n " ++ String.fromInt x ++ ") " ++ (String.fromInt wordNum) ++ " " ++ otw ++ ")")
