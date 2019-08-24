@@ -2,6 +2,8 @@ port module Main exposing (..)
 
 {- TODO
 
+   differentiate saving current puzzle and saved puzzles to local storage
+
    different ways to sort saved puzzles
 
    way to delete puzzles
@@ -83,7 +85,8 @@ type Msg =
   | Phase Phase
   | Save Time.Posix
   | NewPuzzle
-  | Load Puzzle
+  | SelectPuzzle String
+  | LoadPuzzle Puzzle
   | ClearNumbering
   | SolveNumbering
   | SolverResults Json.Encode.Value
@@ -274,6 +277,7 @@ type alias Model =
     { puzzle : Puzzle
     , selectedClues : List Int
     , savedPuzzles : List Puzzle
+    , selectedPuzzle : Maybe Puzzle
     , solverState : SolverState
     }
 
@@ -282,11 +286,18 @@ emptyModel =
     { puzzle = emptyPuzzle
     , selectedClues = []
     , savedPuzzles = []
+    , selectedPuzzle = Nothing
     , solverState = SolverUnloaded
     }
     
 asCurrentPuzzleIn : Model -> Puzzle -> Model
 asCurrentPuzzleIn model puzzle = { model | puzzle = puzzle }    
+
+asSelectedPuzzleIn : Model -> Maybe Puzzle -> Model
+asSelectedPuzzleIn model puzzle = { model | selectedPuzzle = puzzle }    
+
+clearSelectedPuzzle : Model -> Model
+clearSelectedPuzzle model = { model | selectedPuzzle = Nothing }
 
 asSolverStateIn : Model -> SolverState -> Model
 asSolverStateIn model solverState = { model | solverState = solverState }    
@@ -347,6 +358,7 @@ decodeModel =
              { puzzle = puzzle
              , selectedClues = selectedClues
              , savedPuzzles = savedPuzzles
+             , selectedPuzzle = Nothing
              , solverState = SolverUnloaded
              })
         (Json.Decode.field "puzzle" decodePuzzle)
@@ -449,7 +461,20 @@ update msg model =
             let newModel = model.puzzle |> setTimeModified now |> asCurrentPuzzleIn model in
             (newModel, savePuzzles (encodeModel newModel))
         NewPuzzle -> model |> popCurrentPuzzle emptyPuzzle |> andSave
-        Load savedPuzzle -> model |> loadPuzzle savedPuzzle |> andSave
+        SelectPuzzle sIndex ->
+            ( sIndex |>
+              String.toInt |>
+              Maybe.withDefault (List.length model.savedPuzzles) |>
+              (\index -> List.drop index model.savedPuzzles) |>
+              List.head |>
+              asSelectedPuzzleIn model
+            , Cmd.none
+            )
+        LoadPuzzle savedPuzzle -> 
+            model |>
+            clearSelectedPuzzle |>
+            loadPuzzle savedPuzzle |> 
+            andSave
         ClearNumbering -> model.puzzle |> clearNumbering |> asCurrentPuzzleIn model |> andSave
         SolveNumbering ->
             (model, 
@@ -557,20 +582,43 @@ view model =
               ]
         , section [id "saved"]
             [ div [ id "saved-puzzles" ]
-                ([ div [id "saved-puzzles-header"] [ h3 [] [text "Saved puzzles"]
-                          , input [ type_ "button"
-                                  , onClick NewPuzzle
-                                  , value "New puzzle"
-                                  ]
-                                []
-                          ]
-                 , a [] [model.puzzle |> puzzleDescription |> text]
+                ([ h3 [] [text "Saved puzzles"]
+                 , div [id "current-puzzle"] 
+                     [ text "Current puzzle: "
+                     , a [] [model.puzzle |> puzzleDescription |> text]
+                     ]
+                 , input [ id "new-puzzle"
+                         , type_ "button"
+                         , onClick NewPuzzle
+                         , value "New puzzle"
+                         ]
+                       []
                  ] ++
-                 List.map
-                     (\savedPuzzle ->
-                          a [onClick (Load savedPuzzle), href "#"]
-                          [savedPuzzle |> puzzleDescription |> text])
-                     model.savedPuzzles)
+                 [ select [ id "saved-puzzle-list"
+                          , onInput SelectPuzzle
+                          ]
+                       (option [ value ""
+                               , selected (model.selectedPuzzle == Nothing)
+                               ] 
+                               [text "Select saved puzzle..."] ::
+                        (List.indexedMap
+                             (\index savedPuzzle ->
+                                  (option 
+                                       [ index |> String.fromInt |> value
+                                       , selected (model.selectedPuzzle == Just savedPuzzle)
+                                       ]
+                                       [savedPuzzle |> 
+                                        puzzleDescription |>
+                                        text]))
+                             model.savedPuzzles))
+                 , input ([ type_ "button"
+                          , value "Load puzzle"
+                          ] ++
+                          (case model.selectedPuzzle of
+                               Nothing -> []
+                               Just sPuz -> [ onClick (LoadPuzzle sPuz) ]))
+                       []
+                 ])
             ]
         , section [id "quote"]
             (if quoteFixed
