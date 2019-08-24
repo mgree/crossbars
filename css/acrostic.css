@@ -30,15 +30,12 @@
     grid-row 1;
 }
 
-#saved #saved-puzzles {
-   display: flex;
-   flex-direction: column;
+#saved-puzzles #new-puzzle {
+    margin-right: 1em;
 }
 
-#saved-puzzles-header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+#saved-puzzles #saved-puzzle-list {
+    margin-right: 1em;
 }
 
 #saved-puzzles-header h3 {
