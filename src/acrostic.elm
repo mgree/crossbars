@@ -6,8 +6,6 @@ port module Main exposing (..)
 
    different ways to sort saved puzzles
 
-   way to delete puzzles
-
    prompt to save when no title is given?
 
    unified messages/warnings
@@ -83,6 +81,8 @@ type Msg =
   | Phase Phase
   | Save Time.Posix
   | NewPuzzle
+  | DeletePuzzle
+  | ReallyDeletePuzzle Bool
   | SelectPuzzle String
   | LoadPuzzle Puzzle
   | ClearNumbering
@@ -273,6 +273,7 @@ decodeSolverState =
                    
 type alias Model = 
     { puzzle : Puzzle
+    , pendingDelete : Bool
     , selectedClues : List Int
     , savedPuzzles : List Puzzle
     , selectedPuzzle : Maybe Puzzle
@@ -282,6 +283,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { puzzle = emptyPuzzle
+    , pendingDelete = False
     , selectedClues = []
     , savedPuzzles = []
     , selectedPuzzle = Nothing
@@ -296,6 +298,9 @@ asSelectedPuzzleIn model puzzle = { model | selectedPuzzle = puzzle }
 
 clearSelectedPuzzle : Model -> Model
 clearSelectedPuzzle model = { model | selectedPuzzle = Nothing }
+
+pendingDeletion : Bool -> Model -> Model
+pendingDeletion pending model = { model | pendingDelete = pending }
 
 asSolverStateIn : Model -> SolverState -> Model
 asSolverStateIn model solverState = { model | solverState = solverState }    
@@ -354,6 +359,7 @@ decodeModel =
     Json.Decode.map3
         (\puzzle selectedClues savedPuzzles ->
              { puzzle = puzzle
+             , pendingDelete = False
              , selectedClues = selectedClues
              , savedPuzzles = savedPuzzles
              , selectedPuzzle = Nothing
@@ -459,6 +465,9 @@ update msg model =
             let newModel = model.puzzle |> setTimeModified now |> asCurrentPuzzleIn model in
             (newModel, savePuzzles (encodeModel newModel))
         NewPuzzle -> model |> popCurrentPuzzle emptyPuzzle |> andSave
+        DeletePuzzle -> (model |> pendingDeletion True, Cmd.none)
+        ReallyDeletePuzzle False -> (model |> pendingDeletion False, Cmd.none)
+        ReallyDeletePuzzle True -> emptyPuzzle |> asCurrentPuzzleIn model |> pendingDeletion False |> andSave
         SelectPuzzle sIndex ->
             ( sIndex |>
               String.toInt |>
@@ -579,51 +588,71 @@ view model =
                                  phases))
               ]
         , section [id "saved"]
-            [ h3 [class "header"] [text "Manage puzzles"]
-            , div [ id "current-puzzle" ]
-                [ span [] 
-                     [ text "Current puzzle: "
-                     , model.puzzle |> puzzleDescription |> text
-                     ]
-                 , input [ type_ "button"
-                         , value "Delete current puzzle"
-                         ]
+            ([ h3 [class "header"] [text "Manage puzzles"]
+             , div [ id "current-puzzle" ]
+                 ([ span [] 
+                       [ text "Current puzzle: "
+                       , model.puzzle |> puzzleDescription |> text
+                       ]
+                  ] ++ (if model.pendingDelete
+                        then [ ]
+                        else [ input [ type_ "button"
+                                     , onClick DeletePuzzle
+                                     , value "Delete current puzzle"
+                                     ]
+                                   []
+                             ]))
+             ] ++
+             (if model.pendingDelete 
+              then [ span []
+                          [text "Are you sure? Deleted puzzles are gone forever."]
+                   , input [ type_ "button"
+                           , onClick (ReallyDeletePuzzle False)
+                           , value "Cancel"
+                           ]
                        []
-                ]
-            , div [ id "saved-puzzles" ]
-                ([ input [ id "new-puzzle"
-                         , type_ "button"
-                         , onClick NewPuzzle
-                         , value "New puzzle"
-                         ]
-                       []
-                 ] ++
-                 [ select [ id "saved-puzzle-list"
-                          , onInput SelectPuzzle
+                   ,  input [ type_ "button"
+                            , onClick (ReallyDeletePuzzle True)
+                            , value "Delete current puzzle"
+                            ]
+                         []
+                   ]
+              else [])
+               ++
+             [ div [ id "saved-puzzles" ]
+                 ([ input [ id "new-puzzle"
+                          , type_ "button"
+                          , onClick NewPuzzle
+                          , value "New puzzle"
                           ]
-                       (option [ value ""
-                               , selected (model.selectedPuzzle == Nothing)
-                               ] 
-                               [text "Select saved puzzle..."] ::
-                        (List.indexedMap
-                             (\index savedPuzzle ->
-                                  (option 
-                                       [ index |> String.fromInt |> value
-                                       , selected (model.selectedPuzzle == Just savedPuzzle)
-                                       ]
-                                       [savedPuzzle |> 
-                                        puzzleDescription |>
-                                        text]))
-                             model.savedPuzzles))
-                 , input ([ type_ "button"
-                          , value "Load puzzle"
-                          ] ++
-                          (case model.selectedPuzzle of
-                               Nothing -> []
-                               Just sPuz -> [ onClick (LoadPuzzle sPuz) ]))
-                       []
-                 ])
-            ]
+                        []
+                  ] ++
+                  [ select [ id "saved-puzzle-list"
+                           , onInput SelectPuzzle
+                           ]
+                        (option [ value ""
+                                , selected (model.selectedPuzzle == Nothing)
+                                ] 
+                                [text "Select saved puzzle..."] ::
+                         (List.indexedMap
+                              (\index savedPuzzle ->
+                                   (option 
+                                        [ index |> String.fromInt |> value
+                                        , selected (model.selectedPuzzle == Just savedPuzzle)
+                                        ]
+                                        [savedPuzzle |> 
+                                         puzzleDescription |>
+                                         text]))
+                              model.savedPuzzles))
+                  , input ([ type_ "button"
+                           , value "Load puzzle"
+                           ] ++
+                           (case model.selectedPuzzle of
+                                Nothing -> []
+                                Just sPuz -> [ onClick (LoadPuzzle sPuz) ]))
+                        []
+                  ])
+             ])
         , section [id "quote"]
             (if quoteFixed
              then [ boardToSVG 24 qIndexUses model.puzzle ]
