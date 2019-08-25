@@ -8,7 +8,6 @@ port module Main exposing (..)
 
    autonumbering 
      set timeouts? needs z3 wasm build w/o pthreads
-     error messages on unsat/unknown?
 
      how good can a greedy algorithm do?
        might be faster, sometimes? (z3 is a few secs in native code)
