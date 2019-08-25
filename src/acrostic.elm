@@ -6,8 +6,6 @@ port module Main exposing (..)
    
    clicking on a square highlights selected clues
 
-   unified messages/warnings
-
    autonumbering 
      set timeouts? needs z3 wasm build w/o pthreads
      error messages on unsat/unknown?
@@ -281,6 +279,7 @@ type alias Model =
     , savedPuzzles : List Puzzle
     , selectedPuzzle : Maybe Puzzle
     , solverState : SolverState
+    , solverResult : Maybe SMTResult
     , timeZone : Time.Zone
     }
 
@@ -292,14 +291,18 @@ emptyModel =
     , savedPuzzles = []
     , selectedPuzzle = Nothing
     , solverState = SolverUnloaded
+    , solverResult = Nothing
     , timeZone = Time.utc
     }
+
+withSolverResult : Maybe SMTResult -> Model -> Model
+withSolverResult mResult model = { model | solverResult = mResult }
     
 asCurrentPuzzleIn : Model -> Puzzle -> Model
 asCurrentPuzzleIn model puzzle = { model | puzzle = puzzle }    
 
 asSelectedPuzzleIn : Model -> Maybe Puzzle -> Model
-asSelectedPuzzleIn model puzzle = { model | selectedPuzzle = puzzle }    
+asSelectedPuzzleIn model puzzle = { model | selectedPuzzle = puzzle }
 
 clearSelectedPuzzle : Model -> Model
 clearSelectedPuzzle model = { model | selectedPuzzle = Nothing }
@@ -369,6 +372,7 @@ decodeModel =
              , savedPuzzles = savedPuzzles
              , selectedPuzzle = Nothing
              , solverState = SolverUnloaded
+             , solverResult = Nothing
              , timeZone = Time.utc
              })
         (Json.Decode.field "puzzle" decodePuzzle)
@@ -449,31 +453,72 @@ subscriptions model =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
-        Title title -> model.puzzle |> setTitle title |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
-        Author author -> model.puzzle |> setAuthor author |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
-        Quote quote -> model.puzzle |> setQuote quote |> fixupAnswerInitials |> asCurrentPuzzleIn model |> andSave
-        Answer idx answer -> model.puzzle |> updateAnswer idx answer |> asCurrentPuzzleIn model |> andSave
-        SelectClue idx -> { model | selectedClues = 
-                            if 0 <= idx && idx < List.length model.puzzle.clues &&
-                                not (List.member idx model.selectedClues)
-                            then [idx]
-                            else model.selectedClues } |> andSave
-        SelectClues idxs -> { model | selectedClues =
-                                  idxs |> List.filter
-                                          (\idx ->
-                                               0 <= idx &&
-                                               idx < List.length model.puzzle.clues)
-                            } |> andSave
-        Hint idx hint -> model.puzzle |> updateHint idx hint |> asCurrentPuzzleIn model |> andSave
-        Number idx numIdx newNum -> model.puzzle |> updateNumbering idx numIdx (newNum |> String.toInt) |> asCurrentPuzzleIn model |> andSave
-        Phase phase -> model.puzzle |> setPhase phase |> asCurrentPuzzleIn model |> andSave
+        Title title -> 
+            model.puzzle |> 
+            setTitle title |> 
+            fixupAnswerInitials |> 
+            asCurrentPuzzleIn model |> 
+            andSave
+        Author author -> 
+            model.puzzle |> 
+            setAuthor author |>
+            fixupAnswerInitials |>
+            asCurrentPuzzleIn model |>
+            andSave
+        Quote quote -> 
+            model.puzzle |>
+            setQuote quote |>
+            fixupAnswerInitials |>
+            asCurrentPuzzleIn model |>
+            andSave
+        Answer idx answer -> 
+            model.puzzle |>
+            updateAnswer idx answer |>
+            asCurrentPuzzleIn model |>
+            andSave
+        SelectClue idx -> 
+            { model | selectedClues = 
+                  if 0 <= idx && idx < List.length model.puzzle.clues &&
+                      not (List.member idx model.selectedClues)
+                  then [idx]
+                  else model.selectedClues } |> 
+            andSave
+        SelectClues idxs -> 
+            { model | selectedClues =
+                  idxs |> 
+                  List.filter
+                      (\idx -> 0 <= idx && idx < List.length model.puzzle.clues)
+            } |> 
+            andSave
+        Hint idx hint -> 
+            model.puzzle |>
+            updateHint idx hint |>
+            asCurrentPuzzleIn model |>
+            andSave
+        Number idx numIdx newNum -> 
+            model.puzzle |>
+            updateNumbering idx numIdx (newNum |> String.toInt) |>
+            asCurrentPuzzleIn model |>
+            andSave
+        Phase phase ->
+            model.puzzle |>
+            setPhase phase |>
+            asCurrentPuzzleIn model |>
+            andSave
         Save now ->
             let newModel = model.puzzle |> setTimeModified now |> asCurrentPuzzleIn model in
             (newModel, savePuzzles (encodeModel newModel))
-        NewPuzzle -> model |> popCurrentPuzzle emptyPuzzle |> andSave
+        NewPuzzle -> 
+            model |>
+            popCurrentPuzzle emptyPuzzle |>
+            andSave
         DeletePuzzle -> (model |> pendingDeletion True, Cmd.none)
         ReallyDeletePuzzle False -> (model |> pendingDeletion False, Cmd.none)
-        ReallyDeletePuzzle True -> emptyPuzzle |> asCurrentPuzzleIn model |> pendingDeletion False |> andSave
+        ReallyDeletePuzzle True -> 
+            emptyPuzzle |>
+            asCurrentPuzzleIn model |>
+            pendingDeletion False |>
+            andSave
         SelectPuzzle sIndex ->
             ( sIndex |>
               String.toInt |>
@@ -488,25 +533,32 @@ update msg model =
             clearSelectedPuzzle |>
             loadPuzzle savedPuzzle |> 
             andSave
-        ClearNumbering -> model.puzzle |> clearNumbering |> asCurrentPuzzleIn model |> andSave
+        ClearNumbering -> 
+            model.puzzle |> 
+            clearNumbering |> 
+            asCurrentPuzzleIn model |> 
+            withSolverResult Nothing |>
+            andSave
         SolveNumbering ->
             (model, 
              model.puzzle |> 
              constraintsOfPuzzle (quoteIndices model.puzzle) |> 
-             smt2OfConstraints (quoteIndexWords model.puzzle) |> 
+             smt2OfConstraints (quoteIndexWords model.puzzle) |>
              Json.Encode.string |> 
              solveNumbering)
         SolverResults json ->
             json |>
             Json.Decode.decodeValue decodeSMTResult |>
             Result.withDefault SMTFailed |>
-            tryApplySMTNumberingTo model.puzzle |>
-            asCurrentPuzzleIn model |> andSave
+            tryApplySMTNumberingTo model |>
+            andSave
         ApplyNumbering nums -> model.puzzle |> applySMTNumbering nums |> asCurrentPuzzleIn model |> andSave
-        SolverStateChanged json -> (json |>
-                                    Json.Decode.decodeValue decodeSolverState |>
-                                    Result.withDefault SolverUnloaded |>
-                                    asSolverStateIn model, Cmd.none)
+        SolverStateChanged json -> 
+            ( json |>
+              Json.Decode.decodeValue decodeSolverState |>
+              Result.withDefault SolverUnloaded |>
+              asSolverStateIn model
+            , Cmd.none)
                                     {- FIXME display error -}
         TimeZone here -> ({ model | timeZone = here }, Cmd.none)
 
@@ -517,14 +569,14 @@ loadPuzzle puzzle model =
                            |> List.filter (not << samePuzzle puzzle)
                            |> trySave model.puzzle
         , puzzle = puzzle
-    }
+    } |> withSolverResult Nothing
                 
 popCurrentPuzzle : Puzzle -> Model -> Model
 popCurrentPuzzle newPuzzle model =
     { model
         | savedPuzzles = trySave model.puzzle model.savedPuzzles
         , puzzle = newPuzzle
-    }
+    } |> withSolverResult Nothing
 
 trySave : Puzzle -> List Puzzle -> List Puzzle
 trySave puzzle savedPuzzles =
@@ -707,6 +759,14 @@ view model =
                              SolverInitializing -> "Initializing numbering solver..."
                              SolverReady -> "Numbering solver ready"
                              SolverRunning -> "Numbering solver running..."
+                        ]
+                  , div [id "solver-result"]
+                        [text <|
+                             case model.solverResult of
+                                 Nothing -> ""
+                                 Just (SMTFailed) -> "Could not find a numbering. 😦"
+                                 Just (SMTTimeout) -> "Timed out. ⏲"
+                                 Just (SMTOk _) -> "Success! 🎊 The puzzle has been automatically numbered."
                         ]
                   , input [ type_ "button"
                           , onClick ClearNumbering
@@ -1389,12 +1449,15 @@ type alias SMTNumberEntry =
     , number : Int
     }
 
-tryApplySMTNumberingTo : Puzzle -> SMTResult -> Puzzle
-tryApplySMTNumberingTo puzzle result =
-    case result of
-        SMTFailed -> puzzle
-        SMTTimeout -> puzzle
-        SMTOk nums -> applySMTNumbering nums puzzle
+tryApplySMTNumberingTo : Model -> SMTResult -> Model
+tryApplySMTNumberingTo model result =
+    (case result of
+         SMTFailed -> model
+         SMTTimeout -> model
+         SMTOk nums -> model.puzzle |>
+                       applySMTNumbering nums |>
+                       asCurrentPuzzleIn model) |>
+    withSolverResult (Just result)
 
 applySMTNumbering : SMTNumbering -> Puzzle -> Puzzle
 applySMTNumbering nums puz =
@@ -1464,6 +1527,9 @@ smt2OfConstraint c =
             List.map (\n -> smtEq var (String.fromInt n)) |>
             smtOr |>
             smtAssert
+
+        Disjoint [] -> smtAssert "true"
+        Disjoint [_] -> smtAssert "true"
 
         Disjoint vars ->
             vars |>
@@ -1646,3 +1712,6 @@ twoDigits : Int -> String
 twoDigits i = i |>
               String.fromInt |>
               String.padLeft 2 '0'
+
+listInsert : a -> List a -> List a
+listInsert x l = if List.member x l then l else x::l
