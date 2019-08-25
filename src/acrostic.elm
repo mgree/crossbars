@@ -1530,7 +1530,6 @@ smt2OfConstraint c =
 
         Disjoint [] -> smtAssert "true"
         Disjoint [_] -> smtAssert "true"
-
         Disjoint vars ->
             vars |>
             allPairs |>
@@ -1544,7 +1543,9 @@ smt2OfConstraint c =
             smtAscending |>
             smtNot |>
             smtAssert
-                              
+                 
+        NotSameWord [] -> smtAssert "true"
+        NotSameWord [_] -> smtAssert "true"             
         NotSameWord vars ->
             vars |>
             allPairs |>
