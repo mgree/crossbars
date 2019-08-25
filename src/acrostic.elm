@@ -3,7 +3,6 @@ port module Main exposing (..)
 {- TODO
 
    differentiate saving current puzzle and saved puzzles to local storage
-   indicate time modified in saved puzzle list
    
    clicking on a square highlights selected clues
 
@@ -66,6 +65,7 @@ main = Browser.element
 type alias Flags = Json.Encode.Value {- saved puzzles -}
 
 type Msg =
+  {- editing -}
     Title String
   | Author String
   | Quote String
@@ -75,17 +75,21 @@ type Msg =
   | Hint Int String
   | Number Int Int String
   | Phase Phase
+  {- puzzle management -}
   | Save Time.Posix
   | NewPuzzle
   | DeletePuzzle
   | ReallyDeletePuzzle Bool
   | SelectPuzzle String
   | LoadPuzzle Puzzle
+  {- numbering via Z3.wasm -}
   | ClearNumbering
   | SolveNumbering
   | SolverResults Json.Encode.Value
   | ApplyNumbering SMTNumbering
   | SolverStateChanged Json.Encode.Value
+  {- loading, etc. -}
+  | TimeZone Time.Zone
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
 
@@ -135,10 +139,13 @@ emptyPuzzle =
     , timeModified = Time.millisToPosix 0
     }
 
-puzzleDescription : Puzzle -> String
-puzzleDescription puzzle =
-    {- FIXME need Time.here to render modified time -}
+shortPuzzleDescription : Puzzle -> String
+shortPuzzleDescription puzzle = 
     String.toUpper puzzle.author ++ " — " ++ String.toUpper puzzle.title
+
+puzzleDescription : Time.Zone -> Puzzle -> String
+puzzleDescription here puzzle =
+    shortPuzzleDescription puzzle ++ " (" ++ iso8601DateTime here puzzle.timeModified ++ ")"
     
 comparePuzzles : Puzzle -> Puzzle -> Order
 comparePuzzles puz1 puz2 =
@@ -274,6 +281,7 @@ type alias Model =
     , savedPuzzles : List Puzzle
     , selectedPuzzle : Maybe Puzzle
     , solverState : SolverState
+    , timeZone : Time.Zone
     }
 
 emptyModel : Model
@@ -284,6 +292,7 @@ emptyModel =
     , savedPuzzles = []
     , selectedPuzzle = Nothing
     , solverState = SolverUnloaded
+    , timeZone = Time.utc
     }
     
 asCurrentPuzzleIn : Model -> Puzzle -> Model
@@ -360,6 +369,7 @@ decodeModel =
              , savedPuzzles = savedPuzzles
              , selectedPuzzle = Nothing
              , solverState = SolverUnloaded
+             , timeZone = Time.utc
              })
         (Json.Decode.field "puzzle" decodePuzzle)
         (Json.Decode.field "selectedClues" (Json.Decode.list Json.Decode.int))
@@ -424,7 +434,7 @@ init savedPuzzleJSON =
     ( savedPuzzleJSON
         |> Json.Decode.decodeValue decodeModel 
         |> Result.withDefault emptyModel {- FIXME indicate error? -}
-    , Cmd.none
+    , Task.perform TimeZone Time.here
     )
     
 subscriptions : Model -> Sub Msg
@@ -498,7 +508,8 @@ update msg model =
                                     Result.withDefault SolverUnloaded |>
                                     asSolverStateIn model, Cmd.none)
                                     {- FIXME display error -}
-                            
+        TimeZone here -> ({ model | timeZone = here }, Cmd.none)
+
 loadPuzzle : Puzzle -> Model -> Model
 loadPuzzle puzzle model =
     { model
@@ -588,7 +599,9 @@ view model =
              , div [ id "current-puzzle" ]
                  ([ span [] 
                        [ text "Current puzzle: "
-                       , model.puzzle |> puzzleDescription |> text
+                       , model.puzzle |> 
+                         shortPuzzleDescription |> 
+                         text
                        ]
                   ] ++ (if model.pendingDelete
                         then [ ]
@@ -639,7 +652,7 @@ view model =
                                         , selected (model.selectedPuzzle == Just savedPuzzle)
                                         ]
                                         [savedPuzzle |> 
-                                         puzzleDescription |>
+                                         puzzleDescription model.timeZone |>
                                          text]))
                               model.savedPuzzles))
                   , input ([ type_ "button"
@@ -1596,3 +1609,40 @@ listOf item =
         , succeed []
         ]
 
+iso8601DateTime : Time.Zone -> Time.Posix -> String
+iso8601DateTime here now =
+    iso8601Date here now ++ " " ++ iso8601Time here now
+
+iso8601Date : Time.Zone -> Time.Posix -> String
+iso8601Date here now =
+    let yyyy = Time.toYear here now |>
+               String.fromInt
+        mm   = case Time.toMonth here now of
+                   Time.Jan -> "01"
+                   Time.Feb -> "02"
+                   Time.Mar -> "03"
+                   Time.Apr -> "04"
+                   Time.May -> "05"
+                   Time.Jun -> "06"
+                   Time.Jul -> "07"
+                   Time.Aug -> "08"
+                   Time.Sep -> "09"
+                   Time.Oct -> "10"
+                   Time.Nov -> "11"
+                   Time.Dec -> "12"
+        dd   = Time.toDay here now |> twoDigits
+    in
+        String.join "-" [yyyy, mm, dd]
+
+iso8601Time : Time.Zone -> Time.Posix -> String
+iso8601Time here now =
+    let hh = Time.toHour here now |> twoDigits
+        mm = Time.toMinute here now |> twoDigits
+        ss = Time.toSecond here now |> twoDigits
+    in
+        String.join ":" [hh, mm, ss]
+
+twoDigits : Int -> String 
+twoDigits i = i |>
+              String.fromInt |>
+              String.padLeft 2 '0'
