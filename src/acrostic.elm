@@ -604,18 +604,20 @@ view model =
                              ]))
              ] ++
              (if model.pendingDelete 
-              then [ span []
-                          [text "Are you sure? Deleted puzzles are gone forever."]
-                   , input [ type_ "button"
-                           , onClick (ReallyDeletePuzzle False)
-                           , value "Cancel"
-                           ]
-                       []
-                   ,  input [ type_ "button"
-                            , onClick (ReallyDeletePuzzle True)
-                            , value "Delete current puzzle"
-                            ]
-                         []
+              then [ div [ id "deletion-prompt" ]
+                         [ span []
+                               [text "Are you sure? Deleted puzzles are gone forever."]
+                         , input [ type_ "button"
+                                 , onClick (ReallyDeletePuzzle False)
+                                 , value "Cancel"
+                                 ]
+                               []
+                         ,  input [ type_ "button"
+                                  , onClick (ReallyDeletePuzzle True)
+                                  , value "Delete current puzzle"
+                                  ]
+                               []
+                         ]
                    ]
               else [])
                ++
