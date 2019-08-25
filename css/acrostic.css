@@ -39,6 +39,14 @@ section .header {
     margin-bottom: 1em;
 }
 
+#saved #deletion-prompt {
+    margin-bottom: 1em;
+}
+
+#saved #deletion-prompt input {
+    margin-left: 1em;
+}
+
 #saved #current-puzzle input {
     margin-left: 1em;
 }
