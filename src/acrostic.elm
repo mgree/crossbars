@@ -3,15 +3,14 @@ port module Main exposing (..)
 {- TODO
 
    differentiate saving current puzzle and saved puzzles to local storage
-
-   different ways to sort saved puzzles
-
-   prompt to save when no title is given?
+   indicate time modified in saved puzzle list
+   
+   clicking on a square highlights selected clues
 
    unified messages/warnings
 
    autonumbering 
-     set timeouts?
+     set timeouts? needs z3 wasm build w/o pthreads
      error messages on unsat/unknown?
 
      how good can a greedy algorithm do?
@@ -29,9 +28,6 @@ port module Main exposing (..)
    way to control escaped characters in the quote
 
    right-aligned wrapping of long clues
-
-   z3 wasm build w/o pthreads
-
 -}
 
 import Dict exposing (Dict)
