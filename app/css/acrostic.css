@@ -1,3 +1,8 @@
+section .header {
+    width: 100%;
+    border-bottom: 1px solid black;
+}
+
 #crossbars-wrapper {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -28,6 +33,14 @@
 #saved {
     grid-column: 2;
     grid-row 1;
+}
+
+#saved #current-puzzle {
+    margin-bottom: 1em;
+}
+
+#saved #current-puzzle input {
+    margin-left: 1em;
 }
 
 #saved-puzzles #new-puzzle {
@@ -160,9 +173,7 @@
     grid-column: 1 / span 2;
     grid-row: 3;
     height: 7em;
-}
 
-#clues {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
@@ -201,7 +212,7 @@
     grid-row: 4;
 }
 
-#clue-info h3 {
+#clue-info clue-detail h3 {
     display: inline;
     margin-right: 1em;
 }

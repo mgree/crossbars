@@ -10,8 +10,6 @@ port module Main exposing (..)
 
    prompt to save when no title is given?
 
-   section headers; dividers?
-
    unified messages/warnings
 
    autonumbering 
@@ -566,7 +564,7 @@ view model =
 
     div [id "crossbars-wrapper"]
         [ section [id "overview"]
-              [ h1 [] [text "Crossbars — Acrostic Constructor"]
+              [ h3 [class "header"] [text "Crossbars — Acrostic Constructor"]
               , div [] (List.intersperse (span [] [text " → "])
                             (List.map
                                  (\p ->
@@ -581,13 +579,19 @@ view model =
                                  phases))
               ]
         , section [id "saved"]
-            [ div [ id "saved-puzzles" ]
-                ([ h3 [] [text "Saved puzzles"]
-                 , div [id "current-puzzle"] 
+            [ h3 [class "header"] [text "Manage puzzles"]
+            , div [ id "current-puzzle" ]
+                [ span [] 
                      [ text "Current puzzle: "
-                     , a [] [model.puzzle |> puzzleDescription |> text]
+                     , model.puzzle |> puzzleDescription |> text
                      ]
-                 , input [ id "new-puzzle"
+                 , input [ type_ "button"
+                         , value "Delete current puzzle"
+                         ]
+                       []
+                ]
+            , div [ id "saved-puzzles" ]
+                ([ input [ id "new-puzzle"
                          , type_ "button"
                          , onClick NewPuzzle
                          , value "New puzzle"
@@ -654,7 +658,8 @@ view model =
                  ])
         , section [id "detail"]
             (if puzzle.phase == CluingLettering
-             then [ div [id "solver-state"]
+             then [ h3 [class "header"] [text "Numbering solver"]
+                  , div [id "solver-state"]
                         [text <|
                          case model.solverState of
                              SolverUnloaded -> "Numbering solver not loaded"
@@ -673,7 +678,8 @@ view model =
                           ]
                           []
                   ]
-             else [ histToSVG quoteHist remainingHist ])
+             else [ h3 [class "header"] [text "Letters remaining"]
+                  , histToSVG quoteHist remainingHist ])
         , section [id "clues"]
             (puzzle.clues 
                 |> addInitials (String.toList initials) 
