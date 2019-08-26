@@ -2,8 +2,6 @@ port module Main exposing (..)
 
 {- TODO
 
-   differentiate saving current puzzle and saved puzzles to local storage
-   
    clicking on a square highlights selected clues
 
    autonumbering 
@@ -61,6 +59,9 @@ main = Browser.element
     
 type alias Flags = Json.Encode.Value {- saved puzzles -}
 
+type SaveMode = CurrentPuzzle
+              | All
+
 type Msg =
   {- editing -}
     Title String
@@ -73,7 +74,7 @@ type Msg =
   | Number Int Int String
   | Phase Phase
   {- puzzle management -}
-  | Save Time.Posix
+  | Save SaveMode Time.Posix
   | NewPuzzle
   | DeletePuzzle
   | ReallyDeletePuzzle Bool
@@ -83,12 +84,13 @@ type Msg =
   | ClearNumbering
   | SolveNumbering
   | SolverResults Json.Encode.Value
-  | ApplyNumbering SMTNumbering
   | SolverStateChanged Json.Encode.Value
   {- loading, etc. -}
   | TimeZone Time.Zone
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
+
+port saveCurrentPuzzle : Json.Encode.Value -> Cmd msg
 
 port solveNumbering : Json.Encode.Value -> Cmd msg
 
@@ -317,8 +319,7 @@ asSolverStateIn model solverState = { model | solverState = solverState }
 encodeModel : Model -> Json.Encode.Value
 encodeModel model =
     Json.Encode.object
-        [ ("puzzle", encodePuzzle model.puzzle)
-        , ("selectedClues", Json.Encode.list Json.Encode.int model.selectedClues)
+        [ ("encodePuzzle", encodePuzzle model.puzzle)
         , ("savedPuzzles", Json.Encode.list encodePuzzle model.savedPuzzles)
         ]
               
@@ -363,19 +364,18 @@ encodeNullable encode ma =
                                                  
 decodeModel : Json.Decode.Decoder Model
 decodeModel =
-    Json.Decode.map3
-        (\puzzle selectedClues savedPuzzles ->
+    Json.Decode.map2
+        (\puzzle savedPuzzles ->
              { puzzle = puzzle
              , pendingDelete = False
-             , selectedClues = selectedClues
+             , selectedClues = []
              , savedPuzzles = savedPuzzles
              , selectedPuzzle = Nothing
              , solverState = SolverUnloaded
              , solverResult = Nothing
              , timeZone = Time.utc
              })
-        (Json.Decode.field "puzzle" decodePuzzle)
-        (Json.Decode.field "selectedClues" (Json.Decode.list Json.Decode.int))
+        (Json.Decode.field "currentPuzzle" decodePuzzle)
         (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
                                                  
 decodePuzzle : Json.Decode.Decoder Puzzle
@@ -433,8 +433,8 @@ decodePhase =
 -- INITIAL STATE, SUBSCRIPTIONS
                                  
 init : Flags -> (Model, Cmd Msg)
-init savedPuzzleJSON =
-    ( savedPuzzleJSON
+init savedModel =
+    ( savedModel
         |> Json.Decode.decodeValue decodeModel 
         |> Result.withDefault emptyModel {- FIXME indicate error? -}
     , Task.perform TimeZone Time.here
@@ -457,67 +457,73 @@ update msg model =
             setTitle title |> 
             fixupAnswerInitials |> 
             asCurrentPuzzleIn model |> 
-            andSave
+            andSave CurrentPuzzle
         Author author -> 
             model.puzzle |> 
             setAuthor author |>
             fixupAnswerInitials |>
             asCurrentPuzzleIn model |>
-            andSave
+            andSave CurrentPuzzle
         Quote quote -> 
             model.puzzle |>
             setQuote quote |>
             fixupAnswerInitials |>
             asCurrentPuzzleIn model |>
-            andSave
+            andSave CurrentPuzzle
         Answer idx answer -> 
             model.puzzle |>
             updateAnswer idx answer |>
             asCurrentPuzzleIn model |>
-            andSave
+            andSave CurrentPuzzle
         SelectClue idx -> 
             { model | selectedClues = 
                   if 0 <= idx && idx < List.length model.puzzle.clues &&
                       not (List.member idx model.selectedClues)
                   then [idx]
                   else model.selectedClues } |> 
-            andSave
+            andSave CurrentPuzzle
         SelectClues idxs -> 
             { model | selectedClues =
                   idxs |> 
                   List.filter
                       (\idx -> 0 <= idx && idx < List.length model.puzzle.clues)
             } |> 
-            andSave
+            andSave CurrentPuzzle
         Hint idx hint -> 
             model.puzzle |>
             updateHint idx hint |>
             asCurrentPuzzleIn model |>
-            andSave
+            andSave CurrentPuzzle
         Number idx numIdx newNum -> 
             model.puzzle |>
             updateNumbering idx numIdx (newNum |> String.toInt) |>
             asCurrentPuzzleIn model |>
-            andSave
+            andSave CurrentPuzzle
         Phase phase ->
             model.puzzle |>
             setPhase phase |>
             asCurrentPuzzleIn model |>
-            andSave
-        Save now ->
+            andSave CurrentPuzzle
+        Save CurrentPuzzle now ->
             let newModel = model.puzzle |> setTimeModified now |> asCurrentPuzzleIn model in
-            (newModel, savePuzzles (encodeModel newModel))
+            (newModel, saveCurrentPuzzle (encodePuzzle newModel.puzzle))
+        Save All _ ->
+            (model, 
+             Cmd.batch [ saveCurrentPuzzle (encodePuzzle model.puzzle)
+                       , savePuzzles (Json.Encode.list encodePuzzle model.savedPuzzles)
+                       ]
+            )
         NewPuzzle -> 
             model |>
             popCurrentPuzzle emptyPuzzle |>
-            andSave
+            andSave All
         DeletePuzzle -> (model |> pendingDeletion True, Cmd.none)
         ReallyDeletePuzzle False -> (model |> pendingDeletion False, Cmd.none)
         ReallyDeletePuzzle True -> 
             emptyPuzzle |>
             asCurrentPuzzleIn model |>
             pendingDeletion False |>
-            andSave
+            andSave CurrentPuzzle
         SelectPuzzle sIndex ->
             ( sIndex |>
               String.toInt |>
@@ -531,13 +537,13 @@ update msg model =
             model |>
             clearSelectedPuzzle |>
             loadPuzzle savedPuzzle |> 
-            andSave
+            andSave All
         ClearNumbering -> 
             model.puzzle |> 
             clearNumbering |> 
             asCurrentPuzzleIn model |> 
             withSolverResult Nothing |>
-            andSave
+            andSave CurrentPuzzle
         SolveNumbering ->
             (model, 
              model.puzzle |> 
@@ -550,8 +556,7 @@ update msg model =
             Json.Decode.decodeValue decodeSMTResult |>
             Result.withDefault SMTFailed |>
             tryApplySMTNumberingTo model |>
-            andSave
-        ApplyNumbering nums -> model.puzzle |> applySMTNumbering nums |> asCurrentPuzzleIn model |> andSave
+            andSave CurrentPuzzle
         SolverStateChanged json -> 
             ( json |>
               Json.Decode.decodeValue decodeSolverState |>
@@ -583,8 +588,8 @@ trySave puzzle savedPuzzles =
     then savedPuzzles
     else insertWith comparePuzzles puzzle savedPuzzles
     
-andSave : Model -> (Model, Cmd Msg)
-andSave model = (model, Task.perform Save Time.now)
+andSave : SaveMode -> Model -> (Model, Cmd Msg)
+andSave mode model = (model, Task.perform (Save mode) Time.now)
 
 -- VIEW
                 
