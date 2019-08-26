@@ -2,16 +2,7 @@ port module Main exposing (..)
 
 {- TODO
 
-   clicking on a square highlights selected clues
-
-   autonumbering 
-     set timeouts? needs z3 wasm build w/o pthreads
-
-     how good can a greedy algorithm do?
-       might be faster, sometimes? (z3 is a few secs in native code)
-       can we do it ensemble style?
-
-   answer search
+   ANSWER SEARCH
      /usr/share/dict/words
      Webster's 1913 -- adapt https://github.com/ponychicken/WebsterParser
      Wikipedia/Wiktionary titles
@@ -19,9 +10,18 @@ port module Main exposing (..)
        enter a URL
      tie in to autocomplete?
 
-   way to control escaped characters in the quote
+   AUTONUMBERING 
+     set timeouts? needs z3 wasm build w/o pthreads
 
-   right-aligned wrapping of long clues
+     how good can a greedy algorithm do?
+       might be faster, sometimes? (z3 is a few seconds in native code)
+       can we do it ensemble style?
+
+   NITS
+
+     clicking on a square highlights selected letters in the clue?
+     way to control escaped characters in the quote
+     right-aligned wrapping of long clues
 -}
 
 import Dict exposing (Dict)
@@ -554,7 +554,7 @@ update msg model =
         SolverResults json ->
             json |>
             Json.Decode.decodeValue decodeSMTResult |>
-            Result.withDefault SMTFailed |>
+            Result.withDefault smtMissingResult |>
             tryApplySMTNumberingTo model |>
             andSave CurrentPuzzle
         SolverStateChanged json -> 
@@ -768,9 +768,18 @@ view model =
                         [text <|
                              case model.solverResult of
                                  Nothing -> ""
-                                 Just (SMTFailed) -> "Could not find a numbering. 😦"
-                                 Just (SMTTimeout) -> "Timed out. ⏲"
-                                 Just (SMTOk _) -> "Success! 🎊 The puzzle has been automatically numbered."
+                                 Just result ->
+                                     let time = 
+                                             if result.elapsed >= 1000
+                                             then let ss = String.fromInt (result.elapsed // 1000)
+                                                      ms = String.padLeft 3 '0' (String.fromInt (modBy 1000 result.elapsed))
+                                                  in ss ++ "." ++ ms ++ "s"
+                                             else String.fromInt result.elapsed ++ "ms" 
+                                     in
+                                     case result.answer of
+                                         SMTFailed -> "Could not find a numbering (" ++ time ++ "). 😦"
+                                         SMTTimeout -> "Timed out (" ++ time ++ "). ⏲"
+                                         SMTOk _ -> "Success! 🎊 The puzzle has been automatically numbered in " ++ time ++ "."
                         ]
                   , input [ type_ "button"
                           , onClick ClearNumbering
@@ -1441,9 +1450,19 @@ smtAscending vars =
         var1::var2::rest ->
             "(and (< " ++ var1 ++ " " ++ var2 ++ ")" ++ smtAscending (var2::rest) ++ ")"
 
-type SMTResult = SMTOk SMTNumbering
+type alias SMTResult =
+    { answer : SMTAnswer
+    , elapsed : Int {- millis -}
+    }
+
+type SMTAnswer = SMTOk SMTNumbering
                | SMTTimeout
                | SMTFailed
+
+smtMissingResult : SMTResult
+smtMissingResult = { answer = SMTFailed
+                   , elapsed = 0
+                   }
 
 type alias SMTNumbering = List SMTNumberEntry
                 
@@ -1455,7 +1474,7 @@ type alias SMTNumberEntry =
 
 tryApplySMTNumberingTo : Model -> SMTResult -> Model
 tryApplySMTNumberingTo model result =
-    (case result of
+    (case result.answer of
          SMTFailed -> model
          SMTTimeout -> model
          SMTOk nums -> model.puzzle |>
@@ -1472,15 +1491,19 @@ applySMTNumbering nums puz =
 
 decodeSMTResult : Json.Decode.Decoder SMTResult
 decodeSMTResult = 
-    Json.Decode.field "stdout" (Json.Decode.list Json.Decode.string) |>
-    Json.Decode.map 
-        (\stdout ->
-             let output = String.join "\n" stdout in
-             Parser.run smtResultParser output |>
-             Result.withDefault SMTFailed)
+    Json.Decode.map2 
+        (\elapsed stdout ->
+             let answer = String.join "\n" stdout |>
+                          Parser.run smtAnswerParser |>
+                          Result.withDefault SMTFailed
+             in { answer = answer
+                , elapsed = elapsed
+                })
+        (Json.Decode.field "elapsed" Json.Decode.int)
+        (Json.Decode.field "stdout" (Json.Decode.list Json.Decode.string))
 
-smtResultParser : Parser SMTResult
-smtResultParser =
+smtAnswerParser : Parser SMTAnswer
+smtAnswerParser =
   Parser.oneOf
       [ succeed SMTFailed
         |. symbol "unsat"
