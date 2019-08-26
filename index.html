@@ -13,11 +13,18 @@
     <script>
       let app = Elm.Main.init({
           node: document.getElementById('elm'),
-          flags: JSON.parse(localStorage.getItem('puzzles'))
+          flags: 
+            { currentPuzzle: JSON.parse(localStorage.getItem('currentPuzzle'))
+            , savedPuzzles: JSON.parse(localStorage.getItem('savedPuzzles'))
+            }
       });
 
-      app.ports.savePuzzles.subscribe(function (puzzles) {
-          localStorage.setItem('puzzles', JSON.stringify(puzzles));
+      app.ports.saveCurrentPuzzle.subscribe(function (currentPuzzle) {
+          localStorage.setItem('currentPuzzle', JSON.stringify(currentPuzzle));
+      });
+
+      app.ports.savePuzzles.subscribe(function (savedPuzzles) {
+          localStorage.setItem('savedPuzzles', JSON.stringify(savedPuzzles));
       });
 
       var worker;
