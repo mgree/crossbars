@@ -19,6 +19,12 @@ port module Main exposing (..)
 
    NITS
 
+     refactor:
+       Crossbars.Acrostic.Creator -- main goes here
+       Crossbars.Puzzle
+       Crossbars.Histogram
+       Crossbars.SMT
+
      clicking on a square highlights selected letters in the clue?
      way to control escaped characters in the quote
      right-aligned wrapping of long clues
