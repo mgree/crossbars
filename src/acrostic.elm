@@ -1692,9 +1692,23 @@ anagramAssistance model remainingHist index =
 
         anagrams = anagramsFor testingWordlist remainingHist prefix
 
+        split = splitList anagrams
+
+        anagramEntry num descr l =
+            div [class ("anagram-group" ++ String.fromInt num)]
+                ([h4 [] [text descr]] ++
+                 List.map (text >> List.singleton >> div [class "anagram"]) l)
     in
-        datalist [id (anagramDatalistId letter)] 
-            (List.map (\anagram -> option [value anagram] []) anagrams)
+        div [id ("anagram-assistance-" ++ letter)
+            , class "anagrams"]
+            [ datalist [id (anagramDatalistId letter)] 
+                  (List.map (\anagram -> option [value anagram] []) anagrams)
+            , anagramEntry 3 "3 letters" split.three
+            , anagramEntry 4 "4 letters" split.four
+            , anagramEntry 5 "5 letters" split.five
+            , anagramEntry 6 "6 letters" split.six
+            , anagramEntry 7 "7+ letters" split.sevenPlus
+            ]
 
 {- FIXME need a prefix tree or something -}
 type alias Wordlist = Dict Char (List String)
@@ -1847,3 +1861,38 @@ twoDigits i = i |>
 
 listInsert : a -> List a -> List a
 listInsert x l = if List.member x l then l else x::l
+
+type alias SplitList = 
+    { three      : List String
+    , four       : List String
+    , five       : List String
+    , six        : List String
+    , sevenPlus  : List String
+    }
+
+emptySplitList = 
+    { three = []
+    , four = []
+    , five = []
+    , six = []
+    , sevenPlus = []
+    }
+
+splitList : List String -> SplitList
+splitList list =
+    let loop l sl =
+            case l of
+                [] -> sl
+                s::rest -> 
+                    case String.length s of
+                        0 -> loop rest sl
+                        1 -> loop rest sl
+                        2 -> loop rest sl
+                        3 -> loop rest { sl | three = s::sl.three }
+                        4 -> loop rest { sl | four = s::sl.four }
+                        5 -> loop rest { sl | five = s::sl.five }
+                        6 -> loop rest { sl | six = s::sl.six }
+                        _ -> loop rest { sl | sevenPlus = s::sl.sevenPlus }
+    in
+        loop (List.reverse list) emptySplitList
+                     
