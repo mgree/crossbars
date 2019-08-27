@@ -3,12 +3,17 @@ port module Main exposing (..)
 {- TODO
 
    ANSWER SEARCH
-     /usr/share/dict/words
-     Webster's 1913 -- adapt https://github.com/ponychicken/WebsterParser
-     Wikipedia/Wiktionary titles
-     generic JSON API?
-       enter a URL
-     tie in to autocomplete?
+
+     wordlists have links/hovers/tooltips with more info?
+     Model has some Wordlist entries in it
+     settings display here to load more wordlists
+     allow user to filter by word length, letters used/avoided
+
+     dictionary ideas:
+       /usr/share/dict/words
+       Webster's 1913 -- adapt https://github.com/ponychicken/WebsterParser
+       Wikipedia/Wiktionary titles
+     dictionary format validator
 
    AUTONUMBERING 
      unclear how to set timeouts in Z3 wasm---needs pthreads :(
@@ -846,17 +851,6 @@ view model =
                        then span [] [text "Select a clue to receive anagram suggestions."]
                        else div [] (model.selectedClues |>
                                     List.map (anagramAssistance model remainingHist))
-                     {- PICK UP HERE 
-
-                        display results from each wordlist, sorted by size
-                          wordlists have links/hovers/tooltips with more info?
-
-                        Model has some Wordlist entries in it
-                        
-                        settings display here to load more wordlists
-                            
-                        allow user to filter by word length, letters used/avoided
-                      -}
                      ]
                  CluingLettering -> 
                      (model.selectedClues |> 
