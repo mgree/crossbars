@@ -269,15 +269,15 @@ section .header {
 #clue-info .anagrams {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 
-#clue-info .anagram-group3 { width: 8%; }
-#clue-info .anagram-group4 { width: 13%; }
-#clue-info .anagram-group5 { width: 18%; }
-#clue-info .anagram-group6 { width: 23%; }
-#clue-info .anagram-group7 { width: 28%; }
+#clue-info .anagram-group3 { width: 5em; }
+#clue-info .anagram-group4 { width: 6em; }
+#clue-info .anagram-group5 { width: 7em; }
+#clue-info .anagram-group6 { width: 8em; }
+#clue-info .anagram-group7 { width: 16em; }
 
 
 #clue-info h4 {
