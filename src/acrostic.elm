@@ -600,7 +600,7 @@ view model =
         
         quoteFixed = puzzle.phase /= QuoteEntry
 
-        answersFixed = puzzle.phase == CluingLettering
+        answersFixed = puzzle.phase /= Anagramming
 
         initials = initialism puzzle 
 
@@ -794,13 +794,45 @@ view model =
              else [ h3 [class "header"] [text "Letters remaining"]
                   , histToSVG quoteHist remainingHist ])
         , section [id "clues"]
+            (h3 [class "header"] [text "Clues"] ::
             (puzzle.clues 
                 |> addInitials (String.toList initials) 
                 |> addIndex 
-                |> List.map (clueEntry model answersFixed))
+                |> List.map 
+                     (\(index, (initial, clue)) -> 
+                          let 
+                              answer = clueAnswer clue
+
+                              initialStr = String.fromChar initial
+
+                              letter = letterFor index 
+                 
+                              validCls = class <| 
+                                         if String.startsWith (String.toUpper initialStr)  (String.toUpper answer)
+                                         then "valid"
+                                         else "invalid"
+
+                              selectedCls = if quoteFixed && List.member index model.selectedClues
+                                            then [ class "selected" ]
+                                            else []
+                                
+                              lbl = "clue-" ++ letter
+                          in
+                              div ([onClick (SelectClue index)] ++ selectedCls)
+                                  [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
+                                  , textInput [tabindex (index + baseTabs)
+                                              , name lbl
+                                              , validCls
+                                              , onFocus (SelectClue index)
+                                              , onClick (SelectClue index)
+                                              , readonly answersFixed
+                                              ] 
+                                        (initialStr ++ "...") clue.text (Answer index)
+                                  ])))
 
         , section [id "clue-info"]
-            (model.selectedClues |> List.map
+            ((if quoteFixed then model.selectedClues else []) |> 
+             List.map
                  (\index ->
                       let 
                         
@@ -956,38 +988,6 @@ stringOfPhase p =
 phases : List Phase
 phases = [QuoteEntry, Anagramming, CluingLettering]
          
-clueEntry : Model -> Bool -> (Int, (Char, Clue)) -> Html Msg
-clueEntry model answersFixed (index, (initial, clue)) =
-    let 
-
-        answer = clueAnswer clue
-
-        initialStr = String.fromChar initial
-
-        letter = letterFor index 
-                 
-        validCls = class <| if String.startsWith (String.toUpper initialStr)  (String.toUpper answer)
-                            then "valid"
-                            else "invalid"
-
-        selectedCls = if List.member index model.selectedClues
-                       then [ class "selected" ]
-                       else []
-                                
-        lbl = "clue-" ++ letter
-    in
-        div ([onClick (SelectClue index)] ++ selectedCls)
-            [ label [class "clue-letter", for lbl] [text (letter ++ ". ")]
-            , textInput [tabindex (index + baseTabs)
-                        , name lbl
-                        , validCls
-                        , onFocus (SelectClue index)
-                        , onClick (SelectClue index)
-                        , readonly answersFixed
-                        ] 
-                (initialStr ++ "...") clue.text (Answer index)
-            ] 
-
 transpose : List (List a) -> List (List a)
 transpose ls =
     if List.isEmpty ls
