@@ -573,6 +573,7 @@ loadPuzzle puzzle model =
                            |> List.filter (not << samePuzzle puzzle)
                            |> trySave model.puzzle
         , puzzle = puzzle
+        , selectedClues = []
     } |> withSolverResult Nothing
                 
 popCurrentPuzzle : Puzzle -> Model -> Model
@@ -794,7 +795,6 @@ view model =
              else [ h3 [class "header"] [text "Letters remaining"]
                   , histToSVG quoteHist remainingHist ])
         , section [id "clues"]
-            (h3 [class "header"] [text "Clues"] ::
             (puzzle.clues 
                 |> addInitials (String.toList initials) 
                 |> addIndex 
@@ -828,141 +828,146 @@ view model =
                                               , readonly answersFixed
                                               ] 
                                         (initialStr ++ "...") clue.text (Answer index)
-                                  ])))
+                                  ]))
 
         , section [id "clue-info"]
-            ((if quoteFixed then model.selectedClues else []) |> 
-             List.map
-                 (\index ->
-                      let 
+            (case puzzle.phase of
+                 QuoteEntry -> []
+                 Anagramming -> [] {- PICK UP HERE autocompletion -}
+                 CluingLettering -> 
+                     (model.selectedClues |> 
+                      List.map
+                          (\index ->
+                               let 
+                                                
+                                   clueLetter = letterFor index
                         
-                         clueLetter = letterFor index
+                                   clue = clueFor index puzzle
+                        
+                                   answer = clue.answer
+                        
+                                   numberingFor numIndex mNum c = 
+                                       select [id ("clue-numbering-" ++ String.fromInt index ++ "-" ++ String.fromInt numIndex)
+                                              , onInput (Number index numIndex)]
+                                         ([option [ value ""
+                                                  , selected (mNum == Nothing)] 
+                                               [text "###"]] ++
+                                              (List.map
+                                                   (\qIndex ->
+                                                        let 
+                                                            
+                                                            uses = Dict.get qIndex qIndexUses |> 
+                                                                   Maybe.withDefault [] |> 
+                                                                   List.filter (\(uIdx, uNumIdx) -> uIdx /= index || (uIdx == index && uNumIdx /= numIndex))
+                        
+                                                            clueMention (cIdx, cNumIdx) = letterFor cIdx ++ ". " ++ (cNumIdx + 1 |> String.fromInt)
+                        
+                                                            useText =
+                                                                if List.isEmpty uses
+                                                                then ""
+                                                                else " (used by " ++ String.join ", " (List.map clueMention uses) ++ ")"
+                        
+                                                        in
+                        
+                                                            option [ qIndex |> String.fromInt |> value
+                                                                   , selected (mNum == Just qIndex)
+                                                                   ] 
+                                                              [text ((qIndex + 1 |> String.fromInt) ++ useText)])
+                                                   (Dict.get c qIndices |> Maybe.withDefault [])))
+                        
+                                   clueNumbers = answer |> 
+                                                 List.indexedMap Tuple.pair |> 
+                                                 List.filterMap (\(ansIndex,(mNumIndex,_)) -> Maybe.map (Tuple.pair ansIndex) mNumIndex)
+                        
+                                   unindexedClueNumbers = clueNumbers |> List.map Tuple.second
+                                         
+                                   fullyNumbered = List.map (Tuple.second >> Just) clueNumbers == List.map Tuple.first answer
+                        
+                                   clueWords = List.filterMap
+                                                 (\(ansIndex, numIndex) ->
+                                                      Dict.get numIndex qIndexWords |> Maybe.map (Tuple.pair ansIndex))
+                                               clueNumbers
+                        
+                                   dupWords = List.filter
+                                                (\(ansIndex, wIndex) ->
+                                                     List.any
+                                                       (\(otherAnsIndex, otherWIndex) -> ansIndex /= otherAnsIndex && wIndex == otherWIndex)
+                                                           clueWords)
+                                                clueWords
+                        
+                                   dupLetters = List.map Tuple.first dupWords
+                        
+                               in
+                                   div [class "clue-detail"]
+                                       [ h3 [] [ clueLetter ++ ". " |> text ]
+                                       , textInput [ tabindex (baseTabs + List.length puzzle.clues + 1)
+                                                   , class "clue-hint"
+                                                   , value clue.hint
+                                                   ]
+                                             "Clue hint text"
+                                             clue.hint
+                                             (Hint index)
+                        
+                                       , table [class "clue-numbering"]
+                                           [ tr []
+                                                 (List.indexedMap 
+                                                      (\numIndex (_, c) ->
+                                                           let
+                                                               
+                                                               dupClasses =
+                                                                   if List.member numIndex dupLetters
+                                                                   then [ class "double-dipped" ]
+                                                                   else []
+                                                                     
+                                                           in
+                                                               td ([class "clue-numbering-letter"] ++ dupClasses)
+                                                           [c |> String.fromChar |> text])
+                                                      answer)
+                                           , tr []
+                                               (List.indexedMap
+                                                    (\numIndex (mNum, rawC) ->
+                                                         let
+                                                             
+                                                             c = Char.toUpper rawC
+                        
+                                                             validCls = 
+                                                                 case mNum of
+                                                                     Nothing -> "unentered"
+                                                                     Just num ->
+                                                                         if quoteIndex puzzle num |> 
+                                                                            Maybe.map (\qC -> c == Char.toUpper qC) |> 
+                                                                            Maybe.withDefault False
+                                                                         then "valid"
+                                                                         else "invalid"
+                                                                                                            
+                                                         in
+                                                             td [class "clue-numbering-number", class validCls]
+                                                         [numberingFor numIndex mNum c])
+                                                    answer)
+                                           ]
+                                       , let
 
-                         clue = clueFor index puzzle
-
-                         answer = clue.answer
-
-                         numberingFor numIndex mNum c = 
-                             select [id ("clue-numbering-" ++ String.fromInt index ++ "-" ++ String.fromInt numIndex)
-                                    , onInput (Number index numIndex)]
-                                 ([option [ value ""
-                                          , selected (mNum == Nothing)] 
-                                          [text "###"]] ++
-                                  (List.map
-                                       (\qIndex ->
-                                            let 
-
-                                                uses = Dict.get qIndex qIndexUses 
-                                                         |> Maybe.withDefault []
-                                                         |> List.filter (\(uIdx, uNumIdx) -> uIdx /= index || (uIdx == index && uNumIdx /= numIndex))
-
-                                                clueMention (cIdx, cNumIdx) = letterFor cIdx ++ ". " ++ (cNumIdx + 1 |> String.fromInt)
-
-                                                useText =
-                                                    if List.isEmpty uses
-                                                    then ""
-                                                    else " (used by " ++ String.join ", " (List.map clueMention uses) ++ ")"
-
-                                            in
-
-                                            option [ qIndex |> String.fromInt |> value
-                                                   , selected (mNum == Just qIndex)
-                                                   ] 
-                                                   [text ((qIndex + 1 |> String.fromInt) ++ useText)])
-                                       (Dict.get c qIndices |> Maybe.withDefault [])))
-
-                         clueNumbers = answer |> List.indexedMap Tuple.pair
-                                              |> List.filterMap (\(ansIndex,(mNumIndex,_)) -> Maybe.map (Tuple.pair ansIndex) mNumIndex)
-
-                         unindexedClueNumbers = clueNumbers |> List.map Tuple.second
-                 
-                         fullyNumbered = List.map (Tuple.second >> Just) clueNumbers == List.map Tuple.first answer
-
-                         clueWords = List.filterMap
-                                       (\(ansIndex, numIndex) ->
-                                              Dict.get numIndex qIndexWords |> Maybe.map (Tuple.pair ansIndex))
-                                       clueNumbers
-
-                         dupWords = List.filter
-                                      (\(ansIndex, wIndex) ->
-                                           List.any
-                                             (\(otherAnsIndex, otherWIndex) -> ansIndex /= otherAnsIndex && wIndex == otherWIndex)
-                                                 clueWords)
-                                             clueWords
-
-                         dupLetters = List.map Tuple.first dupWords
-
-                     in
-                         div [class "clue-detail"]
-                         [ h3 [] [ clueLetter ++ ". " |> text ]
-                         , textInput [ tabindex (baseTabs + List.length puzzle.clues + 1)
-                                     , class "clue-hint"
-                                     , value clue.hint
-                                     ]
-                               "Clue hint text"
-                               clue.hint
-                               (Hint index)
-
-                         , table [class "clue-numbering"]
-                             [ tr []
-                                   (List.indexedMap 
-                                        (\numIndex (_, c) ->
-                                             let
-                                                 
-                                                 dupClasses =
-                                                     if List.member numIndex dupLetters
-                                                     then [ class "double-dipped" ]
-                                                     else []
+                                             editableWarning = if puzzle.phase /= CluingLettering
+                                                               then Just (span [] [text "Editing the clue will erase any numbers you have entered."])
+                                                               else Nothing
                                              
-                                             in
-                                                 td ([class "clue-numbering-letter"] ++ dupClasses)
-                                                    [c |> String.fromChar |> text])
-                                        answer)
-                             , tr []
-                                   (List.indexedMap
-                                        (\numIndex (mNum, rawC) ->
-                                             let
-                                                 
-                                                 c = Char.toUpper rawC
-
-                                                 validCls = 
-                                                     case mNum of
-                                                         Nothing -> "unentered"
-                                                         Just num ->
-                                                             if quoteIndex puzzle num 
-                                                                  |> Maybe.map (\qC -> c == Char.toUpper qC)
-                                                                  |> Maybe.withDefault False
-                                                             then "valid"
-                                                             else "invalid"
-                                                                                    
-                                             in
-                                                 td [class "clue-numbering-number", class validCls]
-                                                    [numberingFor numIndex mNum c])
-                                        answer)
-                             ]
-                         , let
-
-                               editableWarning = if puzzle.phase /= CluingLettering
-                                                 then Just (span [] [text "Editing the clue will erase any numbers you have entered."])
-                                                 else Nothing
-                               
-                               ascendingWarning = if fullyNumbered && List.sort unindexedClueNumbers == unindexedClueNumbers
-                                                  then Just (span [] [text "Clue numbers are an ascending run."])
-                                                  else Nothing
-
-                               descendingWarning = if fullyNumbered && List.sort unindexedClueNumbers == List.reverse unindexedClueNumbers
-                                                   then Just (span [] [text "Clue numbers are a descending run."])
-                                                   else Nothing
-
-                               duplicateWarning = if not (List.isEmpty dupWords)
-                                                  then Just (span [] [ text "Highlighted clue letters come from the same word." ])
-                                                  else Nothing
-                                                       
-                               warnings = [editableWarning, ascendingWarning, descendingWarning, duplicateWarning]
-
-                           in
-                               div [class "warnings"] (List.filterMap identity warnings)
-                         ]))        
+                                             ascendingWarning = if fullyNumbered && List.sort unindexedClueNumbers == unindexedClueNumbers
+                                                                then Just (span [] [text "Clue numbers are an ascending run."])
+                                                                else Nothing
+                        
+                                             descendingWarning = if fullyNumbered && List.sort unindexedClueNumbers == List.reverse unindexedClueNumbers
+                                                                 then Just (span [] [text "Clue numbers are a descending run."])
+                                                                 else Nothing
+                        
+                                             duplicateWarning = if not (List.isEmpty dupWords)
+                                                                then Just (span [] [ text "Highlighted clue letters come from the same word." ])
+                                                                else Nothing
+                                                                     
+                                             warnings = [editableWarning, ascendingWarning, descendingWarning, duplicateWarning]
+                                                        
+                                          in
+                                              div [class "warnings"] (List.filterMap identity warnings)
+                                       ])))
         , section [id "messages"]
             [ 
             ]
