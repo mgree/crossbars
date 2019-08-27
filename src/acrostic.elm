@@ -1682,7 +1682,13 @@ anagramAssistance model remainingHist index =
 
         clue = clueFor index model.puzzle
 
-        prefix = List.map Tuple.second clue.answer
+        prefix = case List.map Tuple.second clue.answer of
+                     [] -> initialism model.puzzle |>
+                           String.toList |>
+                           List.drop index |>
+                           List.take 1 |>
+                           List.map Char.toUpper
+                     cs -> cs
 
         anagrams = anagramsFor testingWordlist remainingHist prefix
 
