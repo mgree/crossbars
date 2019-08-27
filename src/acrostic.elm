@@ -833,7 +833,25 @@ view model =
         , section [id "clue-info"]
             (case puzzle.phase of
                  QuoteEntry -> []
-                 Anagramming -> [] {- PICK UP HERE autocompletion -}
+                 Anagramming -> 
+                     [ h3 [class "header"] [text "Anagram assistance"]
+                     {- PICK UP HERE 
+                     
+                        Model has some Wordlist entries in it
+                        
+                        settings display here to load more wordlists
+
+                        for each selected clue:
+                          find words that:
+                            - have the current answer as a prefix
+                            - as drawn from remainingHist
+                            
+                        display results from each wordlist, sorted by size
+                          wordlists have links/hovers/tooltips with more info?
+
+                        allow user to filter by word length, letters used/avoided
+                      -}
+                     ]
                  CluingLettering -> 
                      (model.selectedClues |> 
                       List.map
