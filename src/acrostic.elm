@@ -1386,7 +1386,7 @@ type alias ConstraintProblem = (List ConstraintVar, List Constraint)
     
 type Constraint = IsInt ConstraintVar
                 | OneOf ConstraintVar (List Int)
-                | Disjoint (List ConstraintVar)
+                | Distinct (List ConstraintVar)
                 | NotAscending (List ConstraintVar)
                 | NotSameWord (List ConstraintVar)
 
@@ -1425,7 +1425,7 @@ constraintsOfPuzzle qIndices puzzle =
 
         disjointnessConstraints = charUses |>
                                   Dict.values |>
-                                  List.map (Disjoint)
+                                  List.map Distinct
 
         numberingConstraints =
             clueVarsByClue |>
@@ -1475,9 +1475,14 @@ smtAscending vars =
     case vars of
         [] -> "true"
         [var] -> "true"
-        [var1,var2] -> "(< " ++ var1 ++ " " ++ var2 ++ ")"
-        var1::var2::rest ->
-            "(and (< " ++ var1 ++ " " ++ var2 ++ ")" ++ smtAscending (var2::rest) ++ ")"
+        _ -> "(< " ++ String.join " " vars ++ ")"
+
+smtDistinct : List ConstraintVar -> String
+smtDistinct vars =
+    case vars of
+        [] -> "true"
+        [var] -> "true"
+        _ -> "(distinct " ++ String.join " " vars ++ ")"
 
 type alias SMTResult =
     { answer : SMTAnswer
@@ -1584,14 +1589,10 @@ smt2OfConstraint c =
             smtOr |>
             smtAssert
 
-        Disjoint [] -> smtAssert "true"
-        Disjoint [_] -> smtAssert "true"
-        Disjoint vars ->
+        Distinct [] -> smtAssert "true"
+        Distinct vars -> 
             vars |>
-            allPairs |>
-            List.map (\(v1,v2) -> smtEq v1 v2) |>
-            smtOr |>
-            smtNot |>
+            smtDistinct |>
             smtAssert
 
         NotAscending vars ->
@@ -1604,12 +1605,10 @@ smt2OfConstraint c =
         NotSameWord [_] -> smtAssert "true"             
         NotSameWord vars ->
             vars |>
-            allPairs |>
-            List.map (\(v1,v2) -> smtEq (smtWordOf v1) (smtWordOf v2)) |>
-            smtOr |>
-            smtNot |>                   
+            List.map smtWordOf |>
+            smtDistinct |>
             smtAssert
-                      
+
 smt2OfConstraints : Dict Int Int -> List Constraint -> String
 smt2OfConstraints qIndexWords constraints =
     let
@@ -1647,7 +1646,6 @@ smt2OfConstraints qIndexWords constraints =
                         (\x wordNum otw ->
                              "(ite (= n " ++ String.fromInt x ++ ") " ++ (String.fromInt wordNum) ++ " " ++ otw ++ ")")
                         "-1"
-
                         
                 defn = "(define-fun " ++ smtWordFun ++ " ((n Int)) Int " ++ conds ++ ")"
                         
