@@ -832,6 +832,7 @@ view model =
                                               , onFocus (SelectClue index)
                                               , onClick (SelectClue index)
                                               , readonly answersFixed
+                                              , list (anagramDatalistId letter)
                                               ] 
                                         (initialStr ++ "...") clue.text (Answer index)
                                   ]))
@@ -840,21 +841,20 @@ view model =
             (case puzzle.phase of
                  QuoteEntry -> []
                  Anagramming -> 
-                     [ h3 [class "header"] [text "Anagram assistance"]
+                     [ h3 [class "header"] [text "Anagrams"]
+                     , if List.isEmpty model.selectedClues
+                       then span [] [text "Select a clue to receive anagram suggestions."]
+                       else div [] (model.selectedClues |>
+                                    List.map (anagramAssistance model remainingHist))
                      {- PICK UP HERE 
-                     
-                        Model has some Wordlist entries in it
-                        
-                        settings display here to load more wordlists
 
-                        for each selected clue:
-                          find words that:
-                            - have the current answer as a prefix
-                            - as drawn from remainingHist
-                            
                         display results from each wordlist, sorted by size
                           wordlists have links/hovers/tooltips with more info?
 
+                        Model has some Wordlist entries in it
+                        
+                        settings display here to load more wordlists
+                            
                         allow user to filter by word length, letters used/avoided
                       -}
                      ]
@@ -1136,6 +1136,13 @@ cleanLetterHist h = Dict.union h emptyLetterHist
 countHist : Hist -> Int
 countHist h = List.sum (Dict.values h)
 
+foundInHist : Hist -> String -> Bool
+foundInHist hist s = 
+    s |>
+    letterHist |>
+    histDifference hist |>
+    isExhaustedHist
+
 histDifference : Hist -> Hist -> Hist
 histDifference hSub hSup = 
     Dict.merge
@@ -1317,7 +1324,6 @@ boardToSVG numCols qIndexUses puzzle =
                                   |> Maybe.withDefault []
                                   |> List.map Tuple.first
                                   |> Set.fromList |> Set.toList
-                                  {- PICK UP HERE warning when there's more than one -}
                      in
 
                      Svg.g [ Svg.Attributes.class ("row-" ++ String.fromInt square.row)
@@ -1662,7 +1668,72 @@ smt2OfConstraints qIndexWords constraints =
                            
     in
         String.join "\n" commands
-        
+
+-- WORDLIST FUNCTIONS
+
+anagramDatalistId : String -> String
+anagramDatalistId letter = "clue-anagrams-" ++ letter
+
+anagramAssistance : Model -> Hist -> Int -> Html Msg
+anagramAssistance model remainingHist index =
+    let
+
+        letter = letterFor index
+
+        clue = clueFor index model.puzzle
+
+        prefix = List.map Tuple.second clue.answer
+
+        anagrams = anagramsFor testingWordlist remainingHist prefix
+
+    in
+        datalist [id (anagramDatalistId letter)] 
+            (List.map (\anagram -> option [value anagram] []) anagrams)
+
+{- FIXME need a prefix tree or something -}
+type alias Wordlist = Dict Char (List String)
+
+anagramsFor : Wordlist -> Hist -> List Char -> List String
+anagramsFor wl remainingHist prefix =
+    case prefix of 
+        [] -> []
+        c::rest ->
+            let s = String.fromList prefix in
+            Dict.get c wl |>
+            Maybe.withDefault [] |>
+            List.filter (String.startsWith s) |>
+            List.filter (String.dropLeft (String.length s) >> 
+                         foundInHist remainingHist)
+
+testingWordlist : Wordlist
+testingWordlist = Dict.fromList <|
+    [ ('A', ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC"])
+    , ('B', ["BCD", "BFD", "BDF", "BFF"])
+    , ('C', [])
+    , ('D', [])
+    , ('E', [])
+    , ('F', [])
+    , ('G', [])
+    , ('H', [])
+    , ('I', [])
+    , ('J', [])
+    , ('K', [])
+    , ('L', [])
+    , ('M', [])
+    , ('N', [])
+    , ('O', [])
+    , ('P', [])
+    , ('Q', [])
+    , ('R', [])
+    , ('S', [])
+    , ('T', [])
+    , ('U', [])
+    , ('V', [])
+    , ('W', [])
+    , ('X', [])
+    , ('Y', [])
+    , ('Z', [])
+    ]
 
 -- UTILITY FUNCTIONS
 
