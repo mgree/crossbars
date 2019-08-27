@@ -11,10 +11,10 @@ port module Main exposing (..)
      tie in to autocomplete?
 
    AUTONUMBERING 
-     set timeouts? needs z3 wasm build w/o pthreads
+     unclear how to set timeouts in Z3 wasm---needs pthreads :(
 
      how good can a greedy algorithm do?
-       might be faster, sometimes? (z3 is a few seconds in native code)
+       might be faster, sometimes? (Z3 takes ~10s on my old WCW acrostic)
        can we do it ensemble style?
 
    NITS
