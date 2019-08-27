@@ -58,6 +58,7 @@ import Time
 import Browser
 
 import Histogram exposing (..)
+import SMT exposing (..)
 
 -- MAIN                    
 
@@ -1258,48 +1259,13 @@ constraintsOfPuzzle qIndices puzzle =
     
     charConstraints ++ disjointnessConstraints ++ numberingConstraints
 
-smtAssert : String -> String
-smtAssert prop = "(assert " ++ prop ++ ")"
-
-smtWordFun : String
-smtWordFun = "word-of"
-
-smtWordOf : String -> String
-smtWordOf x = "(" ++ smtWordFun ++ " " ++ x ++")"
-             
-smtEq : String -> String -> String
-smtEq l r = "(= " ++ l ++ " " ++ r ++ ")"
-                 
-smtOr : List String -> String
-smtOr props =
-    case props of
-        [] -> "true"
-        [prop] -> prop
-        _ -> "(or " ++ String.join " " props ++ ")"
-
-smtAnd : List String -> String
-smtAnd props =
-    case props of
-        [] -> "true" -- weird, I know, but probably the right default for our case. shouldn't come up.
-        [prop] -> prop
-        _ -> "(and " ++ String.join " " props ++ ")"
-
-smtNot : String -> String
-smtNot prop = "(not " ++ prop ++ ")"
-
-smtAscending : List ConstraintVar -> String
-smtAscending vars =
-    case vars of
-        [] -> "true"
-        [var] -> "true"
-        _ -> "(< " ++ String.join " " vars ++ ")"
-
-smtDistinct : List ConstraintVar -> String
-smtDistinct vars =
-    case vars of
-        [] -> "true"
-        [var] -> "true"
-        _ -> "(distinct " ++ String.join " " vars ++ ")"
+type alias SMTNumbering = List SMTNumberEntry
+                
+type alias SMTNumberEntry =
+    { clue : Int
+    , letter : Int
+    , number : Int
+    }
 
 type alias SMTResult =
     { answer : SMTAnswer
@@ -1314,14 +1280,6 @@ smtMissingResult : SMTResult
 smtMissingResult = { answer = SMTFailed
                    , elapsed = 0
                    }
-
-type alias SMTNumbering = List SMTNumberEntry
-                
-type alias SMTNumberEntry =
-    { clue : Int
-    , letter : Int
-    , number : Int
-    }
 
 tryApplySMTNumberingTo : Model -> SMTResult -> Model
 tryApplySMTNumberingTo model result =
