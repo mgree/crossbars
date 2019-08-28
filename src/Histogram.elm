@@ -6,25 +6,12 @@ import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
+import Util exposing (..)
+
 type alias Hist = Dict Char Int
-
-cleanString : String -> String
-cleanString s =
-    s |> String.toUpper 
-      |> String.filter Char.isAlphaNum         
-      {- FIXME doesn't work with diacritics, Greek, etc. -}
-
-cleanChars : String -> List Char
-cleanChars s = s |> cleanString |> String.toList
          
 emptyHist : Hist
 emptyHist = Dict.empty
-
-alphabet : String
-alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
-
-alphabetList : List Char
-alphabetList = alphabet |> String.toList
 
 emptyLetterHist : Hist
 emptyLetterHist = 

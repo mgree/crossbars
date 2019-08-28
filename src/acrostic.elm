@@ -49,16 +49,17 @@ import Svg.Attributes
 import Json.Encode
 import Json.Decode
 
-import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces)
-
 import Task
 
 import Time
 
 import Browser
 
+{- FIXME don't just expose everything -}
+import Puzzle exposing (..)
 import Histogram exposing (..)
-import SMT exposing (..)
+import Solver exposing (..)
+import Util exposing (..)
 
 -- MAIN                    
 
@@ -113,160 +114,6 @@ port solverResults : (Json.Encode.Value -> msg) -> Sub msg
 port solverStateChanged : (Json.Encode.Value -> msg) -> Sub msg
 
 -- TYPES, HELPERS                
-                   
-type Phase = QuoteEntry
-           | Anagramming {- quotes uneditable, show puzzle view -}
-           | CluingLettering {- answers uneditable, too -}
-
-type alias Clue =
-    { hint : String
-    , text : String
-    , answer : List (Maybe Int, Char)
-    }
-
-clueAnswer : Clue -> String
-clueAnswer c = c.answer |> List.map Tuple.second |> String.fromList
-
-defaultClue : String -> Clue
-defaultClue s = { hint = ""
-                , text = s |> String.toUpper
-                , answer = s |> String.toList |> List.map (Tuple.pair Nothing)
-                }
-
-type alias Puzzle =
-    { title : String
-    , author : String
-    , quote : String
-    , clues : List Clue
-    , phase : Phase
-    , timeModified : Time.Posix
-    }
-
-emptyPuzzle :  Puzzle
-emptyPuzzle =
-    { title = ""
-    , author = ""
-    , quote = ""
-    , clues = []
-    , phase = QuoteEntry
-    , timeModified = Time.millisToPosix 0
-    }
-
-shortPuzzleDescription : Puzzle -> String
-shortPuzzleDescription puzzle = 
-    String.toUpper puzzle.author ++ " — " ++ String.toUpper puzzle.title
-
-puzzleDescription : Time.Zone -> Puzzle -> String
-puzzleDescription here puzzle =
-    shortPuzzleDescription puzzle ++ " (" ++ iso8601DateTime here puzzle.timeModified ++ ")"
-    
-comparePuzzles : Puzzle -> Puzzle -> Order
-comparePuzzles puz1 puz2 =
-    compare (Time.posixToMillis puz1.timeModified) (Time.posixToMillis puz2.timeModified)
-
-samePuzzle : Puzzle -> Puzzle -> Bool
-samePuzzle puz1 puz2 = comparePuzzles puz1 puz2 == EQ
-
--- Puzzle setters
-    
-setTitle : String -> Puzzle -> Puzzle
-setTitle title puzzle = { puzzle | title = title }
-
-setAuthor : String -> Puzzle -> Puzzle
-setAuthor author puzzle = { puzzle | author = author }
-
-setQuote : String -> Puzzle -> Puzzle
-setQuote quote puzzle = { puzzle | quote = quote }
-
-setPhase : Phase -> Puzzle -> Puzzle
-setPhase phase puzzle = { puzzle | phase = phase }
-
-setTimeModified : Time.Posix -> Puzzle -> Puzzle
-setTimeModified now puzzle = { puzzle | timeModified = now }
-
-clearNumbering : Puzzle -> Puzzle
-clearNumbering puzzle =
-    { puzzle | clues =
-          puzzle.clues |>
-          List.map
-              (\clue ->
-                   { clue | answer =
-                         clue.answer |>
-                         List.map (\(_, c) -> (Nothing, c))
-                   })
-    }
-
-updateNumbering : Int -> Int -> Maybe Int -> Puzzle -> Puzzle
-updateNumbering index numIndex mQuoteNum puzzle =
-    { puzzle | clues =
-          updateIndex index
-            (\clue ->
-                 { clue | answer =
-                       updateIndex numIndex (\(_,c) -> (mQuoteNum, c)) clue.answer })
-          puzzle.clues
-    }
-
-updateHint : Int -> String -> Puzzle -> Puzzle
-updateHint index hint puzzle =
-    { puzzle | clues =
-          updateIndex index
-            (\clue -> { clue | hint = hint })
-            puzzle.clues
-    }
-
-updateAnswer : Int -> String -> Puzzle -> Puzzle
-updateAnswer index answer puzzle =    
-    { puzzle | clues =
-          updateIndex index
-          (\clue ->
-               let
-                    
-                   numbering = clue.answer |> List.map Tuple.first
-               
-                   extendedNumbering = numbering ++ List.repeat (String.length answer - List.length numbering) Nothing
-
-                   numberedAnswer = 
-                       answer |> 
-                       String.toUpper |> 
-                       String.filter Char.isAlphaNum |>
-                       String.toList |> 
-                       List.map2 
-                           (\mnum c ->
-                                {- FIXME slightly inefficient...  -}
-                                case mnum of
-                                    Nothing -> (Nothing, c)
-                                    Just num ->
-                                        if quoteIndex puzzle num == Just c
-                                        then (Just num, c)
-                                        else (Nothing, c))
-                           extendedNumbering
-                in
-                    
-                    {clue | text = answer
-                          , answer = numberedAnswer 
-                    })
-            puzzle.clues
-    }
-
-fixupAnswerInitials : Puzzle -> Puzzle
-fixupAnswerInitials puzzle =
-    let 
-        initials = initialism puzzle |> String.toList |> List.map String.fromChar
-
-        clues = 
-            {- FIXME with more detailed delta information, we could be smarter here -}
-            if List.length puzzle.clues /= List.length initials
-            then List.map defaultClue initials
-            else List.map2 
-                (\i c -> 
-                     if String.startsWith i (clueAnswer c)
-                     then c
-                     else defaultClue i) 
-                initials puzzle.clues
-
-    in
-
-        { puzzle | clues = clues }
 
 type SolverState = SolverUnloaded
                  | SolverDownloading
@@ -309,10 +156,7 @@ emptyModel =
     , solverResult = Nothing
     , timeZone = Time.utc
     }
-
-withSolverResult : Maybe SMTResult -> Model -> Model
-withSolverResult mResult model = { model | solverResult = mResult }
-    
+  
 asCurrentPuzzleIn : Model -> Puzzle -> Model
 asCurrentPuzzleIn model puzzle = { model | puzzle = puzzle }    
 
@@ -325,6 +169,19 @@ clearSelectedPuzzle model = { model | selectedPuzzle = Nothing }
 pendingDeletion : Bool -> Model -> Model
 pendingDeletion pending model = { model | pendingDelete = pending }
 
+withSolverResult : Maybe SMTResult -> Model -> Model
+withSolverResult mResult model = { model | solverResult = mResult }
+
+tryApplySMTNumberingTo : Model -> SMTResult -> Model
+tryApplySMTNumberingTo model result =
+    (case result.answer of
+         SMTFailed -> model
+         SMTTimeout -> model
+         SMTOk nums -> model.puzzle |>
+                       applySMTNumbering nums |>
+                       asCurrentPuzzleIn model) |>
+    withSolverResult (Just result)
+
 asSolverStateIn : Model -> SolverState -> Model
 asSolverStateIn model solverState = { model | solverState = solverState }    
 
@@ -336,46 +193,7 @@ encodeModel model =
         [ ("encodePuzzle", encodePuzzle model.puzzle)
         , ("savedPuzzles", Json.Encode.list encodePuzzle model.savedPuzzles)
         ]
-              
-encodePuzzle : Puzzle -> Json.Encode.Value
-encodePuzzle puzzle =
-    Json.Encode.object
-        [ ("title", Json.Encode.string puzzle.title)
-        , ("author", Json.Encode.string puzzle.author)
-        , ("quote", Json.Encode.string puzzle.quote)
-        , ("clues", Json.Encode.list encodeClue puzzle.clues)
-        , ("phase", encodePhase puzzle.phase)
-        , ("timeModified", Json.Encode.int <| Time.posixToMillis <| puzzle.timeModified)
-        ]
 
-encodeClue : Clue -> Json.Encode.Value
-encodeClue clue =
-    Json.Encode.object
-        [ ("hint", Json.Encode.string clue.hint)
-        , ("text", Json.Encode.string clue.text)
-        , ("answer", Json.Encode.list encodeAnswer clue.answer)
-        ]
-
-encodeAnswer : (Maybe Int, Char) -> Json.Encode.Value
-encodeAnswer (mNum, c) =
-    Json.Encode.object
-        [ ("number", encodeNullable Json.Encode.int mNum)
-        , ("char", Json.Encode.string <| String.fromChar <| c)
-        ]
-
-encodePhase : Phase -> Json.Encode.Value
-encodePhase phase =
-    Json.Encode.string <| case phase of
-                              QuoteEntry -> "QuoteEntry"
-                              Anagramming -> "Anagramming"
-                              CluingLettering -> "CluingLettering"
-
-encodeNullable : (a -> Json.Encode.Value) -> Maybe a -> Json.Encode.Value
-encodeNullable encode ma =
-    case ma of
-        Nothing -> Json.Encode.null
-        Just a -> encode a
-                                                 
 decodeModel : Json.Decode.Decoder Model
 decodeModel =
     Json.Decode.map2
@@ -391,58 +209,6 @@ decodeModel =
              })
         (Json.Decode.field "currentPuzzle" decodePuzzle)
         (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
-                                                 
-decodePuzzle : Json.Decode.Decoder Puzzle
-decodePuzzle =
-    Json.Decode.map6
-        (\title author quote clues phase timeModified ->
-             { title = title
-             , author = author
-             , quote = quote
-             , clues = clues
-             , phase = phase
-             , timeModified = timeModified
-             })
-        (Json.Decode.field "title" Json.Decode.string)
-        (Json.Decode.field "author" Json.Decode.string)
-        (Json.Decode.field "quote" Json.Decode.string)
-        (Json.Decode.field "clues" (Json.Decode.list decodeClue))
-        (Json.Decode.field "phase" decodePhase)
-        (Json.Decode.field "timeModified" (Json.Decode.int |>
-                                               Json.Decode.map Time.millisToPosix))
-
-decodeClue : Json.Decode.Decoder Clue
-decodeClue =
-    Json.Decode.map3
-        (\hint text answer ->
-             { hint = hint
-             , text = text
-             , answer = answer
-             })
-        (Json.Decode.field "hint" Json.Decode.string)
-        (Json.Decode.field "text" Json.Decode.string)
-        (Json.Decode.field "answer" (Json.Decode.list decodeAnswer))
-
-decodeAnswer : Json.Decode.Decoder (Maybe Int, Char)
-decodeAnswer =
-    Json.Decode.map2
-        Tuple.pair
-        (Json.Decode.field "number" (Json.Decode.nullable Json.Decode.int))
-        (Json.Decode.field "char" (Json.Decode.string |> Json.Decode.andThen
-                           (\s ->
-                                case String.uncons s of
-                                    Just (c, "") -> Json.Decode.succeed c
-                                    _ -> Json.Decode.fail ("expected single character in answer, found '" ++ s ++ "'"))))
-
-decodePhase : Json.Decode.Decoder Phase
-decodePhase =
-    Json.Decode.string |> Json.Decode.andThen
-        (\s ->
-             case s of
-                 "QuoteEntry" -> Json.Decode.succeed QuoteEntry
-                 "Anagramming" -> Json.Decode.succeed Anagramming
-                 "CluingLettering" -> Json.Decode.succeed CluingLettering
-                 _ -> Json.Decode.fail ("invalid phase '" ++ s ++ "'"))
 
 -- INITIAL STATE, SUBSCRIPTIONS
                                  
@@ -1003,76 +769,6 @@ baseTabs = 3 {- title, author, quote -}
 textInput : List (Attribute msg) -> String -> String -> (String -> msg) -> Html msg
 textInput attrs p v toMsg = 
     input ([ type_ "text", placeholder p, value v, onInput toMsg ] ++ attrs) []
-           
-stringOfPhase : Phase -> String
-stringOfPhase p =
-    case p of
-        QuoteEntry -> "Quote entry"
-        Anagramming -> "Anagramming"
-        CluingLettering -> "Cluing and lettering"
-
-phases : List Phase
-phases = [QuoteEntry, Anagramming, CluingLettering]
-         
-addInitials : List Char -> List a -> List (Char, a)
-addInitials initial clues = List.map2 Tuple.pair initial clues
-
-addIndex : List a -> List (Int, a)
-addIndex l = List.indexedMap Tuple.pair l
-
-lettering : List String
-lettering =
-    let 
-        aToZ = List.map String.fromChar alphabetList
-        aaToZZ = List.map (String.repeat 2) aToZ 
-    in
-        aToZ ++ aaToZZ
-
-letterFor : Int -> String
-letterFor index = List.head (List.drop index lettering) |> Maybe.withDefault ""
-
-clueFor : Int -> Puzzle -> Clue
-clueFor index puzzle = 
-    List.head (List.drop index puzzle.clues) |> Maybe.withDefault (defaultClue "")
-
-initialism : Puzzle -> String
-initialism puzzle = puzzle.author ++ puzzle.title |> String.filter Char.isAlphaNum
-
--- ACROSTIC FUNCTIONS
-
-quoteIndex : Puzzle -> Int -> Maybe Char
-quoteIndex puzzle index =
-    puzzle.quote |> cleanChars
-                 |> List.drop index
-                 |> List.head
-
-quoteIndices : Puzzle -> Dict Char (List Int)
-quoteIndices puzzle =
-    puzzle.quote |> cleanChars
-                 |> List.indexedMap (\i c -> (c, i))
-                 |> List.foldr (\(c, i) d -> updateCons c i d) Dict.empty
-
-quoteIndexWords : Puzzle -> Dict Int Int
-quoteIndexWords puzzle =
-    puzzle.quote |> String.words
-                 |> List.map cleanChars
-                 |> List.filter (not << List.isEmpty)
-                 |> List.indexedMap (\i w -> List.repeat (List.length w) i)
-                 |> List.concat
-                 |> List.indexedMap Tuple.pair
-                 |> Dict.fromList
-
-quoteIndexUses : Puzzle -> Dict Int (List (Int, Int))
-quoteIndexUses puzzle = 
-    puzzle.clues |> List.indexedMap (\i clue -> 
-                                        List.foldr 
-                                          (\(numIndex, (mNum,_)) d ->
-                                               case mNum of
-                                                   Nothing -> d
-                                                   Just num -> updateCons num (i, numIndex) d)
-                                          Dict.empty
-                                          (clue.answer |> List.indexedMap Tuple.pair))
-                |> mergeConsMany
 
 -- BOARD RENDERING
 
@@ -1196,248 +892,6 @@ boardToSVG numCols qIndexUses puzzle =
             , id "board" ]
             quoteRows
 
--- NUMBERING VIA SMT
-
-type alias ConstraintVar = String
-
-type alias ConstraintProblem = (List ConstraintVar, List Constraint)
-    
-type Constraint = IsInt ConstraintVar
-                | OneOf ConstraintVar (List Int)
-                | Distinct (List ConstraintVar)
-                | NotAscending (List ConstraintVar)
-                | NotSameWord (List ConstraintVar)
-
-isDefn : Constraint -> Bool
-isDefn c =
-    case c of
-        IsInt _ -> True
-        _ -> False
-                  
-constraintsOfPuzzle : Dict Char (List Int) -> Puzzle -> List Constraint
-constraintsOfPuzzle qIndices puzzle =
-    let
-        varName clueIndex numIndex =
-            "clue" ++ String.fromInt clueIndex ++ "_" ++
-            "letter" ++ String.fromInt numIndex
-
-        clueVarsByClue =
-            puzzle.clues |>
-            List.indexedMap
-                (\clueIndex clue ->
-                     clue.answer |> {- FIXME way to consider existing numbers? -}
-                     List.indexedMap Tuple.pair |>
-                     List.map (\(numIndex, (_, c)) -> (varName clueIndex numIndex, c)))
-                
-        clueVars = List.concat clueVarsByClue
-                
-        charConstraints =
-            clueVars |> List.concatMap
-                (\(v, c) ->
-                     let uses = Dict.get (Char.toUpper c) qIndices |>
-                                Maybe.withDefault [] {- yikes -}
-                     in
-                         [IsInt v, OneOf v uses])
-
-        charUses = List.foldr (\(v,c) d -> updateCons c v d) Dict.empty clueVars
-
-        disjointnessConstraints = charUses |>
-                                  Dict.values |>
-                                  List.map Distinct
-
-        numberingConstraints =
-            clueVarsByClue |>
-            List.concatMap
-                (\vs ->
-                    let vars = List.map Tuple.first vs in 
-                     [ NotAscending vars
-                     , NotAscending (List.reverse vars)
-                     , NotSameWord vars
-                     ])
-            
-    in
-    
-    charConstraints ++ disjointnessConstraints ++ numberingConstraints
-
-type alias SMTNumbering = List SMTNumberEntry
-                
-type alias SMTNumberEntry =
-    { clue : Int
-    , letter : Int
-    , number : Int
-    }
-
-type alias SMTResult =
-    { answer : SMTAnswer
-    , elapsed : Int {- millis -}
-    }
-
-type SMTAnswer = SMTOk SMTNumbering
-               | SMTTimeout
-               | SMTFailed
-
-smtMissingResult : SMTResult
-smtMissingResult = { answer = SMTFailed
-                   , elapsed = 0
-                   }
-
-tryApplySMTNumberingTo : Model -> SMTResult -> Model
-tryApplySMTNumberingTo model result =
-    (case result.answer of
-         SMTFailed -> model
-         SMTTimeout -> model
-         SMTOk nums -> model.puzzle |>
-                       applySMTNumbering nums |>
-                       asCurrentPuzzleIn model) |>
-    withSolverResult (Just result)
-
-applySMTNumbering : SMTNumbering -> Puzzle -> Puzzle
-applySMTNumbering nums puz =
-    let apply num newPuz =
-            updateNumbering num.clue num.letter (Just num.number) newPuz
-    in
-        List.foldr apply puz nums
-
-decodeSMTResult : Json.Decode.Decoder SMTResult
-decodeSMTResult = 
-    Json.Decode.map2 
-        (\elapsed stdout ->
-             let answer = String.join "\n" stdout |>
-                          Parser.run smtAnswerParser |>
-                          Result.withDefault SMTFailed
-             in { answer = answer
-                , elapsed = elapsed
-                })
-        (Json.Decode.field "elapsed" Json.Decode.int)
-        (Json.Decode.field "stdout" (Json.Decode.list Json.Decode.string))
-
-smtAnswerParser : Parser SMTAnswer
-smtAnswerParser =
-  Parser.oneOf
-      [ succeed SMTFailed
-        |. symbol "unsat"
-      , succeed SMTTimeout
-        |. symbol "unknown"
-      , succeed SMTOk
-        |. symbol "sat"
-        |. spaces
-        |= smtModelParser
-      ]
-        
-smtModelParser : Parser SMTNumbering
-smtModelParser =
-    succeed identity
-        |. spaces
-        |. symbol "("
-        |. spaces
-        |= listOf smtValueParser
-        |. spaces
-        |. symbol ")"
-        |. spaces
-        |. end
-
-smtValueParser : Parser SMTNumberEntry
-smtValueParser =
-    succeed (\clue letter number ->
-                 { clue = clue
-                 , letter = letter
-                 , number = number
-                 })
-        |. spaces
-        |. symbol "("
-        |. symbol "clue"
-        |= Parser.int
-        |. symbol "_letter"
-        |= Parser.int
-        |. spaces
-        |= Parser.int
-        |. symbol ")"
-
-smt2OfConstraint : Constraint -> String
-smt2OfConstraint c =
-    case c of
-        IsInt var -> ("(declare-const " ++ var ++ " Int)")
-
-        OneOf var ns ->
-            ns |>
-            List.map (\n -> smtEq var (String.fromInt n)) |>
-            smtOr |>
-            smtAssert
-
-        Distinct [] -> smtAssert "true"
-        Distinct vars -> 
-            vars |>
-            smtDistinct |>
-            smtAssert
-
-        NotAscending vars ->
-            vars |>
-            smtAscending |>
-            smtNot |>
-            smtAssert
-                 
-        NotSameWord [] -> smtAssert "true"
-        NotSameWord [_] -> smtAssert "true"             
-        NotSameWord vars ->
-            vars |>
-            List.map smtWordOf |>
-            smtDistinct |>
-            smtAssert
-
-smt2OfConstraints : Dict Int Int -> List Constraint -> String
-smt2OfConstraints qIndexWords constraints =
-    let
-
-        (defnConstraints, assertConstraints) = List.partition isDefn constraints
-
-        vars = defnConstraints |>
-               List.filterMap
-                   (\c ->
-                        case c of
-                            IsInt v -> Just v
-                            _ -> Nothing)
-                                               
-        defns = defnConstraints |>
-                List.map smt2OfConstraint
-
-        wordFun =
-            let
-                {- METHOD 1: axiomatize (currently used, works much better) -}
-                decl = "(declare-fun " ++ smtWordFun ++ " (Int) Int)"
-
-                vals =
-                    qIndexWords |>
-                    Dict.foldr
-                        (\x wordNum eqs ->
-                             ("(= " ++ smtWordOf (String.fromInt x) ++ " " ++ (String.fromInt wordNum) ++ ")") :: eqs)
-                        [] |>
-                    smtAnd |>
-                    smtAssert
-
-                {- METHOD 2: define as a function/macro -}
-                conds =
-                    qIndexWords |>
-                    Dict.foldr
-                        (\x wordNum otw ->
-                             "(ite (= n " ++ String.fromInt x ++ ") " ++ (String.fromInt wordNum) ++ " " ++ otw ++ ")")
-                        "-1"
-                        
-                defn = "(define-fun " ++ smtWordFun ++ " ((n Int)) Int " ++ conds ++ ")"
-                        
-            in
-                [decl, vals] -- [defn]
-                                          
-        assertions = assertConstraints |>
-                     List.map smt2OfConstraint
-                        
-        commands = [ {- "(set-option :timeout 2000)"
-                   , -} "(set-option :produce-models true)"] ++
-                   defns ++ wordFun ++ assertions ++
-                   ["(check-sat)", "(get-value (" ++ String.join " " vars ++ "))"]
-                           
-    in
-        String.join "\n" commands
-
 -- WORDLIST FUNCTIONS
 
 anagramDatalistId : String -> String
@@ -1524,144 +978,3 @@ testingWordlist = Dict.fromList <|
     , ('Z', [])
     ]
 
--- UTILITY FUNCTIONS
-
-updateIndex : Int -> (a -> a) -> List a -> List a
-updateIndex index f l =
-    case l of
-        [] -> []
-        x::rest -> 
-            if index == 0
-            then f x::rest
-            else x::updateIndex (index - 1) f rest
-
-updateCons : comparable -> v -> Dict comparable (List v) -> Dict comparable (List v)
-updateCons k v d =
-    Dict.update k
-        (\mvs ->
-             case mvs of
-                 Nothing -> Just [v]
-                 Just vs -> Just (v::vs))
-        d
-
-updateAppend : comparable -> List v -> Dict comparable (List v) -> Dict comparable (List v)
-updateAppend k v d =
-    Dict.update k
-        (\mvs ->
-             case mvs of
-                 Nothing -> Just v
-                 Just vs -> Just (v ++ vs))
-        d
-
-mergeCons : Dict comparable (List v) -> Dict comparable (List v) -> Dict comparable (List v)
-mergeCons d1 d2 = Dict.foldr (\k vs d -> updateAppend k vs d) d2 d1
-
-mergeConsMany : List (Dict comparable (List v)) -> Dict comparable (List v)
-mergeConsMany l = 
-    case l of
-        [] -> Dict.empty
-        [d] -> d
-        d::ds -> mergeCons d (mergeConsMany ds)
-
-insertWith : (a -> a -> Order) -> a -> List a -> List a
-insertWith cmp x l =
-    case l of
-        [] -> [x]
-        y::rest ->
-            case cmp x y of
-                LT -> x::y::rest
-                EQ -> x::y::rest
-                GT -> y::insertWith cmp x rest
-
-allPairs : List a -> List (a,a)
-allPairs l =
-    case l of
-        [] -> []
-        hd::tl -> List.map (Tuple.pair hd) tl ++ allPairs tl
-
-listOf : Parser a -> Parser (List a)
-listOf item =
-    Parser.oneOf
-        [ succeed (\hd tl -> hd :: tl)
-            |. spaces
-            |= item
-            |. spaces
-            |= Parser.lazy (\_ -> listOf item)
-        , succeed []
-        ]
-
-iso8601DateTime : Time.Zone -> Time.Posix -> String
-iso8601DateTime here now =
-    iso8601Date here now ++ " " ++ iso8601Time here now
-
-iso8601Date : Time.Zone -> Time.Posix -> String
-iso8601Date here now =
-    let yyyy = Time.toYear here now |>
-               String.fromInt
-        mm   = case Time.toMonth here now of
-                   Time.Jan -> "01"
-                   Time.Feb -> "02"
-                   Time.Mar -> "03"
-                   Time.Apr -> "04"
-                   Time.May -> "05"
-                   Time.Jun -> "06"
-                   Time.Jul -> "07"
-                   Time.Aug -> "08"
-                   Time.Sep -> "09"
-                   Time.Oct -> "10"
-                   Time.Nov -> "11"
-                   Time.Dec -> "12"
-        dd   = Time.toDay here now |> twoDigits
-    in
-        String.join "-" [yyyy, mm, dd]
-
-iso8601Time : Time.Zone -> Time.Posix -> String
-iso8601Time here now =
-    let hh = Time.toHour here now |> twoDigits
-        mm = Time.toMinute here now |> twoDigits
-        ss = Time.toSecond here now |> twoDigits
-    in
-        String.join ":" [hh, mm, ss]
-
-twoDigits : Int -> String 
-twoDigits i = i |>
-              String.fromInt |>
-              String.padLeft 2 '0'
-
-listInsert : a -> List a -> List a
-listInsert x l = if List.member x l then l else x::l
-
-type alias SplitList = 
-    { three      : List String
-    , four       : List String
-    , five       : List String
-    , six        : List String
-    , sevenPlus  : List String
-    }
-
-emptySplitList = 
-    { three = []
-    , four = []
-    , five = []
-    , six = []
-    , sevenPlus = []
-    }
-
-splitList : List String -> SplitList
-splitList list =
-    let loop l sl =
-            case l of
-                [] -> sl
-                s::rest -> 
-                    case String.length s of
-                        0 -> loop rest sl
-                        1 -> loop rest sl
-                        2 -> loop rest sl
-                        3 -> loop rest { sl | three = s::sl.three }
-                        4 -> loop rest { sl | four = s::sl.four }
-                        5 -> loop rest { sl | five = s::sl.five }
-                        6 -> loop rest { sl | six = s::sl.six }
-                        _ -> loop rest { sl | sevenPlus = s::sl.sevenPlus }
-    in
-        loop (List.reverse list) emptySplitList
-                     
