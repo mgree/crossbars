@@ -58,6 +58,7 @@ import Browser
 {- FIXME don't just expose everything -}
 import Puzzle exposing (..)
 import Histogram exposing (..)
+import SMT
 import Solver exposing (..)
 import Util exposing (..)
 
@@ -114,25 +115,6 @@ port solverResults : (Json.Encode.Value -> msg) -> Sub msg
 port solverStateChanged : (Json.Encode.Value -> msg) -> Sub msg
 
 -- TYPES, HELPERS                
-
-type SolverState = SolverUnloaded
-                 | SolverDownloading
-                 | SolverInitializing
-                 | SolverReady
-                 | SolverRunning
-
-decodeSolverState : Json.Decode.Decoder SolverState
-decodeSolverState =
-    Json.Decode.string |>
-    Json.Decode.andThen
-        (\s ->
-             case s of
-                 "SolverUnloaded" -> Json.Decode.succeed SolverUnloaded
-                 "SolverDownloading" -> Json.Decode.succeed SolverDownloading
-                 "SolverInitializing" -> Json.Decode.succeed SolverInitializing
-                 "SolverReady" -> Json.Decode.succeed SolverReady
-                 "SolverRunning" -> Json.Decode.succeed SolverRunning
-                 _ -> Json.Decode.fail ("expected solver state, found '" ++ s ++ "'"))
                    
 type alias Model = 
     { puzzle : Puzzle
@@ -140,7 +122,7 @@ type alias Model =
     , selectedClues : List Int
     , savedPuzzles : List Puzzle
     , selectedPuzzle : Maybe Puzzle
-    , solverState : SolverState
+    , solverState : SMT.SolverState
     , solverResult : Maybe SMTResult
     , timeZone : Time.Zone
     }
@@ -152,7 +134,7 @@ emptyModel =
     , selectedClues = []
     , savedPuzzles = []
     , selectedPuzzle = Nothing
-    , solverState = SolverUnloaded
+    , solverState = SMT.SolverUnloaded
     , solverResult = Nothing
     , timeZone = Time.utc
     }
@@ -182,33 +164,34 @@ tryApplySMTNumberingTo model result =
                        asCurrentPuzzleIn model) |>
     withSolverResult (Just result)
 
-asSolverStateIn : Model -> SolverState -> Model
+asSolverStateIn : Model -> SMT.SolverState -> Model
 asSolverStateIn model solverState = { model | solverState = solverState }    
 
--- PUZZLE SAVING
+loadPuzzle : Puzzle -> Model -> Model
+loadPuzzle puzzle model =
+    { model
+        | savedPuzzles = model.savedPuzzles
+                           |> List.filter (not << samePuzzle puzzle)
+                           |> trySave model.puzzle
+        , puzzle = puzzle
+        , selectedClues = []
+    } |> withSolverResult Nothing
+                
+popCurrentPuzzle : Puzzle -> Model -> Model
+popCurrentPuzzle newPuzzle model =
+    { model
+        | savedPuzzles = trySave model.puzzle model.savedPuzzles
+        , puzzle = newPuzzle
+    } |> withSolverResult Nothing
 
-encodeModel : Model -> Json.Encode.Value
-encodeModel model =
-    Json.Encode.object
-        [ ("encodePuzzle", encodePuzzle model.puzzle)
-        , ("savedPuzzles", Json.Encode.list encodePuzzle model.savedPuzzles)
-        ]
-
-decodeModel : Json.Decode.Decoder Model
-decodeModel =
-    Json.Decode.map2
-        (\puzzle savedPuzzles ->
-             { puzzle = puzzle
-             , pendingDelete = False
-             , selectedClues = []
-             , savedPuzzles = savedPuzzles
-             , selectedPuzzle = Nothing
-             , solverState = SolverUnloaded
-             , solverResult = Nothing
-             , timeZone = Time.utc
-             })
-        (Json.Decode.field "currentPuzzle" decodePuzzle)
-        (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
+trySave : Puzzle -> List Puzzle -> List Puzzle
+trySave puzzle savedPuzzles =
+    if List.all String.isEmpty [puzzle.title, puzzle.author]
+    then savedPuzzles
+    else insertWith comparePuzzles puzzle savedPuzzles
+    
+andSave : SaveMode -> Model -> (Model, Cmd Msg)
+andSave mode model = (model, Task.perform (Save mode) Time.now)
 
 -- INITIAL STATE, SUBSCRIPTIONS
                                  
@@ -219,6 +202,22 @@ init savedModel =
         |> Result.withDefault emptyModel {- FIXME indicate error? -}
     , Task.perform TimeZone Time.here
     )
+
+decodeModel : Json.Decode.Decoder Model
+decodeModel =
+    Json.Decode.map2
+        (\puzzle savedPuzzles ->
+             { puzzle = puzzle
+             , pendingDelete = False
+             , selectedClues = []
+             , savedPuzzles = savedPuzzles
+             , selectedPuzzle = Nothing
+             , solverState = SMT.SolverUnloaded
+             , solverResult = Nothing
+             , timeZone = Time.utc
+             })
+        (Json.Decode.field "currentPuzzle" decodePuzzle)
+        (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
     
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -339,38 +338,12 @@ update msg model =
             andSave CurrentPuzzle
         SolverStateChanged json -> 
             ( json |>
-              Json.Decode.decodeValue decodeSolverState |>
-              Result.withDefault SolverUnloaded |>
+              Json.Decode.decodeValue SMT.decodeSolverState |>
+              Result.withDefault SMT.SolverUnloaded |>
               asSolverStateIn model
             , Cmd.none)
                                     {- FIXME display error -}
         TimeZone here -> ({ model | timeZone = here }, Cmd.none)
-
-loadPuzzle : Puzzle -> Model -> Model
-loadPuzzle puzzle model =
-    { model
-        | savedPuzzles = model.savedPuzzles
-                           |> List.filter (not << samePuzzle puzzle)
-                           |> trySave model.puzzle
-        , puzzle = puzzle
-        , selectedClues = []
-    } |> withSolverResult Nothing
-                
-popCurrentPuzzle : Puzzle -> Model -> Model
-popCurrentPuzzle newPuzzle model =
-    { model
-        | savedPuzzles = trySave model.puzzle model.savedPuzzles
-        , puzzle = newPuzzle
-    } |> withSolverResult Nothing
-
-trySave : Puzzle -> List Puzzle -> List Puzzle
-trySave puzzle savedPuzzles =
-    if List.all String.isEmpty [puzzle.title, puzzle.author]
-    then savedPuzzles
-    else insertWith comparePuzzles puzzle savedPuzzles
-    
-andSave : SaveMode -> Model -> (Model, Cmd Msg)
-andSave mode model = (model, Task.perform (Save mode) Time.now)
 
 -- VIEW
                 
@@ -539,11 +512,11 @@ view model =
                   , div [id "solver-state"]
                         [text <|
                          case model.solverState of
-                             SolverUnloaded -> "Numbering solver not loaded"
-                             SolverDownloading -> "Downloading numbering solver code..."
-                             SolverInitializing -> "Initializing numbering solver..."
-                             SolverReady -> "Numbering solver ready"
-                             SolverRunning -> "Numbering solver running..."
+                             SMT.SolverUnloaded -> "Numbering solver not loaded"
+                             SMT.SolverDownloading -> "Downloading numbering solver code..."
+                             SMT.SolverInitializing -> "Initializing numbering solver..."
+                             SMT.SolverReady -> "Numbering solver ready"
+                             SMT.SolverRunning -> "Numbering solver running..."
                         ]
                   , div [id "solver-result"]
                         [text <|

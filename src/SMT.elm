@@ -1,5 +1,26 @@
 module SMT exposing (..)
 
+import Json.Decode
+
+type SolverState = SolverUnloaded
+                 | SolverDownloading
+                 | SolverInitializing
+                 | SolverReady
+                 | SolverRunning
+
+decodeSolverState : Json.Decode.Decoder SolverState
+decodeSolverState =
+    Json.Decode.string |>
+    Json.Decode.andThen
+        (\s ->
+             case s of
+                 "SolverUnloaded" -> Json.Decode.succeed SolverUnloaded
+                 "SolverDownloading" -> Json.Decode.succeed SolverDownloading
+                 "SolverInitializing" -> Json.Decode.succeed SolverInitializing
+                 "SolverReady" -> Json.Decode.succeed SolverReady
+                 "SolverRunning" -> Json.Decode.succeed SolverRunning
+                 _ -> Json.Decode.fail ("expected solver state, found '" ++ s ++ "'"))
+
 smtAssert : String -> String
 smtAssert prop = "(assert " ++ prop ++ ")"
 
