@@ -6,6 +6,13 @@ import Histogram exposing (..)
 import Puzzle exposing (..)
 import Util exposing (..)
 
+{- PICK UP HERE
+
+   write trie search function
+   convert anagramsFor, Wordlist to use tries
+
+ -}
+
 type alias Wordlist = Dict Char (List String)
 
 anagramsFor : Wordlist -> Hist -> List Char -> List String
@@ -74,13 +81,13 @@ trieLookup word t1 =
             Maybe.andThen (List.filter (\entry -> entry.word == word) >> List.head)
         _ -> Nothing
 
-generateWordlist : List String -> Trie
-generateWordlist words =
+generateWordlist : String -> List String -> Trie
+generateWordlist source words =
     words |>
     List.map 
         (\word ->
              { word = word
-             , source = ""
+             , source = source
              , desc = ""
              , url = ""
              }) |>
