@@ -24,12 +24,6 @@ port module Main exposing (..)
 
    NITS
 
-     refactor:
-       Crossbars.Acrostic.Creator -- main goes here
-       Crossbars.Puzzle
-       Crossbars.Histogram
-       Crossbars.SMT
-
      clicking on a square highlights selected letters in the clue?
      way to control escaped characters in the quote
      right-aligned wrapping of long clues
@@ -61,6 +55,7 @@ import Histogram exposing (..)
 import SMT
 import Solver exposing (..)
 import Util exposing (..)
+import Wordlist exposing (..)
 
 -- MAIN                    
 
@@ -592,7 +587,7 @@ view model =
                      , if List.isEmpty model.selectedClues
                        then span [] [text "Select a clue to receive anagram suggestions."]
                        else div [] (model.selectedClues |>
-                                    List.map (anagramAssistance model remainingHist))
+                                    List.map (anagramAssistance puzzle remainingHist))
                      ]
                  CluingLettering -> 
                      (model.selectedClues |> 
@@ -865,21 +860,21 @@ boardToSVG numCols qIndexUses puzzle =
             , id "board" ]
             quoteRows
 
--- WORDLIST FUNCTIONS
+-- ANAGRAMS
 
 anagramDatalistId : String -> String
 anagramDatalistId letter = "clue-anagrams-" ++ letter
 
-anagramAssistance : Model -> Hist -> Int -> Html Msg
-anagramAssistance model remainingHist index =
+anagramAssistance : Puzzle -> Hist -> Int -> Html Msg
+anagramAssistance puzzle remainingHist index =
     let
 
         letter = letterFor index
 
-        clue = clueFor index model.puzzle
+        clue = clueFor index puzzle
 
         prefix = case List.map Tuple.second clue.answer of
-                     [] -> initialism model.puzzle |>
+                     [] -> initialism puzzle |>
                            String.toList |>
                            List.drop index |>
                            List.take 1 |>
@@ -905,49 +900,3 @@ anagramAssistance model remainingHist index =
             , anagramEntry 6 "6 letters" split.six
             , anagramEntry 7 "7+ letters" split.sevenPlus
             ]
-
-{- FIXME need a prefix tree or something -}
-type alias Wordlist = Dict Char (List String)
-
-anagramsFor : Wordlist -> Hist -> List Char -> List String
-anagramsFor wl remainingHist prefix =
-    case prefix of 
-        [] -> []
-        c::rest ->
-            let s = String.fromList prefix in
-            Dict.get c wl |>
-            Maybe.withDefault [] |>
-            List.filter (String.startsWith s) |>
-            List.filter (String.dropLeft (String.length s) >> 
-                         foundInHist remainingHist)
-
-testingWordlist : Wordlist
-testingWordlist = Dict.fromList <|
-    [ ('A', ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC"])
-    , ('B', ["BCD", "BFD", "BDF", "BFF"])
-    , ('C', [])
-    , ('D', [])
-    , ('E', [])
-    , ('F', [])
-    , ('G', [])
-    , ('H', [])
-    , ('I', [])
-    , ('J', [])
-    , ('K', [])
-    , ('L', [])
-    , ('M', [])
-    , ('N', [])
-    , ('O', [])
-    , ('P', [])
-    , ('Q', [])
-    , ('R', [])
-    , ('S', [])
-    , ('T', [])
-    , ('U', [])
-    , ('V', [])
-    , ('W', [])
-    , ('X', [])
-    , ('Y', [])
-    , ('Z', [])
-    ]
-
