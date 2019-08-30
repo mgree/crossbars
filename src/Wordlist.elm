@@ -13,7 +13,7 @@ import Util exposing (..)
 
  -}
 
-type alias Wordlist = Dict Char (List String)
+type alias Wordlist = Trie
 
 anagramsFor : Wordlist -> Hist -> List Char -> List String
 anagramsFor wl remainingHist prefix =
@@ -21,9 +21,8 @@ anagramsFor wl remainingHist prefix =
         [] -> []
         c::rest ->
             let s = String.fromList prefix in
-            Dict.get c wl |>
-            Maybe.withDefault [] |>
-            List.filter (String.startsWith s) |>
+            trieSuffixes prefix s wl |>
+            List.map .word |>
             List.filter (String.dropLeft (String.length s) >> 
                          foundInHist remainingHist)
 
@@ -81,6 +80,29 @@ trieLookup word t1 =
             Maybe.andThen (List.filter (\entry -> entry.word == word) >> List.head)
         _ -> Nothing
 
+trieSuffixes : List Char -> String -> Trie -> List Entry
+trieSuffixes word s t1 =
+    case word of
+        c1::c2::c3::_ ->
+            Dict.get c1 t1 |> 
+            Maybe.andThen (Dict.get c2) |>
+            Maybe.andThen (Dict.get c3) |>
+            Maybe.withDefault [] |>
+            List.filter (.word >> String.startsWith s)
+        [c1, c2] ->
+            Dict.get c1 t1 |> 
+            Maybe.andThen (Dict.get c2) |>
+            Maybe.withDefault Dict.empty |>
+            Dict.values |>
+            List.concat
+        [c1] ->
+            Dict.get c1 t1 |> 
+            Maybe.withDefault Dict.empty |>
+            Dict.values |>
+            List.concatMap Dict.values |>
+            List.concat
+        [] -> []
+
 generateWordlist : String -> List String -> Trie
 generateWordlist source words =
     words |>
@@ -94,32 +116,7 @@ generateWordlist source words =
     List.foldr trieInsert emptyTrie
 
 testingWordlist : Wordlist
-testingWordlist = Dict.fromList <|
-    [ ('A', ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC"])
-    , ('B', ["BCD", "BFD", "BDF", "BFF"])
-    , ('C', [])
-    , ('D', [])
-    , ('E', [])
-    , ('F', [])
-    , ('G', [])
-    , ('H', [])
-    , ('I', [])
-    , ('J', [])
-    , ('K', [])
-    , ('L', [])
-    , ('M', [])
-    , ('N', [])
-    , ('O', [])
-    , ('P', [])
-    , ('Q', [])
-    , ('R', [])
-    , ('S', [])
-    , ('T', [])
-    , ('U', [])
-    , ('V', [])
-    , ('W', [])
-    , ('X', [])
-    , ('Y', [])
-    , ('Z', [])
-    ]
-
+testingWordlist = 
+    generateWordlist "testing"
+      ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC",
+       "BCD", "BFD", "BDF", "BFF"]
