@@ -8,7 +8,7 @@ import Json.Decode
 import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces)
 
 import Puzzle exposing (..)
-import SMT exposing (..)
+import SMT
 import Util exposing (..)
 
 -- NUMBERING VIA SMT
@@ -165,29 +165,29 @@ smt2OfConstraint c =
 
         OneOf var ns ->
             ns |>
-            List.map (\n -> smtEq var (String.fromInt n)) |>
-            smtOr |>
-            smtAssert
+            List.map (\n -> SMT.eq var (String.fromInt n)) |>
+            SMT.or |>
+            SMT.assert
 
-        Distinct [] -> smtAssert "true"
+        Distinct [] -> SMT.assert "true"
         Distinct vars -> 
             vars |>
-            smtDistinct |>
-            smtAssert
+            SMT.distinct |>
+            SMT.assert
 
         NotAscending vars ->
             vars |>
-            smtAscending |>
-            smtNot |>
-            smtAssert
+            SMT.ascending |>
+            SMT.not |>
+            SMT.assert
                  
-        NotSameWord [] -> smtAssert "true"
-        NotSameWord [_] -> smtAssert "true"             
+        NotSameWord [] -> SMT.assert "true"
+        NotSameWord [_] -> SMT.assert "true"             
         NotSameWord vars ->
             vars |>
-            List.map smtWordOf |>
-            smtDistinct |>
-            smtAssert
+            List.map SMT.wordOf |>
+            SMT.distinct |>
+            SMT.assert
 
 smt2OfConstraints : Dict Int Int -> List Constraint -> String
 smt2OfConstraints qIndexWords constraints =
@@ -208,16 +208,16 @@ smt2OfConstraints qIndexWords constraints =
         wordFun =
             let
                 {- METHOD 1: axiomatize (currently used, works much better) -}
-                decl = "(declare-fun " ++ smtWordFun ++ " (Int) Int)"
+                decl = "(declare-fun " ++ SMT.wordFun ++ " (Int) Int)"
 
                 vals =
                     qIndexWords |>
                     Dict.foldr
                         (\x wordNum eqs ->
-                             ("(= " ++ smtWordOf (String.fromInt x) ++ " " ++ (String.fromInt wordNum) ++ ")") :: eqs)
+                             ("(= " ++ SMT.wordOf (String.fromInt x) ++ " " ++ (String.fromInt wordNum) ++ ")") :: eqs)
                         [] |>
-                    smtAnd |>
-                    smtAssert
+                    SMT.and |>
+                    SMT.assert
 
                 {- METHOD 2: define as a function/macro -}
                 conds =
@@ -227,7 +227,7 @@ smt2OfConstraints qIndexWords constraints =
                              "(ite (= n " ++ String.fromInt x ++ ") " ++ (String.fromInt wordNum) ++ " " ++ otw ++ ")")
                         "-1"
                         
-                defn = "(define-fun " ++ smtWordFun ++ " ((n Int)) Int " ++ conds ++ ")"
+                defn = "(define-fun " ++ SMT.wordFun ++ " ((n Int)) Int " ++ conds ++ ")"
                         
             in
                 [decl, vals] -- [defn]

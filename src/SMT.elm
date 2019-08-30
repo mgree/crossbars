@@ -1,4 +1,16 @@
-module SMT exposing (..)
+module SMT exposing 
+    ( SolverState(..)
+    , decodeSolverState
+    , assert
+    , wordFun
+    , wordOf
+    , eq
+    , or
+    , and
+    , not
+    , ascending
+    , distinct
+    )
 
 import Json.Decode
 
@@ -21,44 +33,44 @@ decodeSolverState =
                  "SolverRunning" -> Json.Decode.succeed SolverRunning
                  _ -> Json.Decode.fail ("expected solver state, found '" ++ s ++ "'"))
 
-smtAssert : String -> String
-smtAssert prop = "(assert " ++ prop ++ ")"
+assert : String -> String
+assert prop = "(assert " ++ prop ++ ")"
 
-smtWordFun : String
-smtWordFun = "word-of"
+wordFun : String
+wordFun = "word-of"
 
-smtWordOf : String -> String
-smtWordOf x = "(" ++ smtWordFun ++ " " ++ x ++")"
+wordOf : String -> String
+wordOf x = "(" ++ wordFun ++ " " ++ x ++")"
              
-smtEq : String -> String -> String
-smtEq l r = "(= " ++ l ++ " " ++ r ++ ")"
+eq : String -> String -> String
+eq l r = "(= " ++ l ++ " " ++ r ++ ")"
                  
-smtOr : List String -> String
-smtOr props =
+or : List String -> String
+or props =
     case props of
         [] -> "true"
         [prop] -> prop
         _ -> "(or " ++ String.join " " props ++ ")"
 
-smtAnd : List String -> String
-smtAnd props =
+and : List String -> String
+and props =
     case props of
         [] -> "true" -- weird, I know, but probably the right default for our case. shouldn't come up.
         [prop] -> prop
         _ -> "(and " ++ String.join " " props ++ ")"
 
-smtNot : String -> String
-smtNot prop = "(not " ++ prop ++ ")"
+not : String -> String
+not prop = "(not " ++ prop ++ ")"
 
-smtAscending : List String -> String
-smtAscending vars =
+ascending : List String -> String
+ascending vars =
     case vars of
         [] -> "true"
         [var] -> "true"
         _ -> "(< " ++ String.join " " vars ++ ")"
 
-smtDistinct : List String -> String
-smtDistinct vars =
+distinct : List String -> String
+distinct vars =
     case vars of
         [] -> "true"
         [var] -> "true"
