@@ -51,7 +51,7 @@ import Browser
 
 {- FIXME don't just expose everything -}
 import Puzzle exposing (..)
-import Histogram exposing (..)
+import Hist exposing (..)
 import SMT
 import Solver exposing (..)
 import Util exposing (..)

@@ -1,4 +1,4 @@
-module Histogram exposing (..)
+module Hist exposing (..)
 
 import Dict exposing (Dict)
 import Html exposing (Html)

@@ -2,7 +2,7 @@ module Wordlist exposing (..)
 
 import Dict exposing (Dict)
 
-import Histogram exposing (..)
+import Hist exposing (..)
 import Puzzle exposing (..)
 import Util exposing (..)
 

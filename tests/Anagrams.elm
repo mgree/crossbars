@@ -4,7 +4,7 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 
-import Histogram exposing (Hist)
+import Hist exposing (Hist)
 import Wordlist exposing (..)
 
 import Util exposing (..)
@@ -47,7 +47,7 @@ sampleWords =
      "BCD", "BFD", "BDF", "BFF"]
 
 sampleHist : Hist
-sampleHist = Histogram.letterHist "ABCDFF"
+sampleHist = Hist.letterHist "ABCDFF"
 
 {- model for comparison -}
 type alias NaiveWordlist = List Entry
