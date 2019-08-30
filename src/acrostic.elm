@@ -51,9 +51,9 @@ import Browser
 
 {- FIXME don't just expose everything -}
 import Puzzle exposing (..)
-import Hist exposing (..)
+import Hist exposing (Hist)
 import SMT
-import Solver exposing (..)
+import Solver
 import Util exposing (..)
 import Wordlist exposing (..)
 
@@ -118,7 +118,7 @@ type alias Model =
     , savedPuzzles : List Puzzle
     , selectedPuzzle : Maybe Puzzle
     , solverState : SMT.SolverState
-    , solverResult : Maybe SMTResult
+    , solverResult : Maybe Solver.SMTResult
     , timeZone : Time.Zone
     }
 
@@ -146,17 +146,17 @@ clearSelectedPuzzle model = { model | selectedPuzzle = Nothing }
 pendingDeletion : Bool -> Model -> Model
 pendingDeletion pending model = { model | pendingDelete = pending }
 
-withSolverResult : Maybe SMTResult -> Model -> Model
+withSolverResult : Maybe Solver.SMTResult -> Model -> Model
 withSolverResult mResult model = { model | solverResult = mResult }
 
-tryApplySMTNumberingTo : Model -> SMTResult -> Model
+tryApplySMTNumberingTo : Model -> Solver.SMTResult -> Model
 tryApplySMTNumberingTo model result =
     (case result.answer of
-         SMTFailed -> model
-         SMTTimeout -> model
-         SMTOk nums -> model.puzzle |>
-                       applySMTNumbering nums |>
-                       asCurrentPuzzleIn model) |>
+         Solver.SMTFailed -> model
+         Solver.SMTTimeout -> model
+         Solver.SMTOk nums -> model.puzzle |>
+                              Solver.applySMTNumbering nums |>
+                              asCurrentPuzzleIn model) |>
     withSolverResult (Just result)
 
 asSolverStateIn : Model -> SMT.SolverState -> Model
@@ -321,14 +321,12 @@ update msg model =
         SolveNumbering ->
             (model, 
              model.puzzle |> 
-             constraintsOfPuzzle (quoteIndices model.puzzle) |> 
-             smt2OfConstraints (quoteIndexWords model.puzzle) |>
-             Json.Encode.string |> 
+             Solver.generateNumberingProblem |>
              solveNumbering)
         SolverResults json ->
             json |>
-            Json.Decode.decodeValue decodeSMTResult |>
-            Result.withDefault smtMissingResult |>
+            Json.Decode.decodeValue Solver.decodeSMTResult |>
+            Result.withDefault Solver.missingResult |>
             tryApplySMTNumberingTo model |>
             andSave CurrentPuzzle
         SolverStateChanged json -> 
@@ -526,9 +524,9 @@ view model =
                                              else String.fromInt result.elapsed ++ "ms" 
                                      in
                                      case result.answer of
-                                         SMTFailed -> "Could not find a numbering (" ++ time ++ "). 😦"
-                                         SMTTimeout -> "Timed out (" ++ time ++ "). ⏲"
-                                         SMTOk _ -> "Success! 🎊 The puzzle has been automatically numbered in " ++ time ++ "."
+                                         Solver.SMTFailed -> "Could not find a numbering (" ++ time ++ "). 😦"
+                                         Solver.SMTTimeout -> "Timed out (" ++ time ++ "). ⏲"
+                                         Solver.SMTOk _ -> "Success! 🎊 The puzzle has been automatically numbered in " ++ time ++ "."
                         ]
                   , input [ type_ "button"
                           , onClick ClearNumbering

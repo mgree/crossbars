@@ -1,4 +1,12 @@
-module Solver exposing (..)
+module Solver exposing 
+    ( generateNumberingProblem
+    , applySMTNumbering
+    , decodeSMTResult
+    , SMTResult
+    , missingResult
+    , SMTAnswer(..)
+    , SMTNumbering
+    )
 
 import Dict exposing (Dict)
 
@@ -28,6 +36,14 @@ isDefn c =
     case c of
         IsInt _ -> True
         _ -> False
+
+generateNumberingProblem :  Puzzle -> Json.Encode.Value
+generateNumberingProblem puzzle =
+    puzzle |> 
+    constraintsOfPuzzle (Puzzle.quoteIndices puzzle) |> 
+    smt2OfConstraints (Puzzle.quoteIndexWords puzzle) |>
+    Json.Encode.string
+
                   
 constraintsOfPuzzle : Dict Char (List Int) -> Puzzle -> List Constraint
 constraintsOfPuzzle qIndices puzzle =
@@ -91,8 +107,8 @@ type SMTAnswer = SMTOk SMTNumbering
                | SMTTimeout
                | SMTFailed
 
-smtMissingResult : SMTResult
-smtMissingResult = { answer = SMTFailed
+missingResult : SMTResult
+missingResult = { answer = SMTFailed
                    , elapsed = 0
                    }
 
