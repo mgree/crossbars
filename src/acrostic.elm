@@ -353,27 +353,27 @@ view model =
 
         initials = initialism puzzle 
 
-        initialismHist = letterHist initials
+        initialismHist = Hist.fromString initials
 
-        quoteHist = letterHist puzzle.quote 
+        quoteHist = Hist.fromString puzzle.quote 
                                      
-        missingHist = histDifference quoteHist initialismHist
+        missingHist = Hist.difference quoteHist initialismHist
 
-        viable = isExhaustedHist missingHist
+        viable = Hist.isExhausted missingHist
 
-        clueHist = letterHist (puzzle.clues |> List.map clueAnswer |> String.concat)
+        clueHist = Hist.fromString (puzzle.clues |> List.map clueAnswer |> String.concat)
 
-        remainingHist = histDifference clueHist quoteHist
+        remainingHist = Hist.difference clueHist quoteHist
 
         readyForPhase phase =
             puzzle.phase == phase ||
                 case phase of
                     QuoteEntry -> True
                     Anagramming -> viable &&
-                                   not (isEmptyHist quoteHist)
+                                   not (Hist.isEmpty quoteHist)
                     CluingLettering -> viable &&
-                                       not (isEmptyHist quoteHist) &&
-                                       isEmptyHist remainingHist
+                                       not (Hist.isEmpty quoteHist) &&
+                                       Hist.isEmpty remainingHist
                     
         qIndices = quoteIndices puzzle
 
@@ -491,14 +491,14 @@ view model =
                        [ span [id "viability"]
                              [ if viable
                                then text "Quote has all of the initialism's letters"
-                               else text ("The quote does not have some letters the initialism needs: " ++ histToShortString missingHist)
+                               else text ("The quote does not have some letters the initialism needs: " ++ Hist.toShortString missingHist)
                              ]
                        , span [class "count"] 
                            [ text "Total letters: "
-                           , quoteHist |> countHist |> String.fromInt |> text]
+                           , quoteHist |> Hist.count |> String.fromInt |> text]
                        , span [class "count"] 
                            [ text "Remaining letters: "
-                           , remainingHist |> countHist |> String.fromInt |> text]
+                           , remainingHist |> Hist.count |> String.fromInt |> text]
                        ]
                  ])
         , section [id "detail"]
@@ -541,7 +541,7 @@ view model =
                           []
                   ]
              else [ h3 [class "header"] [text "Letters remaining"]
-                  , histToSVG quoteHist remainingHist ])
+                  , Hist.toSVG quoteHist remainingHist ])
         , section [id "clues"]
             (puzzle.clues 
                 |> addInitials (String.toList initials) 

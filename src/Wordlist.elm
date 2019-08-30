@@ -24,7 +24,7 @@ anagramsFor wl remainingHist prefix =
             trieSuffixes prefix s wl |>
             List.map .word |>
             List.filter (String.dropLeft (String.length s) >> 
-                         foundInHist remainingHist)
+                         Hist.foundIn remainingHist)
 
 -- fixed depth 3 tries
 

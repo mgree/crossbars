@@ -47,7 +47,7 @@ sampleWords =
      "BCD", "BFD", "BDF", "BFF"]
 
 sampleHist : Hist
-sampleHist = Hist.letterHist "ABCDFF"
+sampleHist = Hist.fromString "ABCDFF"
 
 {- model for comparison -}
 type alias NaiveWordlist = List Entry

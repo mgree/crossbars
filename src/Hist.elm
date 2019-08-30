@@ -1,4 +1,15 @@
-module Hist exposing (..)
+module Hist exposing 
+    ( Hist
+    , empty
+    , fromString
+    , foundIn
+    , difference
+    , isEmpty
+    , isExhausted
+    , count
+    , toShortString
+    , toSVG
+    )
 
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -10,17 +21,17 @@ import Util exposing (..)
 
 type alias Hist = Dict Char Int
          
-emptyHist : Hist
-emptyHist = Dict.empty
+empty : Hist
+empty = Dict.empty
 
-emptyLetterHist : Hist
-emptyLetterHist = 
+emptyLetter : Hist
+emptyLetter = 
     alphabetList
         |> List.map (\c -> (c,0))
         |> Dict.fromList
 
-letterHist : String -> Hist
-letterHist s =
+fromString : String -> Hist
+fromString s =
     let 
         incrementCount mcnt =
             case mcnt of
@@ -29,23 +40,23 @@ letterHist s =
     in
 
     List.foldl (\c m -> Dict.update c incrementCount m)
-        emptyHist (cleanChars s)
+        empty (cleanChars s)
 
 cleanLetterHist : Hist -> Hist
-cleanLetterHist h = Dict.union h emptyLetterHist 
+cleanLetterHist h = Dict.union h emptyLetter
 
-countHist : Hist -> Int
-countHist h = List.sum (Dict.values h)
+count : Hist -> Int
+count h = List.sum (Dict.values h)
 
-foundInHist : Hist -> String -> Bool
-foundInHist hist s = 
+foundIn : Hist -> String -> Bool
+foundIn hist s = 
     s |>
-    letterHist |>
-    histDifference hist |>
-    isExhaustedHist
+    fromString |>
+    difference hist |>
+    isExhausted
 
-histDifference : Hist -> Hist -> Hist
-histDifference hSub hSup = 
+difference : Hist -> Hist -> Hist
+difference hSub hSup = 
     Dict.merge
         (\c cSub      d -> Dict.insert c (-cSub) d)
         (\c cSub cSup d -> Dict.insert c (cSup - cSub) d)
@@ -53,27 +64,27 @@ histDifference hSub hSup =
         hSub hSup
         Dict.empty
 
-isExhaustedHist : Hist -> Bool
-isExhaustedHist h = 
+isExhausted : Hist -> Bool
+isExhausted h = 
     h |> Dict.filter (\c cnt -> cnt > 0)
       |> Dict.isEmpty
   
-isEmptyHist : Hist -> Bool
-isEmptyHist h =
+isEmpty : Hist -> Bool
+isEmpty h =
     h |> Dict.values
       |> List.all (\cnt -> cnt == 0)
 
 -- HISTOGRAM RENDERING
          
-histToShortString : Hist -> String
-histToShortString h =
+toShortString : Hist -> String
+toShortString h =
     h |> Dict.filter (\c cnt -> cnt > 0)
       |> Dict.toList
-      |> List.map (\(c, count) -> c |> String.fromChar |> String.repeat count)
+      |> List.map (\(c, cnt) -> c |> String.fromChar |> String.repeat cnt)
       |> String.concat
 
-histToSVG : Hist -> Hist -> Html msg
-histToSVG hQuote hRemaining =
+toSVG : Hist -> Hist -> Html msg
+toSVG hQuote hRemaining =
     let 
         width = 300
         height = 120
@@ -121,16 +132,16 @@ histToSVG hQuote hRemaining =
                                  ] []
 
                            countCls = if cnt >= 0 then "valid" else "invalid"
-                           count = Svg.text_
-                                 [ letterX index |> String.fromFloat |> Svg.Attributes.x
-                                 , barY - 2 |> String.fromFloat |> Svg.Attributes.y
-                                 , Svg.Attributes.textAnchor "middle"
-                                 , Svg.Attributes.class countCls
-                                 ]
-                                 [ cnt |> String.fromInt |> Svg.text ]
+                           counter = Svg.text_
+                                   [ letterX index |> String.fromFloat |> Svg.Attributes.x
+                                   , barY - 2 |> String.fromFloat |> Svg.Attributes.y
+                                   , Svg.Attributes.textAnchor "middle"
+                                   , Svg.Attributes.class countCls
+                                   ]
+                                   [ cnt |> String.fromInt |> Svg.text ]
 
                        in
-                       Svg.g [Svg.Attributes.class cls] [bar, count])
+                       Svg.g [Svg.Attributes.class cls] [bar, counter])
                   (Dict.values h)
             else []
 
@@ -138,7 +149,7 @@ histToSVG hQuote hRemaining =
         remainingBars = bars "remaining" hr
 
         hooray =
-            if isEmptyHist hr && not (isEmptyHist hq)
+            if isEmpty hr && not (isEmpty hq)
             then [ Svg.text_
                        [ width / 2 |> String.fromFloat |> Svg.Attributes.x
                        , height / 2 |> String.fromFloat |> Svg.Attributes.y
