@@ -108,8 +108,3 @@ generateWordlist source words =
              }) |>
     List.foldr trieInsert emptyTrie
 
-testingWordlist : Wordlist
-testingWordlist = 
-    generateWordlist "testing"
-      ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC",
-       "BCD", "BFD", "BDF", "BFF"]

@@ -17,6 +17,7 @@ port module Main exposing (..)
 
    AUTONUMBERING 
      unclear how to set timeouts in Z3 wasm---needs pthreads :(
+       build w/o pthreads doesn't work
 
      how good can a greedy algorithm do?
        might be faster, sometimes? (Z3 takes ~10s on my old WCW acrostic)

@@ -34,6 +34,11 @@ suite =
                 Expect.equal (trieSuffixes (String.toList s) s sampleWL)
         ]
 
+testingWordlist : Wordlist
+testingWordlist = 
+    generateWordlist "testing"
+      ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC",
+       "BCD", "BFD", "BDF", "BFF"]
 
 sampleNWL : NaiveWordlist
 sampleNWL = generateNaiveWordlist "testing" sampleWords
