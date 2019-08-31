@@ -9,6 +9,8 @@ import Wordlist exposing (..)
 
 import Util exposing (..)
 
+import Parser
+
 suite : Test
 suite =
     describe "wordlist"
@@ -32,13 +34,27 @@ suite =
             \s ->
                 naiveWordlistSuffixes (String.toList s) s sampleNWL |>
                 Expect.equal (trieSuffixes (String.toList s) s sampleWL)
+        , test "parse list of words w/final newline" <|
+            \_ ->
+                testingWords |>
+                String.join "\n" |>
+                (\s -> s ++ "\n") |>
+                Parser.run parseWordPerLine |>
+                Expect.equal (Ok testingWords)
+        , test "parse list of words w/o final newline" <|
+            \_ ->
+                testingWords |>
+                String.join "\n" |>
+                Parser.run parseWordPerLine |>
+                Expect.equal (Ok testingWords)
         ]
+
+testingWords : List String
+testingWords = ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC", "BCD", "BFD", "BDF", "BFF"]
 
 testingWordlist : Wordlist
 testingWordlist = 
-    generateWordlist "testing"
-      ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC",
-       "BCD", "BFD", "BDF", "BFF"]
+    generateWordlist "testing" testingWords
 
 sampleNWL : NaiveWordlist
 sampleNWL = generateNaiveWordlist "testing" sampleWords

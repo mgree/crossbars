@@ -6,7 +6,7 @@ import Hist exposing (..)
 import Puzzle exposing (..)
 import Util exposing (..)
 
-import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces)
+import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces, chompUntilEndOr, getChompedString)
 
 type alias Wordlist = Trie
 
@@ -113,7 +113,19 @@ generateWordlist source words =
              }) |>
     List.foldr trieInsert emptyTrie
 
-{-
 parseWordPerLine : Parser (List String)
 parseWordPerLine =
-  -}  
+    Parser.oneOf
+        [ succeed (\hd tl -> if String.isEmpty hd then tl else hd :: tl)
+            |= (chompUntilEndOr "\n" |> getChompedString)
+            |= Parser.oneOf
+              [ succeed identity
+                  |. symbol "\n"
+                  |= Parser.lazy (\_ -> parseWordPerLine)
+              , succeed []
+                |. end
+              ]
+        , succeed []
+            |. end
+        ]
+
