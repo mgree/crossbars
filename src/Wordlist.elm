@@ -101,6 +101,8 @@ trieSuffixes word s t1 =
             List.concat
         [] -> []
 
+-- parsing word lists
+
 generateWordlist : String -> List String -> Trie
 generateWordlist source words =
     words |>

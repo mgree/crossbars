@@ -56,7 +56,7 @@ import Hist exposing (Hist)
 import SMT
 import Solver
 import Util exposing (..)
-import Wordlist exposing (..)
+import Wordlist exposing (Wordlist)
 
 -- MAIN                    
 
@@ -880,7 +880,7 @@ anagramAssistance puzzle remainingHist index =
                            List.map Char.toUpper
                      cs -> cs
 
-        anagrams = anagramsFor Wordlist.empty remainingHist prefix
+        anagrams = Wordlist.anagramsFor Wordlist.empty remainingHist prefix
 
         split = splitList anagrams
 
