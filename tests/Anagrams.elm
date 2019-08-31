@@ -39,14 +39,14 @@ suite =
                 testingWords |>
                 String.join "\n" |>
                 (\s -> s ++ "\n") |>
-                Parser.run parseWordPerLine |>
-                Expect.equal (Ok testingWords)
+                Wordlist.load "testing" |>
+                Expect.equal testingWordlist
         , test "parse list of words w/o final newline" <|
             \_ ->
                 testingWords |>
                 String.join "\n" |>
-                Parser.run parseWordPerLine |>
-                Expect.equal (Ok testingWords)
+                Wordlist.load "testing" |>
+                Expect.equal testingWordlist
         ]
 
 testingWords : List String

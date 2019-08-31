@@ -357,7 +357,7 @@ update msg model =
             , Cmd.none)
         TimeZone here -> ({ model | timeZone = here }, Cmd.none)
         GotWordlist source (Err err) -> 
-            ( err |> Debug.log "error" |> (\_ -> model)
+            ( model
             , Cmd.none) {- FIXME display error -}
         GotWordlist source (Ok words) -> 
             ( { model | wordlist = Wordlist.load source words }

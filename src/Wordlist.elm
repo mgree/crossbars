@@ -107,15 +107,14 @@ load : String -> String -> Wordlist
 load source contents =
     contents |>
     String.words |>
-    generateWordlist source |>
-    Debug.log "wordlist"
+    generateWordlist source
 
 generateWordlist : String -> List String -> Wordlist
 generateWordlist source words =
     words |>
     List.map 
         (\word ->
-             { word = word
+             { word = String.toUpper word
              , source = source
              , desc = ""
              , url = ""
