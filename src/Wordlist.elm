@@ -6,13 +6,6 @@ import Hist exposing (..)
 import Puzzle exposing (..)
 import Util exposing (..)
 
-{- PICK UP HERE
-
-   write trie search function
-   convert anagramsFor, Wordlist to use tries
-
- -}
-
 type alias Wordlist = Trie
 
 anagramsFor : Wordlist -> Hist -> List Char -> List String
