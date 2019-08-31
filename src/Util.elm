@@ -5,6 +5,8 @@ import Dict exposing (Dict)
 import Json.Encode
 import Json.Decode
 
+import Parser exposing (Parser, (|.), (|=), succeed, spaces)
+
 import Time
 
 alphabet : String
@@ -155,3 +157,14 @@ twoDigits : Int -> String
 twoDigits i = i |>
               String.fromInt |>
               String.padLeft 2 '0'
+
+listOf : Parser a -> Parser (List a)
+listOf item =
+    Parser.oneOf
+        [ succeed (\hd tl -> hd :: tl)
+            |. spaces
+            |= item
+            |. spaces
+            |= Parser.lazy (\_ -> listOf item)
+        , succeed []
+        ]

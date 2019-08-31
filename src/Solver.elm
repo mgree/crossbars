@@ -259,13 +259,3 @@ smt2OfConstraints qIndexWords constraints =
     in
         String.join "\n" commands
 
-listOf : Parser a -> Parser (List a)
-listOf item =
-    Parser.oneOf
-        [ succeed (\hd tl -> hd :: tl)
-            |. spaces
-            |= item
-            |. spaces
-            |= Parser.lazy (\_ -> listOf item)
-        , succeed []
-        ]

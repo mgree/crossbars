@@ -6,7 +6,12 @@ import Hist exposing (..)
 import Puzzle exposing (..)
 import Util exposing (..)
 
+import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces)
+
 type alias Wordlist = Trie
+
+empty : Wordlist
+empty = emptyTrie
 
 anagramsFor : Wordlist -> Hist -> List Char -> List String
 anagramsFor wl remainingHist prefix =
@@ -108,3 +113,7 @@ generateWordlist source words =
              }) |>
     List.foldr trieInsert emptyTrie
 
+{-
+parseWordPerLine : Parser (List String)
+parseWordPerLine =
+  -}  

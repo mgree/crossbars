@@ -880,7 +880,7 @@ anagramAssistance puzzle remainingHist index =
                            List.map Char.toUpper
                      cs -> cs
 
-        anagrams = anagramsFor testingWordlist remainingHist prefix
+        anagrams = anagramsFor Wordlist.empty remainingHist prefix
 
         split = splitList anagrams
 
