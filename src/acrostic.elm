@@ -4,13 +4,17 @@ port module Main exposing (..)
 
    ANSWER SEARCH
 
+     SLOW! :(
+       Html.Lazy and Html.Keyed seem to help a _bit_
+       GC seems to dominate, kills frame rate
+
+       something more process-based for search would help
+
      wordlists have links/hovers/tooltips with more info?
-     Model has some Wordlist entries in it
      settings display here to load more wordlists
      allow user to filter by word length, letters used/avoided
 
      dictionary ideas:
-       /usr/share/dict/words
        Webster's 1913 -- adapt https://github.com/ponychicken/WebsterParser
        Wikipedia/Wiktionary titles
      dictionary format validator
@@ -36,6 +40,7 @@ import Set exposing (Set)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onFocus)
+import Html.Lazy as Lazy
 import Html.Keyed as Keyed
 
 import Svg
@@ -195,13 +200,27 @@ andSave : SaveMode -> Model -> (Model, Cmd Msg)
 andSave mode model = (model, Task.perform (Save mode) Time.now)
 
 -- INITIAL STATE, SUBSCRIPTIONS
-                                 
+
+wordlists : List String
+wordlists = 
+    [ "words/words.txt"
+    ]
+
 init : Flags -> (Model, Cmd Msg)
 init savedModel =
     ( savedModel
         |> Json.Decode.decodeValue decodeModel 
         |> Result.withDefault emptyModel {- FIXME indicate error? -}
-    , Task.perform TimeZone Time.here
+    , Cmd.batch 
+        ( Task.perform TimeZone Time.here ::
+          List.map
+              (\source ->
+                   Http.get
+                       { url = source
+                       , expect = Http.expectString (GotWordlist source)
+                       })
+              wordlists
+        )
     )
 
 decodeModel : Json.Decode.Decoder Model
@@ -337,11 +356,12 @@ update msg model =
               asSolverStateIn model
             , Cmd.none)
         TimeZone here -> ({ model | timeZone = here }, Cmd.none)
-        GotWordlist source (Err _) -> (model, Cmd.none) {- FIXME display error -}
+        GotWordlist source (Err err) -> 
+            ( err |> Debug.log "error" |> (\_ -> model)
+            , Cmd.none) {- FIXME display error -}
         GotWordlist source (Ok words) -> 
-            case Wordlist.load source words of
-                Err _ -> (model, Cmd.none) {- FIXME display error -}
-                Ok wordlist -> ({ model | wordlist = wordlist }, Cmd.none)
+            ( { model | wordlist = Wordlist.load source words }
+            , Cmd.none)
 
 -- VIEW
                 
@@ -590,7 +610,7 @@ view model =
                      , if List.isEmpty model.selectedClues
                        then span [] [text "Select a clue to receive anagram suggestions."]
                        else div [] (model.selectedClues |>
-                                    List.map (anagramAssistance puzzle remainingHist))
+                                    List.map (Lazy.lazy4 anagramAssistance puzzle model.wordlist remainingHist))
                      ]
                  CluingLettering -> 
                      (model.selectedClues |> 
@@ -868,8 +888,8 @@ boardToSVG numCols qIndexUses puzzle =
 anagramDatalistId : String -> String
 anagramDatalistId letter = "clue-anagrams-" ++ letter
 
-anagramAssistance : Puzzle -> Hist -> Int -> Html Msg
-anagramAssistance puzzle remainingHist index =
+anagramAssistance : Puzzle -> Wordlist -> Hist -> Int -> Html Msg
+anagramAssistance puzzle wordlist remainingHist index =
     let
 
         letter = letterFor index
@@ -884,19 +904,20 @@ anagramAssistance puzzle remainingHist index =
                            List.map Char.toUpper
                      cs -> cs
 
-        anagrams = Wordlist.anagramsFor Wordlist.empty remainingHist prefix
+        anagrams = Wordlist.anagramsFor wordlist remainingHist prefix
 
         split = splitList anagrams
 
         anagramEntry num descr l =
-            div [class ("anagram-group" ++ String.fromInt num)]
-                ([h4 [] [text descr]] ++
-                 List.map (text >> List.singleton >> div [class "anagram"]) l)
+            Keyed.node "div" 
+                [class ("anagram-group" ++ String.fromInt num)]
+                (("header"  ++ String.fromInt num, h4 [] [text descr]) ::
+                 List.map (\w -> (w, div [class "anagram"] [text w])) l)
     in
         div [id ("anagram-assistance-" ++ letter)
             , class "anagrams"]
-            [ datalist [id (anagramDatalistId letter)] 
-                  (List.map (\anagram -> option [value anagram] []) anagrams)
+            [ Keyed.node "datalist" [id (anagramDatalistId letter)] 
+                  (List.map (\anagram -> (anagram, option [value anagram] [])) anagrams)
             , anagramEntry 3 "3 letters" split.three
             , anagramEntry 4 "4 letters" split.four
             , anagramEntry 5 "5 letters" split.five

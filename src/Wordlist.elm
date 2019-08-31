@@ -103,11 +103,12 @@ trieSuffixes word s t1 =
 
 -- parsing word lists
 
-load : String -> String -> Result (List Parser.DeadEnd) Wordlist
+load : String -> String -> Wordlist
 load source contents =
     contents |>
-    Parser.run parseWordPerLine |>
-    Result.map (generateWordlist source)
+    String.words |>
+    generateWordlist source |>
+    Debug.log "wordlist"
 
 generateWordlist : String -> List String -> Wordlist
 generateWordlist source words =
@@ -120,20 +121,3 @@ generateWordlist source words =
              , url = ""
              }) |>
     List.foldr trieInsert emptyTrie
-
-parseWordPerLine : Parser (List String)
-parseWordPerLine =
-    Parser.oneOf
-        [ succeed (\hd tl -> if String.isEmpty hd then tl else hd :: tl)
-            |= (chompUntilEndOr "\n" |> getChompedString)
-            |= Parser.oneOf
-              [ succeed identity
-                  |. symbol "\n"
-                  |= Parser.lazy (\_ -> parseWordPerLine)
-              , succeed []
-                |. end
-              ]
-        , succeed []
-            |. end
-        ]
-
