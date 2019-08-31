@@ -103,7 +103,13 @@ trieSuffixes word s t1 =
 
 -- parsing word lists
 
-generateWordlist : String -> List String -> Trie
+load : String -> String -> Result (List Parser.DeadEnd) Wordlist
+load source contents =
+    contents |>
+    Parser.run parseWordPerLine |>
+    Result.map (generateWordlist source)
+
+generateWordlist : String -> List String -> Wordlist
 generateWordlist source words =
     words |>
     List.map 

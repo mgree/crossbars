@@ -50,10 +50,12 @@ import Time
 
 import Browser
 
+import Http
+
 {- FIXME don't just expose everything -}
 import Puzzle exposing (..)
 import Hist exposing (Hist)
-import SMT
+import SMT exposing (SolverState(..))
 import Solver
 import Util exposing (..)
 import Wordlist exposing (Wordlist)
@@ -99,6 +101,7 @@ type Msg =
   | SolverStateChanged Json.Encode.Value
   {- loading, etc. -}
   | TimeZone Time.Zone
+  | GotWordlist String (Result Http.Error String)
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
 
@@ -118,9 +121,10 @@ type alias Model =
     , selectedClues : List Int
     , savedPuzzles : List Puzzle
     , selectedPuzzle : Maybe Puzzle
-    , solverState : SMT.SolverState
+    , solverState : SolverState
     , solverResult : Maybe Solver.SMTResult
     , timeZone : Time.Zone
+    , wordlist : Wordlist
     }
 
 emptyModel : Model
@@ -130,9 +134,10 @@ emptyModel =
     , selectedClues = []
     , savedPuzzles = []
     , selectedPuzzle = Nothing
-    , solverState = SMT.SolverUnloaded
+    , solverState = SolverUnloaded
     , solverResult = Nothing
     , timeZone = Time.utc
+    , wordlist = Wordlist.empty
     }
   
 asCurrentPuzzleIn : Model -> Puzzle -> Model
@@ -160,7 +165,7 @@ tryApplySMTNumberingTo model result =
                               asCurrentPuzzleIn model) |>
     withSolverResult (Just result)
 
-asSolverStateIn : Model -> SMT.SolverState -> Model
+asSolverStateIn : Model -> SolverState -> Model
 asSolverStateIn model solverState = { model | solverState = solverState }    
 
 loadPuzzle : Puzzle -> Model -> Model
@@ -203,14 +208,9 @@ decodeModel : Json.Decode.Decoder Model
 decodeModel =
     Json.Decode.map2
         (\puzzle savedPuzzles ->
-             { puzzle = puzzle
-             , pendingDelete = False
-             , selectedClues = []
+             { emptyModel 
+             | puzzle = puzzle
              , savedPuzzles = savedPuzzles
-             , selectedPuzzle = Nothing
-             , solverState = SMT.SolverUnloaded
-             , solverResult = Nothing
-             , timeZone = Time.utc
              })
         (Json.Decode.field "currentPuzzle" decodePuzzle)
         (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
@@ -333,11 +333,15 @@ update msg model =
         SolverStateChanged json -> 
             ( json |>
               Json.Decode.decodeValue SMT.decodeSolverState |>
-              Result.withDefault SMT.SolverUnloaded |>
+              Result.withDefault SolverUnloaded |> {- FIXME display error -}
               asSolverStateIn model
             , Cmd.none)
-                                    {- FIXME display error -}
         TimeZone here -> ({ model | timeZone = here }, Cmd.none)
+        GotWordlist source (Err _) -> (model, Cmd.none) {- FIXME display error -}
+        GotWordlist source (Ok words) -> 
+            case Wordlist.load source words of
+                Err _ -> (model, Cmd.none) {- FIXME display error -}
+                Ok wordlist -> ({ model | wordlist = wordlist }, Cmd.none)
 
 -- VIEW
                 
@@ -506,11 +510,11 @@ view model =
                   , div [id "solver-state"]
                         [text <|
                          case model.solverState of
-                             SMT.SolverUnloaded -> "Numbering solver not loaded"
-                             SMT.SolverDownloading -> "Downloading numbering solver code..."
-                             SMT.SolverInitializing -> "Initializing numbering solver..."
-                             SMT.SolverReady -> "Numbering solver ready"
-                             SMT.SolverRunning -> "Numbering solver running..."
+                             SolverUnloaded -> "Numbering solver not loaded"
+                             SolverDownloading -> "Downloading numbering solver code..."
+                             SolverInitializing -> "Initializing numbering solver..."
+                             SolverReady -> "Numbering solver ready"
+                             SolverRunning -> "Numbering solver running..."
                         ]
                   , div [id "solver-result"]
                         [text <|
