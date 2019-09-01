@@ -309,6 +309,10 @@ section .header {
     grid-row: 5;
 }
 
+#messages #progress label {
+    margin-left: 0.5em;
+}
+
 #debug {
     grid-column: 1 / span 2;
     grid-row: 6;

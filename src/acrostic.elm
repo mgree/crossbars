@@ -5,7 +5,7 @@ port module Main exposing (..)
    ANSWER SEARCH
 
      wordlists have links/hovers/tooltips with more info?
-     settings display here to load more wordlists
+     settings display to load more wordlists
      allow user to filter by word length, letters used/avoided
 
      speed up somehow?
@@ -46,6 +46,7 @@ import Svg.Attributes
 import Json.Encode
 import Json.Decode
 
+import Process
 import Task
 
 import Time
@@ -103,7 +104,9 @@ type Msg =
   | SolverStateChanged Json.Encode.Value
   {- loading, etc. -}
   | TimeZone Time.Zone
-  | GotWordlist String (Result Http.Error String)
+  | GotWordlist WordlistSource (Result Http.Error String)
+  | UpdateRecvProgress String Http.Progress
+  | ClearProgress String
 
 port savePuzzles : Json.Encode.Value -> Cmd msg
 
@@ -127,6 +130,7 @@ type alias Model =
     , solverResult : Maybe Solver.SMTResult
     , timeZone : Time.Zone
     , wordlist : Wordlist
+    , progressBars : Dict String Float
     }
 
 emptyModel : Model
@@ -140,6 +144,7 @@ emptyModel =
     , solverResult = Nothing
     , timeZone = Time.utc
     , wordlist = Wordlist.empty
+    , progressBars = Dict.empty
     }
   
 asCurrentPuzzleIn : Model -> Puzzle -> Model
@@ -170,6 +175,14 @@ tryApplySMTNumberingTo model result =
 asSolverStateIn : Model -> SolverState -> Model
 asSolverStateIn model solverState = { model | solverState = solverState }    
 
+updateProgress : String -> Float -> Model -> Model
+updateProgress src progress model =
+    { model | progressBars = Dict.insert src progress model.progressBars }
+
+clearProgress : String -> Model -> Model
+clearProgress src  model =
+    { model | progressBars = Dict.remove src model.progressBars }
+
 loadPuzzle : Puzzle -> Model -> Model
 loadPuzzle puzzle model =
     { model
@@ -198,9 +211,16 @@ andSave mode model = (model, Task.perform (Save mode) Time.now)
 
 -- INITIAL STATE, SUBSCRIPTIONS
 
-wordlists : List String
+type alias WordlistSource =
+    { url : String
+    , source : String
+    }
+
+wordlists : List WordlistSource
 wordlists = 
-    [ "words/words.txt"
+    [ { url = "words/words.txt"
+      , source = "FreeBSD words list"
+      }
     ]
 
 init : Flags -> (Model, Cmd Msg)
@@ -211,10 +231,15 @@ init savedModel =
     , Cmd.batch 
         ( Task.perform TimeZone Time.here ::
           List.map
-              (\source ->
-                   Http.get
-                       { url = source
-                       , expect = Http.expectString (GotWordlist source)
+              (\wl ->
+                   Http.request
+                       { method = "GET"
+                       , headers = []
+                       , body = Http.emptyBody
+                       , url = wl.url
+                       , expect = Http.expectString (GotWordlist wl)
+                       , timeout = Nothing
+                       , tracker = Just wl.url
                        })
               wordlists
         )
@@ -234,9 +259,13 @@ decodeModel =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ solverStateChanged SolverStateChanged
-        , solverResults SolverResults
-        ]
+        ( solverStateChanged SolverStateChanged
+        :: solverResults SolverResults
+        :: List.map
+            (\wl ->
+                 Http.track wl.url (UpdateRecvProgress wl.source))
+            wordlists
+        )
 
 -- UPDATE
                       
@@ -353,11 +382,25 @@ update msg model =
               asSolverStateIn model
             , Cmd.none)
         TimeZone here -> ({ model | timeZone = here }, Cmd.none)
-        GotWordlist source (Err err) -> 
+        GotWordlist wl (Err err) -> 
             ( model
             , Cmd.none) {- FIXME display error -}
-        GotWordlist source (Ok words) -> 
-            ( { model | wordlist = Wordlist.load source words }
+        GotWordlist wl (Ok words) -> 
+            ( { model | wordlist = Wordlist.load wl.source words }
+            , Cmd.none)
+        UpdateRecvProgress wl (Http.Sending progress) ->
+            ( model
+            , Cmd.none)
+        UpdateRecvProgress s (Http.Receiving progress) ->
+            let recvd = Http.fractionReceived progress in
+            ( model |>
+              updateProgress s recvd
+            , if recvd == 1.0
+              then Task.perform (\() -> ClearProgress s) (Process.sleep 1000)
+              else Cmd.none)
+        ClearProgress s ->
+            ( model |>
+              clearProgress s
             , Cmd.none)
 
 -- VIEW
@@ -746,7 +789,27 @@ view model =
                                               div [class "warnings"] (List.filterMap identity warnings)
                                        ])))
         , section [id "messages"]
-            [ 
+            [ div [id "progress"]
+                  (  (if not (Dict.isEmpty model.progressBars) 
+                      then [h3 [] [text "Loading"]] else [])
+                  ++ (model.progressBars |>
+                      Dict.toList |>
+                      List.map
+                          (\(s,recvd) ->
+                               let tag = "progress-" ++ s in
+                               div []
+                                 [ meter [ Html.Attributes.min "0.0"
+                                         , Html.Attributes.max "1.0"
+                                         , value <| String.fromFloat recvd
+                                         , id tag
+                                         ]
+                                       []
+                                 , label [for tag]
+                                     [text s]
+                                 ]
+                          ))
+                  )
+
             ]
         , section [id "debug", style "display" "none"]
             [ 
