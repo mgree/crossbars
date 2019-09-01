@@ -26,11 +26,11 @@ suite =
                 List.all
                     (\w -> (trieLookup w sampleWL |> Maybe.map .word) == Just w) |>
                 Expect.true "Expected all words to be present."                
-        , fuzz string "lookup behaves the same as a naive implementation" <|
+        , fuzzWith { runs = 1000 } string "lookup behaves the same as a naive implementation" <|
             \s ->
                 naiveWordlistLookup s sampleNWL |>
                 Expect.equal (trieLookup s sampleWL)
-        , fuzz string "suffixes behaves the same as a naive implementation" <|
+        , fuzzWith { runs = 1000 } string "suffixes behaves the same as a naive implementation" <|
             \s ->
                 naiveWordlistSuffixes (String.toList s) s sampleNWL |>
                 Expect.equal (trieSuffixes (String.toList s) s sampleWL)
