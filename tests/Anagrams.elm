@@ -93,7 +93,7 @@ naiveWordlistLookup word nwl =
 
 naiveWordlistSuffixes : List Char -> String -> NaiveWordlist -> List Entry
 naiveWordlistSuffixes word s nwl =
-    if List.isEmpty word
+    if List.length word <= 1
     then []
     else List.filter (.word >> String.startsWith s) nwl
 

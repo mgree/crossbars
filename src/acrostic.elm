@@ -4,15 +4,12 @@ port module Main exposing (..)
 
    ANSWER SEARCH
 
-     SLOW! :(
-       Html.Lazy and Html.Keyed seem to help a _bit_
-       GC seems to dominate, kills frame rate
-
-       something more process-based for search would help
-
      wordlists have links/hovers/tooltips with more info?
      settings display here to load more wordlists
      allow user to filter by word length, letters used/avoided
+
+     speed up somehow?
+       restricting to strings of length 2 or greater sped things up a bunch
 
      dictionary ideas:
        Webster's 1913 -- adapt https://github.com/ponychicken/WebsterParser
@@ -913,6 +910,7 @@ anagramAssistance puzzle wordlist remainingHist index =
                 [class ("anagram-group" ++ String.fromInt num)]
                 (("header"  ++ String.fromInt num, h4 [] [text descr]) ::
                  List.map (\w -> (w, div [class "anagram"] [text w])) l)
+
     in
         div [id ("anagram-assistance-" ++ letter)
             , class "anagrams"]

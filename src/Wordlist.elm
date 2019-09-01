@@ -93,12 +93,7 @@ trieSuffixes word s t1 =
             Maybe.withDefault Dict.empty |>
             Dict.values |>
             List.concat
-        [c1] ->
-            Dict.get c1 t1 |> 
-            Maybe.withDefault Dict.empty |>
-            Dict.values |>
-            List.concatMap Dict.values |>
-            List.concat
+        [_] -> []
         [] -> []
 
 -- parsing word lists
