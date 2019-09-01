@@ -605,9 +605,11 @@ view model =
                  Anagramming -> 
                      [ h3 [class "header"] [text "Anagrams"]
                      , if List.isEmpty model.selectedClues
-                       then span [] [text "Select a clue to receive anagram suggestions."]
-                       else div [] (model.selectedClues |>
-                                    List.map (Lazy.lazy4 anagramAssistance puzzle model.wordlist remainingHist))
+                       then div [class "explanatory"] [text "Select a clue to receive anagram suggestions."]
+                       else div [] 
+                             (div [class "explanatory"] [text "Type two or more characters to find matching suffixes."] ::
+                              (model.selectedClues |>
+                               List.map (Lazy.lazy4 anagramAssistance puzzle model.wordlist remainingHist)))
                      ]
                  CluingLettering -> 
                      (model.selectedClues |> 
