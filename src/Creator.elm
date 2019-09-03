@@ -29,6 +29,9 @@ port module Main exposing (..)
      clicking on a square highlights selected letters in the clue?
      way to control escaped characters in the quote
      right-aligned wrapping of long clues
+
+     auto insert (X wds.)
+     allow markdown in clues
 -}
 
 import Dict exposing (Dict)
@@ -438,10 +441,12 @@ view model =
                                        not (Hist.isEmpty quoteHist) &&
                                        Hist.isEmpty remainingHist
 
+        dupNumberings = Puzzle.duplicateNumberings puzzle
+
         completed =
-            Hist.isEmpty (Hist.difference clueHist quoteHist) &&
+            Hist.isEmpty remainingHist &&
             List.isEmpty (Puzzle.unnumbered puzzle) &&
-            List.isEmpty (Puzzle.duplicates puzzle) &&
+            List.isEmpty dupNumberings &&
             List.isEmpty (Puzzle.unclued puzzle)
                     
         qIndices = quoteIndices puzzle
@@ -467,6 +472,18 @@ view model =
                                             ]
                                             [])
                                  phases))
+              , div [ id "next-steps" ]
+                  [ text <|
+                    if completed
+                    then "Your puzzle is filled in! 🎉"
+                    else case puzzle.phase of
+                             QuoteEntry -> 
+                                 "Make sure your author and title are included in your quote to move on to anagramming."
+                             Anagramming ->
+                                 "Finish anagramming to move on to numbering and cluing."
+                             CluingLettering ->
+                                 "Assign non-duplicate numbers to each letter and come up with clues."
+                  ]
               ]
         , section [id "saved"]
             ([ h3 [class "header"] [text "Manage puzzles"]
@@ -721,8 +738,8 @@ view model =
                                                            clueWords)
                                                 clueWords
                         
-                                   dupLetters = List.map Tuple.first dupWords
-                        
+                                   dupWordLetters = List.map Tuple.first dupWords
+
                                in
                                    div [class "clue-detail"]
                                        [ h3 [] [ clueLetter ++ ". " |> text ]
@@ -740,13 +757,22 @@ view model =
                                                       (\numIndex (_, c) ->
                                                            let
                                                                
-                                                               dupClasses =
-                                                                   if List.member numIndex dupLetters
+                                                               dupWordClasses =
+                                                                   if List.member numIndex dupWordLetters
                                                                    then [ class "double-dipped" ]
                                                                    else []
+
+                                                               dupLetterClasses =
+                                                                   if List.any 
+                                                                       (\(_, idxs) ->
+                                                                            List.any (\idx -> idx == (index, numIndex)) idxs)
+                                                                       dupNumberings
+                                                                   then [ class "duplicate-numbering" ]
+                                                                   else []
+                                                                                    
                                                                      
                                                            in
-                                                               td ([class "clue-numbering-letter"] ++ dupClasses)
+                                                               td ([class "clue-numbering-letter"] ++ dupWordClasses ++ dupLetterClasses)
                                                            [c |> String.fromChar |> text])
                                                       answer)
                                            , tr []
@@ -795,7 +821,42 @@ view model =
                                               div [class "warnings"] (List.filterMap identity warnings)
                                        ])))
         , section [id "messages"]
-            [ div [id "progress"]
+            [ div [class "warnings"]
+                  (let
+                      tag msg ws =
+                          if List.isEmpty ws
+                          then ws
+                          else h5 [] [text msg] :: ws
+
+                      clueRef (cIndex, ansIndex) = 
+                          span [ onClick (SelectClue cIndex) ]
+                               [ text (letterFor cIndex ++ String.fromInt (ansIndex + 1)) ]
+
+                      unnumbered = 
+                          Puzzle.unnumbered puzzle |>
+                          List.map clueRef |>
+                          tag "Missing numbers"
+
+                      dups = 
+                          dupNumberings |>
+                          List.map
+                              (\(qIndex, idxs) ->
+                                   span [ onClick (SelectClues (List.map Tuple.first idxs)) ]
+                                   (  text ("Letter " ++ String.fromInt (1 + qIndex) ++ " is used in ")
+                                   :: List.intersperse (text " ") (List.map clueRef idxs))) |>
+                          tag "Duplicate numbers"
+
+                      unclued = 
+                          Puzzle.unclued puzzle |>
+                          List.map
+                              (\cIndex ->
+                                   span [ onClick (SelectClue cIndex) ]
+                                        [ text (letterFor cIndex) ]) |>
+                          tag "Missing clues"
+
+                   in
+                       if puzzle.phase == CluingLettering then unnumbered ++ dups ++ unclued else [])
+            , div [id "progress"]
                   (  (if not (Dict.isEmpty model.progressBars) 
                       then [h3 [] [text "Loading"]] else [])
                   ++ (model.progressBars |>
@@ -815,7 +876,6 @@ view model =
                                  ]
                           ))
                   )
-
             ]
         , section [id "debug", style "display" "none"]
             [ 

@@ -86,8 +86,8 @@ unclued puz =
              else Nothing) |>
     List.filterMap identity
 
-duplicates : Puzzle -> List (Int, List (Int, Int))
-duplicates puz =
+duplicateNumberings : Puzzle -> List (Int, List (Int, Int))
+duplicateNumberings puz =
     puz.clues |>
     List.indexedMap 
         (\cIndex clue -> 
@@ -103,7 +103,7 @@ duplicates puz =
         (\(qIndex, (cIndex, ansIndex)) d ->
              updateCons qIndex (cIndex, ansIndex) d)
         Dict.empty |>
-    Dict.filter (\qIndex l -> not (List.isEmpty l)) |>
+    Dict.filter (\qIndex l -> List.length l > 1) |>
     Dict.toList
 
 -- Puzzle setters

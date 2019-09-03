@@ -3010,7 +3010,7 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		y: func(record.y),
+		z: func(record.z),
 		aF: record.aF,
 		aB: record.aB
 	}
@@ -3280,7 +3280,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.y;
+		var message = !tag ? value : tag < 3 ? value.a : value.z;
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.aF;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
@@ -4794,9 +4794,9 @@ var elm$time$Time$millisToPosix = elm$core$Basics$identity;
 var author$project$Puzzle$emptyPuzzle = {
 	aJ: '',
 	W: _List_Nil,
-	H: 0,
+	w: 0,
 	aC: '',
-	B: elm$time$Time$millisToPosix(0),
+	C: elm$time$Time$millisToPosix(0),
 	bv: ''
 };
 var author$project$SMT$SolverUnloaded = 0;
@@ -4811,7 +4811,7 @@ var elm$time$Time$Zone = F2(
 		return {$: 0, a: a, b: b};
 	});
 var elm$time$Time$utc = A2(elm$time$Time$Zone, 0, _List_Nil);
-var author$project$Main$emptyModel = {_: false, A: elm$core$Dict$empty, e: author$project$Puzzle$emptyPuzzle, s: _List_Nil, t: _List_Nil, I: elm$core$Maybe$Nothing, an: elm$core$Maybe$Nothing, ao: 0, aq: elm$time$Time$utc, ar: author$project$Wordlist$empty};
+var author$project$Main$emptyModel = {_: false, B: elm$core$Dict$empty, e: author$project$Puzzle$emptyPuzzle, s: _List_Nil, t: _List_Nil, I: elm$core$Maybe$Nothing, an: elm$core$Maybe$Nothing, ao: 0, aq: elm$time$Time$utc, ar: author$project$Wordlist$empty};
 var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
@@ -5286,7 +5286,7 @@ var author$project$Puzzle$decodePuzzle = A7(
 	elm$json$Json$Decode$map6,
 	F6(
 		function (title, author, quote, clues, phase, timeModified) {
-			return {aJ: author, W: clues, H: phase, aC: quote, B: timeModified, bv: title};
+			return {aJ: author, W: clues, w: phase, aC: quote, C: timeModified, bv: title};
 		}),
 	A2(elm$json$Json$Decode$field, 'title', elm$json$Json$Decode$string),
 	A2(elm$json$Json$Decode$field, 'author', elm$json$Json$Decode$string),
@@ -6370,7 +6370,7 @@ var author$project$Main$clearProgress = F2(
 		return _Utils_update(
 			model,
 			{
-				A: A2(elm$core$Dict$remove, src, model.A)
+				B: A2(elm$core$Dict$remove, src, model.B)
 			});
 	});
 var author$project$Main$clearSelectedPuzzle = function (model) {
@@ -6386,8 +6386,8 @@ var author$project$Puzzle$comparePuzzles = F2(
 	function (puz1, puz2) {
 		return A2(
 			elm$core$Basics$compare,
-			elm$time$Time$posixToMillis(puz1.B),
-			elm$time$Time$posixToMillis(puz2.B));
+			elm$time$Time$posixToMillis(puz1.C),
+			elm$time$Time$posixToMillis(puz2.C));
 	});
 var author$project$Util$insertWith = F3(
 	function (cmp, x, l) {
@@ -6606,7 +6606,7 @@ var author$project$Main$updateProgress = F3(
 		return _Utils_update(
 			model,
 			{
-				A: A3(elm$core$Dict$insert, src, progress, model.A)
+				B: A3(elm$core$Dict$insert, src, progress, model.B)
 			});
 	});
 var author$project$Puzzle$clearNumbering = function (puzzle) {
@@ -6730,11 +6730,11 @@ var author$project$Puzzle$encodePuzzle = function (puzzle) {
 				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeClue, puzzle.W)),
 				_Utils_Tuple2(
 				'phase',
-				author$project$Puzzle$encodePhase(puzzle.H)),
+				author$project$Puzzle$encodePhase(puzzle.w)),
 				_Utils_Tuple2(
 				'timeModified',
 				elm$json$Json$Encode$int(
-					elm$time$Time$posixToMillis(puzzle.B)))
+					elm$time$Time$posixToMillis(puzzle.C)))
 			]));
 };
 var elm$core$String$fromList = _String_fromList;
@@ -6803,7 +6803,7 @@ var author$project$Puzzle$setPhase = F2(
 	function (phase, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{H: phase});
+			{w: phase});
 	});
 var author$project$Puzzle$setQuote = F2(
 	function (quote, puzzle) {
@@ -6815,7 +6815,7 @@ var author$project$Puzzle$setTimeModified = F2(
 	function (now, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{B: now});
+			{C: now});
 	});
 var author$project$Puzzle$setTitle = F2(
 	function (title, puzzle) {
@@ -7963,11 +7963,11 @@ var author$project$Solver$generateNumberingProblem = function (puzzle) {
 var author$project$Solver$missingResult = {ag: author$project$Solver$SMTFailed, aj: 0};
 var author$project$Wordlist$compareEntry = F2(
 	function (e1, e2) {
-		return A2(elm$core$Basics$compare, e1.D, e2.D);
+		return A2(elm$core$Basics$compare, e1.E, e2.E);
 	});
 var author$project$Wordlist$trieInsert = F2(
 	function (entry, t1) {
-		var _n0 = elm$core$String$toList(entry.D);
+		var _n0 = elm$core$String$toList(entry.E);
 		if ((_n0.b && _n0.b.b) && _n0.b.b.b) {
 			var c1 = _n0.a;
 			var _n1 = _n0.b;
@@ -8015,7 +8015,7 @@ var author$project$Wordlist$generateWordlist = F2(
 						aP: '',
 						ap: source,
 						S: '',
-						D: elm$core$String$toUpper(word)
+						E: elm$core$String$toUpper(word)
 					};
 				},
 				words));
@@ -8769,6 +8769,9 @@ var author$project$Main$ReallyDeletePuzzle = function (a) {
 var author$project$Main$SelectClue = function (a) {
 	return {$: 4, a: a};
 };
+var author$project$Main$SelectClues = function (a) {
+	return {$: 5, a: a};
+};
 var author$project$Main$SelectPuzzle = function (a) {
 	return {$: 13, a: a};
 };
@@ -8924,7 +8927,7 @@ var author$project$Wordlist$trieSuffixes = F3(
 						A2(
 							elm$core$Basics$composeR,
 							function ($) {
-								return $.D;
+								return $.E;
 							},
 							elm$core$String$startsWith(s)),
 						A2(
@@ -8984,7 +8987,7 @@ var author$project$Wordlist$anagramsFor = F3(
 				A2(
 					elm$core$List$map,
 					function ($) {
-						return $.D;
+						return $.E;
 					},
 					A3(author$project$Wordlist$trieSuffixes, prefix, s, wl)));
 		}
@@ -9237,9 +9240,6 @@ var author$project$Main$anagramAssistance = F4(
 				]));
 	});
 var author$project$Main$baseTabs = 3;
-var author$project$Main$SelectClues = function (a) {
-	return {$: 5, a: a};
-};
 var elm$core$Set$Set_elm_builtin = elm$core$Basics$identity;
 var elm$core$Set$empty = elm$core$Dict$empty;
 var elm$core$Set$insert = F2(
@@ -9485,13 +9485,13 @@ var author$project$Puzzle$addInitials = F2(
 	function (initial, clues) {
 		return A3(elm$core$List$map2, elm$core$Tuple$pair, initial, clues);
 	});
-var author$project$Puzzle$duplicates = function (puz) {
+var author$project$Puzzle$duplicateNumberings = function (puz) {
 	return elm$core$Dict$toList(
 		A2(
 			elm$core$Dict$filter,
 			F2(
 				function (qIndex, l) {
-					return !elm$core$List$isEmpty(l);
+					return elm$core$List$length(l) > 1;
 				}),
 			A3(
 				elm$core$List$foldr,
@@ -9753,7 +9753,7 @@ var author$project$Util$iso8601DateTime = F2(
 	});
 var author$project$Puzzle$puzzleDescription = F2(
 	function (here, puzzle) {
-		return author$project$Puzzle$shortPuzzleDescription(puzzle) + (' (' + (A2(author$project$Util$iso8601DateTime, here, puzzle.B) + ')'));
+		return author$project$Puzzle$shortPuzzleDescription(puzzle) + (' (' + (A2(author$project$Util$iso8601DateTime, here, puzzle.C) + ')'));
 	});
 var author$project$Util$updateAppend = F3(
 	function (k, v, d) {
@@ -9908,6 +9908,7 @@ var elm$core$Maybe$map = F2(
 		}
 	});
 var elm$html$Html$h3 = _VirtualDom_node('h3');
+var elm$html$Html$h5 = _VirtualDom_node('h5');
 var elm$html$Html$label = _VirtualDom_node('label');
 var elm$html$Html$meter = _VirtualDom_node('meter');
 var elm$html$Html$section = _VirtualDom_node('section');
@@ -9980,23 +9981,22 @@ var author$project$Main$view = function (model) {
 	var qIndexUses = author$project$Puzzle$quoteIndexUses(puzzle);
 	var qIndexWords = author$project$Puzzle$quoteIndexWords(puzzle);
 	var qIndices = author$project$Puzzle$quoteIndices(puzzle);
-	var quoteFixed = puzzle.H;
+	var quoteFixed = puzzle.w;
 	var quoteHist = author$project$Hist$fromString(puzzle.aC);
 	var initials = author$project$Puzzle$initialism(puzzle);
 	var initialismHist = author$project$Hist$fromString(initials);
 	var missingHist = A2(author$project$Hist$difference, quoteHist, initialismHist);
 	var viable = author$project$Hist$isExhausted(missingHist);
+	var dupNumberings = author$project$Puzzle$duplicateNumberings(puzzle);
 	var clueHist = author$project$Hist$fromString(
 		elm$core$String$concat(
 			A2(elm$core$List$map, author$project$Puzzle$clueAnswer, puzzle.W)));
-	var completed = author$project$Hist$isEmpty(
-		A2(author$project$Hist$difference, clueHist, quoteHist)) && (elm$core$List$isEmpty(
-		author$project$Puzzle$unnumbered(puzzle)) && (elm$core$List$isEmpty(
-		author$project$Puzzle$duplicates(puzzle)) && elm$core$List$isEmpty(
-		author$project$Puzzle$unclued(puzzle))));
 	var remainingHist = A2(author$project$Hist$difference, clueHist, quoteHist);
+	var completed = author$project$Hist$isEmpty(remainingHist) && (elm$core$List$isEmpty(
+		author$project$Puzzle$unnumbered(puzzle)) && (elm$core$List$isEmpty(dupNumberings) && elm$core$List$isEmpty(
+		author$project$Puzzle$unclued(puzzle))));
 	var readyForPhase = function (phase) {
-		return _Utils_eq(puzzle.H, phase) || function () {
+		return _Utils_eq(puzzle.w, phase) || function () {
 			switch (phase) {
 				case 0:
 					return true;
@@ -10007,7 +10007,7 @@ var author$project$Main$view = function (model) {
 			}
 		}();
 	};
-	var answersFixed = puzzle.H !== 1;
+	var answersFixed = puzzle.w !== 1;
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -10056,7 +10056,7 @@ var author$project$Main$view = function (model) {
 												elm$html$Html$Attributes$type_('button'),
 												elm$html$Html$Attributes$class('phase'),
 												elm$html$Html$Attributes$class(
-												_Utils_eq(p, puzzle.H) ? 'active' : 'inactive'),
+												_Utils_eq(p, puzzle.w) ? 'active' : 'inactive'),
 												elm$html$Html$Attributes$disabled(
 												!readyForPhase(p)),
 												elm$html$Html$Attributes$value(
@@ -10066,7 +10066,32 @@ var author$project$Main$view = function (model) {
 											]),
 										_List_Nil);
 								},
-								author$project$Puzzle$phases)))
+								author$project$Puzzle$phases))),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$id('next-steps')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								function () {
+									if (completed) {
+										return 'Your puzzle is filled in! 🎉';
+									} else {
+										var _n0 = puzzle.w;
+										switch (_n0) {
+											case 0:
+												return 'Make sure your author and title are included in your quote to move on to anagramming.';
+											case 1:
+												return 'Finish anagramming to move on to numbering and cluing.';
+											default:
+												return 'Assign non-duplicate numbers to each letter and come up with clues.';
+										}
+									}
+								}())
+							]))
 					])),
 				A2(
 				elm$html$Html$section,
@@ -10235,11 +10260,11 @@ var author$project$Main$view = function (model) {
 														elm$html$Html$Attributes$value('Load puzzle')
 													]),
 												function () {
-													var _n0 = model.I;
-													if (_n0.$ === 1) {
+													var _n1 = model.I;
+													if (_n1.$ === 1) {
 														return _List_Nil;
 													} else {
-														var sPuz = _n0.a;
+														var sPuz = _n1.a;
 														return _List_fromArray(
 															[
 																elm$html$Html$Events$onClick(
@@ -10350,7 +10375,7 @@ var author$project$Main$view = function (model) {
 					[
 						elm$html$Html$Attributes$id('detail')
 					]),
-				(puzzle.H === 2) ? _List_fromArray(
+				(puzzle.w === 2) ? _List_fromArray(
 					[
 						A2(
 						elm$html$Html$h3,
@@ -10372,8 +10397,8 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text(
 								function () {
-									var _n1 = model.ao;
-									switch (_n1) {
+									var _n2 = model.ao;
+									switch (_n2) {
 										case 0:
 											return 'Numbering solver not loaded';
 										case 1:
@@ -10397,11 +10422,11 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text(
 								function () {
-									var _n2 = model.an;
-									if (_n2.$ === 1) {
+									var _n3 = model.an;
+									if (_n3.$ === 1) {
 										return '';
 									} else {
-										var result = _n2.a;
+										var result = _n3.a;
 										var time = function () {
 											if (result.aj >= 1000) {
 												var ss = elm$core$String$fromInt((result.aj / 1000) | 0);
@@ -10416,8 +10441,8 @@ var author$project$Main$view = function (model) {
 												return elm$core$String$fromInt(result.aj) + 'ms';
 											}
 										}();
-										var _n3 = result.ag;
-										switch (_n3.$) {
+										var _n4 = result.ag;
+										switch (_n4.$) {
 											case 2:
 												return 'Could not find a numbering (' + (time + '). 😦');
 											case 1:
@@ -10468,11 +10493,11 @@ var author$project$Main$view = function (model) {
 					]),
 				A2(
 					elm$core$List$map,
-					function (_n4) {
-						var index = _n4.a;
-						var _n5 = _n4.b;
-						var initial = _n5.a;
-						var clue = _n5.b;
+					function (_n5) {
+						var index = _n5.a;
+						var _n6 = _n5.b;
+						var initial = _n6.a;
+						var clue = _n6.b;
 						var selectedCls = (quoteFixed && A2(elm$core$List$member, index, model.t)) ? _List_fromArray(
 							[
 								elm$html$Html$Attributes$class('selected')
@@ -10540,8 +10565,8 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$Attributes$id('clue-info')
 					]),
 				function () {
-					var _n6 = puzzle.H;
-					switch (_n6) {
+					var _n7 = puzzle.w;
+					switch (_n7) {
 						case 0:
 							return _List_Nil;
 						case 1:
@@ -10622,18 +10647,18 @@ var author$project$Main$view = function (model) {
 														function (qIndex) {
 															var uses = A2(
 																elm$core$List$filter,
-																function (_n16) {
-																	var uIdx = _n16.a;
-																	var uNumIdx = _n16.b;
+																function (_n18) {
+																	var uIdx = _n18.a;
+																	var uNumIdx = _n18.b;
 																	return (!_Utils_eq(uIdx, index)) || (_Utils_eq(uIdx, index) && (!_Utils_eq(uNumIdx, numIndex)));
 																},
 																A2(
 																	elm$core$Maybe$withDefault,
 																	_List_Nil,
 																	A2(elm$core$Dict$get, qIndex, qIndexUses)));
-															var clueMention = function (_n15) {
-																var cIdx = _n15.a;
-																var cNumIdx = _n15.b;
+															var clueMention = function (_n17) {
+																var cIdx = _n17.a;
+																var cNumIdx = _n17.b;
 																return author$project$Puzzle$letterFor(cIdx) + ('. ' + elm$core$String$fromInt(cNumIdx + 1));
 															};
 															var useText = elm$core$List$isEmpty(uses) ? '' : (' (used by ' + (A2(
@@ -10669,10 +10694,10 @@ var author$project$Main$view = function (model) {
 									var answer = clue.ag;
 									var clueNumbers = A2(
 										elm$core$List$filterMap,
-										function (_n13) {
-											var ansIndex = _n13.a;
-											var _n14 = _n13.b;
-											var mNumIndex = _n14.a;
+										function (_n15) {
+											var ansIndex = _n15.a;
+											var _n16 = _n15.b;
+											var mNumIndex = _n16.a;
 											return A2(
 												elm$core$Maybe$map,
 												elm$core$Tuple$pair(ansIndex),
@@ -10681,9 +10706,9 @@ var author$project$Main$view = function (model) {
 										A2(elm$core$List$indexedMap, elm$core$Tuple$pair, answer));
 									var clueWords = A2(
 										elm$core$List$filterMap,
-										function (_n12) {
-											var ansIndex = _n12.a;
-											var numIndex = _n12.b;
+										function (_n14) {
+											var ansIndex = _n14.a;
+											var numIndex = _n14.b;
 											return A2(
 												elm$core$Maybe$map,
 												elm$core$Tuple$pair(ansIndex),
@@ -10692,20 +10717,20 @@ var author$project$Main$view = function (model) {
 										clueNumbers);
 									var dupWords = A2(
 										elm$core$List$filter,
-										function (_n10) {
-											var ansIndex = _n10.a;
-											var wIndex = _n10.b;
+										function (_n12) {
+											var ansIndex = _n12.a;
+											var wIndex = _n12.b;
 											return A2(
 												elm$core$List$any,
-												function (_n11) {
-													var otherAnsIndex = _n11.a;
-													var otherWIndex = _n11.b;
+												function (_n13) {
+													var otherAnsIndex = _n13.a;
+													var otherWIndex = _n13.b;
 													return (!_Utils_eq(ansIndex, otherAnsIndex)) && _Utils_eq(wIndex, otherWIndex);
 												},
 												clueWords);
 										},
 										clueWords);
-									var dupLetters = A2(elm$core$List$map, elm$core$Tuple$first, dupWords);
+									var dupWordLetters = A2(elm$core$List$map, elm$core$Tuple$first, dupWords);
 									var unindexedClueNumbers = A2(elm$core$List$map, elm$core$Tuple$second, clueNumbers);
 									var fullyNumbered = _Utils_eq(
 										A2(
@@ -10754,11 +10779,28 @@ var author$project$Main$view = function (model) {
 														A2(
 															elm$core$List$indexedMap,
 															F2(
-																function (numIndex, _n7) {
-																	var c = _n7.b;
-																	var dupClasses = A2(elm$core$List$member, numIndex, dupLetters) ? _List_fromArray(
+																function (numIndex, _n8) {
+																	var c = _n8.b;
+																	var dupWordClasses = A2(elm$core$List$member, numIndex, dupWordLetters) ? _List_fromArray(
 																		[
 																			elm$html$Html$Attributes$class('double-dipped')
+																		]) : _List_Nil;
+																	var dupLetterClasses = A2(
+																		elm$core$List$any,
+																		function (_n9) {
+																			var idxs = _n9.b;
+																			return A2(
+																				elm$core$List$any,
+																				function (idx) {
+																					return _Utils_eq(
+																						idx,
+																						_Utils_Tuple2(index, numIndex));
+																				},
+																				idxs);
+																		},
+																		dupNumberings) ? _List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('duplicate-numbering')
 																		]) : _List_Nil;
 																	return A2(
 																		elm$html$Html$td,
@@ -10767,7 +10809,7 @@ var author$project$Main$view = function (model) {
 																				[
 																					elm$html$Html$Attributes$class('clue-numbering-letter')
 																				]),
-																			dupClasses),
+																			_Utils_ap(dupWordClasses, dupLetterClasses)),
 																		_List_fromArray(
 																			[
 																				elm$html$Html$text(
@@ -10781,9 +10823,9 @@ var author$project$Main$view = function (model) {
 														A2(
 															elm$core$List$indexedMap,
 															F2(
-																function (numIndex, _n8) {
-																	var mNum = _n8.a;
-																	var rawC = _n8.b;
+																function (numIndex, _n10) {
+																	var mNum = _n10.a;
+																	var rawC = _n10.b;
 																	var c = elm$core$Char$toUpper(rawC);
 																	var validCls = function () {
 																		if (mNum.$ === 1) {
@@ -10818,7 +10860,7 @@ var author$project$Main$view = function (model) {
 															answer))
 													])),
 												function () {
-												var editableWarning = (puzzle.H !== 2) ? elm$core$Maybe$Just(
+												var editableWarning = (puzzle.w !== 2) ? elm$core$Maybe$Just(
 													A2(
 														elm$html$Html$span,
 														_List_Nil,
@@ -10881,10 +10923,105 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$div,
 						_List_fromArray(
 							[
+								elm$html$Html$Attributes$class('warnings')
+							]),
+						function () {
+							var tag = F2(
+								function (msg, ws) {
+									return elm$core$List$isEmpty(ws) ? ws : A2(
+										elm$core$List$cons,
+										A2(
+											elm$html$Html$h5,
+											_List_Nil,
+											_List_fromArray(
+												[
+													elm$html$Html$text(msg)
+												])),
+										ws);
+								});
+							var unclued = A2(
+								tag,
+								'Missing clues',
+								A2(
+									elm$core$List$map,
+									function (cIndex) {
+										return A2(
+											elm$html$Html$span,
+											_List_fromArray(
+												[
+													elm$html$Html$Events$onClick(
+													author$project$Main$SelectClue(cIndex))
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(
+													author$project$Puzzle$letterFor(cIndex))
+												]));
+									},
+									author$project$Puzzle$unclued(puzzle)));
+							var clueRef = function (_n20) {
+								var cIndex = _n20.a;
+								var ansIndex = _n20.b;
+								return A2(
+									elm$html$Html$span,
+									_List_fromArray(
+										[
+											elm$html$Html$Events$onClick(
+											author$project$Main$SelectClue(cIndex))
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											_Utils_ap(
+												author$project$Puzzle$letterFor(cIndex),
+												elm$core$String$fromInt(ansIndex + 1)))
+										]));
+							};
+							var dups = A2(
+								tag,
+								'Duplicate numbers',
+								A2(
+									elm$core$List$map,
+									function (_n19) {
+										var qIndex = _n19.a;
+										var idxs = _n19.b;
+										return A2(
+											elm$html$Html$span,
+											_List_fromArray(
+												[
+													elm$html$Html$Events$onClick(
+													author$project$Main$SelectClues(
+														A2(elm$core$List$map, elm$core$Tuple$first, idxs)))
+												]),
+											A2(
+												elm$core$List$cons,
+												elm$html$Html$text(
+													'Letter ' + (elm$core$String$fromInt(1 + qIndex) + ' is used in ')),
+												A2(
+													elm$core$List$intersperse,
+													elm$html$Html$text(' '),
+													A2(elm$core$List$map, clueRef, idxs))));
+									},
+									dupNumberings));
+							var unnumbered = A2(
+								tag,
+								'Missing numbers',
+								A2(
+									elm$core$List$map,
+									clueRef,
+									author$project$Puzzle$unnumbered(puzzle)));
+							return (puzzle.w === 2) ? _Utils_ap(
+								unnumbered,
+								_Utils_ap(dups, unclued)) : _List_Nil;
+						}()),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
 								elm$html$Html$Attributes$id('progress')
 							]),
 						_Utils_ap(
-							(!elm$core$Dict$isEmpty(model.A)) ? _List_fromArray(
+							(!elm$core$Dict$isEmpty(model.B)) ? _List_fromArray(
 								[
 									A2(
 									elm$html$Html$h3,
@@ -10896,9 +11033,9 @@ var author$project$Main$view = function (model) {
 								]) : _List_Nil,
 							A2(
 								elm$core$List$map,
-								function (_n17) {
-									var s = _n17.a;
-									var recvd = _n17.b;
+								function (_n21) {
+									var s = _n21.a;
+									var recvd = _n21.b;
 									var tag = 'progress-' + s;
 									return A2(
 										elm$html$Html$div,
@@ -10928,7 +11065,7 @@ var author$project$Main$view = function (model) {
 													]))
 											]));
 								},
-								elm$core$Dict$toList(model.A))))
+								elm$core$Dict$toList(model.B))))
 					])),
 				A2(
 				elm$html$Html$section,
