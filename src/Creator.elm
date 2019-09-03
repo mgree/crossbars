@@ -437,6 +437,12 @@ view model =
                     CluingLettering -> viable &&
                                        not (Hist.isEmpty quoteHist) &&
                                        Hist.isEmpty remainingHist
+
+        completed =
+            Hist.isEmpty (Hist.difference clueHist quoteHist) &&
+            List.isEmpty (Puzzle.unnumbered puzzle) &&
+            List.isEmpty (Puzzle.duplicates puzzle) &&
+            List.isEmpty (Puzzle.unclued puzzle)
                     
         qIndices = quoteIndices puzzle
 

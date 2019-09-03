@@ -9485,6 +9485,56 @@ var author$project$Puzzle$addInitials = F2(
 	function (initial, clues) {
 		return A3(elm$core$List$map2, elm$core$Tuple$pair, initial, clues);
 	});
+var author$project$Puzzle$duplicates = function (puz) {
+	return elm$core$Dict$toList(
+		A2(
+			elm$core$Dict$filter,
+			F2(
+				function (qIndex, l) {
+					return !elm$core$List$isEmpty(l);
+				}),
+			A3(
+				elm$core$List$foldr,
+				F2(
+					function (_n2, d) {
+						var qIndex = _n2.a;
+						var _n3 = _n2.b;
+						var cIndex = _n3.a;
+						var ansIndex = _n3.b;
+						return A3(
+							author$project$Util$updateCons,
+							qIndex,
+							_Utils_Tuple2(cIndex, ansIndex),
+							d);
+					}),
+				elm$core$Dict$empty,
+				elm$core$List$concat(
+					A2(
+						elm$core$List$indexedMap,
+						F2(
+							function (cIndex, clue) {
+								return elm$core$List$concat(
+									A2(
+										elm$core$List$indexedMap,
+										F2(
+											function (ansIndex, _n0) {
+												var mNum = _n0.a;
+												if (mNum.$ === 1) {
+													return _List_Nil;
+												} else {
+													var num = mNum.a;
+													return _List_fromArray(
+														[
+															_Utils_Tuple2(
+															num,
+															_Utils_Tuple2(cIndex, ansIndex))
+														]);
+												}
+											}),
+										clue.ag));
+							}),
+						puz.W)))));
+};
 var author$project$Puzzle$phases = _List_fromArray(
 	[0, 1, 2]);
 var author$project$Puzzle$shortPuzzleDescription = function (puzzle) {
@@ -9788,6 +9838,43 @@ var author$project$Puzzle$stringOfPhase = function (p) {
 			return 'Cluing and lettering';
 	}
 };
+var author$project$Puzzle$unclued = function (puz) {
+	return A2(
+		elm$core$List$filterMap,
+		elm$core$Basics$identity,
+		A2(
+			elm$core$List$indexedMap,
+			F2(
+				function (cIndex, clue) {
+					return elm$core$String$isEmpty(clue.aY) ? elm$core$Maybe$Just(cIndex) : elm$core$Maybe$Nothing;
+				}),
+			puz.W));
+};
+var author$project$Puzzle$unnumbered = function (puz) {
+	return elm$core$List$concat(
+		A2(
+			elm$core$List$indexedMap,
+			F2(
+				function (cIndex, clue) {
+					return A2(
+						elm$core$List$filterMap,
+						elm$core$Basics$identity,
+						A2(
+							elm$core$List$indexedMap,
+							F2(
+								function (ansIndex, _n0) {
+									var mNum = _n0.a;
+									if (mNum.$ === 1) {
+										return elm$core$Maybe$Just(
+											_Utils_Tuple2(cIndex, ansIndex));
+									} else {
+										return elm$core$Maybe$Nothing;
+									}
+								}),
+							clue.ag));
+				}),
+			puz.W));
+};
 var elm$core$List$intersperse = F2(
 	function (sep, xs) {
 		if (!xs.b) {
@@ -9902,6 +9989,11 @@ var author$project$Main$view = function (model) {
 	var clueHist = author$project$Hist$fromString(
 		elm$core$String$concat(
 			A2(elm$core$List$map, author$project$Puzzle$clueAnswer, puzzle.W)));
+	var completed = author$project$Hist$isEmpty(
+		A2(author$project$Hist$difference, clueHist, quoteHist)) && (elm$core$List$isEmpty(
+		author$project$Puzzle$unnumbered(puzzle)) && (elm$core$List$isEmpty(
+		author$project$Puzzle$duplicates(puzzle)) && elm$core$List$isEmpty(
+		author$project$Puzzle$unclued(puzzle))));
 	var remainingHist = A2(author$project$Hist$difference, clueHist, quoteHist);
 	var readyForPhase = function (phase) {
 		return _Utils_eq(puzzle.H, phase) || function () {

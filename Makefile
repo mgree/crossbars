@@ -6,8 +6,8 @@ app/creator.min.js : app/creator.js
 app/creator.js : src/Creator.elm src/*.elm
 	elm make $< --optimize --output=$@
 
-#deploy : app/creator.min.js
-#	git subtree push --prefix app origin gh-pages
+deploy : app/creator.min.js
+	git subtree push --prefix app origin gh-pages
 
 clean :
 	rm app/creator.js app/creator.min.js

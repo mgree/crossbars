@@ -62,6 +62,50 @@ comparePuzzles puz1 puz2 =
 samePuzzle : Puzzle -> Puzzle -> Bool
 samePuzzle puz1 puz2 = comparePuzzles puz1 puz2 == EQ
 
+unnumbered : Puzzle -> List (Int, Int)
+unnumbered puz =
+    puz.clues |>
+    List.indexedMap
+        (\cIndex clue ->
+             clue.answer |>
+             List.indexedMap
+                 (\ansIndex (mNum,_) ->
+                      case mNum of
+                          Nothing -> Just (cIndex, ansIndex)
+                          Just _ -> Nothing) |>
+             List.filterMap identity) |>
+    List.concat
+
+unclued : Puzzle -> List Int
+unclued puz =
+    puz.clues |>
+    List.indexedMap
+        (\cIndex clue ->
+             if String.isEmpty clue.hint
+             then Just cIndex
+             else Nothing) |>
+    List.filterMap identity
+
+duplicates : Puzzle -> List (Int, List (Int, Int))
+duplicates puz =
+    puz.clues |>
+    List.indexedMap 
+        (\cIndex clue -> 
+             clue.answer |>
+             List.indexedMap
+                 (\ansIndex (mNum,_) ->
+                      case mNum of
+                          Nothing -> []
+                          Just num -> [(num, (cIndex, ansIndex))]) |>
+             List.concat) |>
+    List.concat |>
+    List.foldr
+        (\(qIndex, (cIndex, ansIndex)) d ->
+             updateCons qIndex (cIndex, ansIndex) d)
+        Dict.empty |>
+    Dict.filter (\qIndex l -> not (List.isEmpty l)) |>
+    Dict.toList
+
 -- Puzzle setters
     
 setTitle : String -> Puzzle -> Puzzle
