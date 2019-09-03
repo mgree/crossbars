@@ -30,6 +30,12 @@ section .header {
 #overview .phase.inactive {
 }
 
+#overview #next-steps {
+    width: 100%;
+    margin-top: 1em;
+    text-align: center;
+}
+
 #saved {
     grid-column: 2;
     grid-row 1;
@@ -233,6 +239,7 @@ section .header {
 
 #clue-info input.clue-hint {
     width: 50%;
+    text-transform: none;
 }
 
 #clue-info table.clue-numbering {
@@ -255,6 +262,10 @@ section .header {
 
 #clue-info .clue-numbering-letter.double-dipped {
     color: darkorange;
+}
+
+#clue-info .clue-numbering-letter.duplicate-numbering {
+    color: pink;
 }
 
 #clue-info .clue-numbering-number input {
@@ -294,11 +305,11 @@ section .header {
     margin-top: 1em;
 }
 
-.warnings span {
+.warnings > span {
     color: darkred;
 }
 
-.warnings span::before {
+.warnings > span::before {
     content: "⚠ ";
     color: darkred;
                 
