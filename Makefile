@@ -13,7 +13,7 @@ app/creator.js : src/Creator.elm src/*.elm
 	elm make $< --optimize --output=$@
 
 app/player.js : src/Player.elm src/*.elm
-	elm make $< --optimize --output=$@
+	elm make $< --output=$@
 
 deploy : app/creator.min.js app/player.min.js
 	git subtree push --prefix app origin gh-pages

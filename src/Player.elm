@@ -21,19 +21,32 @@ type Cursor = Board { index : Int}
             | Clues { clueIndex : Int 
                     , letterIndex : Int
                     }
-type alias Model = 
+
+type alias Clue =
+    { hint : String
+    , answer : List (Int, Maybe Char)
+    }
+
+type alias Puzzle =
+    { quote : List (Maybe Char)
+    , quoteWordLengths : List Int
+    , boardColumns : Int
+    , clues : List Clue
+    }
+
+type Model = NoPuzzle
+           | Playing State
+
+type alias State = 
     { cursor : Cursor
+    , puzzle : Puzzle
     }
 
 defaultModel : Model
-defaultModel = 
-    { cursor = Clues { clueIndex = 0
-                     , letterIndex = 0
-                     }
-    }
+defaultModel = NoPuzzle
 
-withCursor : Cursor -> Model -> Model
-withCursor cursor model = { model | cursor = cursor }
+withCursor : Cursor -> State -> State
+withCursor cursor state = { state | cursor = cursor }
 
 -- MAIN
 
@@ -59,15 +72,25 @@ subscriptions model = Sub.none
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case msg of
-        UpdateIndex index mc -> (model, Cmd.none)
-
-        SelectIndex cursor -> 
-            ( model |>
-              withCursor cursor
-            , Cmd.none)
+    case model of
+        NoPuzzle -> ( model
+                    , Cmd.none)
+        Playing state ->
+            case msg of
+                UpdateIndex index mc -> Debug.todo "UpdateIndex"
+                                        
+                SelectIndex cursor -> 
+                    ( state |>
+                      withCursor cursor |>
+                      Playing
+                    , Cmd.none)
 
 -- VIEW
 
 view : Model -> Html Msg
-view model = div [] []
+view model = 
+    div [id "crossbars-wrapper"] 
+        [ section [id "overview"]
+          [ h3 [class "header"] [text "Crossbars — Acrostic Player"]
+          ]
+        ]
