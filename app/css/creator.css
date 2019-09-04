@@ -1,0 +1,324 @@
+section .header {
+    width: 100%;
+    border-bottom: 1px solid black;
+}
+
+#crossbars-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 10px;
+    grid-auto-rows: minmax(100px, auto);
+}
+
+#crossbars-wrapper input[type="text"] {
+    border: 1px solid gray;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-size: 13px;
+}
+
+#overview {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#overview .phase.active {
+    font-weight: bold;
+    color: green;
+}
+
+#overview .phase.inactive {
+}
+
+#overview #next-steps {
+    width: 100%;
+    margin-top: 1em;
+    text-align: center;
+}
+
+#saved {
+    grid-column: 2;
+    grid-row 1;
+}
+
+#saved #current-puzzle {
+    margin-bottom: 1em;
+}
+
+#saved #deletion-prompt {
+    margin-bottom: 1em;
+}
+
+#saved #deletion-prompt input {
+    margin-left: 1em;
+}
+
+#saved #current-puzzle input {
+    margin-left: 1em;
+}
+
+#saved-puzzles #new-puzzle {
+    margin-right: 1em;
+}
+
+#saved-puzzles #saved-puzzle-list {
+    margin-right: 1em;
+}
+
+#saved-puzzles-header h3 {
+    display: inline-block;
+}
+
+#saved-puzzles-header input {
+    height: max-content;
+}
+
+#quote {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#quote input {
+    margin: 5px 0px;
+    width: 100%;
+    display: block;
+}
+
+#quote textarea {
+    margin: 5px 0px;
+    border: 1px solid gray;
+    width: 100%;
+    display: block;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-size: 13px;
+}
+
+#quote svg#board .board-square {
+    stroke: black;
+}
+
+#quote svg#board .board-space {
+    fill: black;
+}
+
+#quote svg#board .board-letter {
+    fill: white;
+}
+
+#quote svg#board .board-number-conflict {
+    fill: pink;
+}
+
+#quote svg#board .number {
+    font-size: 2.5pt;
+}
+
+#quote svg#board .clue-letter {
+    font-size: 2.5pt;
+}
+
+#quote svg#board .letter {
+    font-size: 6.5pt;
+    font-family: monospace;
+    text-transform: uppercase;
+}
+
+#quote #summary {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 0.25em;
+}
+
+#quote #summary #viability {
+    flex: 0 0 100%;
+}
+
+#quote #summary .count {
+    flex-basis: content;
+}
+
+#detail {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#detail svg#remaining {
+    display: block;
+    width: 90%;
+}
+
+#detail svg#remaining text {
+    font-size: 6pt;
+}
+
+#detail svg#remaining text.label {
+    font-family: monospace;
+}
+
+#detail svg#remaining .quote rect {
+    fill: aliceblue;
+}
+
+#detail svg#remaining .quote text {
+    fill: aliceblue;
+}
+
+#detail svg#remaining .remaining rect {
+    fill: lightblue;
+    stroke: lightblue;
+}
+
+#detail svg#remaining .remaining text.valid {
+    fill: lightblue;
+}
+
+#detail svg#remaining .remaining text.invalid {
+    fill: red;
+}
+
+#detail svg#remaining .hooray {
+    font-size: 32pt;
+}
+
+#clues {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+    height: 7em;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+#clues .clue {
+    margin: 2px;
+}
+
+#clues .clue-letter {
+    width: 1.25em;
+    display: inline-block;
+    text-align: center;
+}
+
+#clues input {
+    margin: .1em;
+}
+
+#clues .selected {
+    background-color: lightblue;
+}
+
+.invalid {
+    background-color: pink;
+}
+
+#clue-info {
+    grid-column: 1 / span 2;
+    grid-row: 4;
+}
+
+#clue-info clue-detail h3 {
+    display: inline;
+    margin-right: 1em;
+}
+
+#clue-info input {
+    font-size: 16pt;
+    text-transform: none;
+    font-family: initial;
+}
+
+#clue-info input.clue-hint {
+    width: 50%;
+    text-transform: none;
+}
+
+#clue-info table.clue-numbering {
+    margin-top: 1em;
+    border-spacing: 1.1em 0;
+}
+
+#clue-info .clue-numbering select {
+    width: 5em;
+}
+
+#clue-info .clue-numbering-letter {
+    width: 1.1em;
+    text-transform: uppercase;
+    font-family: monospace;
+    text-align: center;
+    font-size: 22pt;
+    border-bottom: 2px solid black;
+}
+
+#clue-info .clue-numbering-letter.double-dipped {
+    color: darkorange;
+}
+
+#clue-info .clue-numbering-letter.duplicate-numbering {
+    color: pink;
+}
+
+#clue-info .clue-numbering-number input {
+    width: 100%;
+}
+
+#clue-info .clue-numbering-number {
+    text-align: center;
+    font-size: 12pt;
+}
+
+#clue-info .anagrams {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+#clue-info .anagram-group3 { width: 5em; }
+#clue-info .anagram-group4 { width: 6em; }
+#clue-info .anagram-group5 { width: 7em; }
+#clue-info .anagram-group6 { width: 8em; }
+#clue-info .anagram-group7 { width: 16em; }
+
+
+#clue-info h4 {
+    border-bottom: 1px solid black;
+    display: block;
+
+}
+
+.warnings {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 1em;
+}
+
+.warnings > span {
+    color: darkred;
+}
+
+.warnings > span::before {
+    content: "⚠ ";
+    color: darkred;
+                
+}
+
+#messages {
+    grid-column: 1 / span 2;
+    grid-row: 5;
+}
+
+#messages #progress label {
+    margin-left: 0.5em;
+}
+
+#debug {
+    grid-column: 1 / span 2;
+    grid-row: 6;
+}
