@@ -9,6 +9,10 @@
     border-spacing: 1.1em 0;
 }
 
+.clue table td.selected {
+    background-color: pink;
+}
+
 .clue .hint .clue-letter {
     font-weight: bold;
 }
@@ -23,6 +27,7 @@
     font-size: 16pt;
     text-align: center;
     border-bottom: 2px solid black;
+    height: 16pt;
 }
 
 .clue .answer-number {

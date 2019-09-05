@@ -2314,43 +2314,6 @@ function _Platform_mergeExportsDebug(moduleName, obj, exports)
 
 
 
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
-
 
 // HELPERS
 
@@ -4347,6 +4310,43 @@ function _Browser_load(url)
 		}
 	}));
 }
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 var author$project$Main$Clues = F2(
 	function (a, b) {
 		return {$: 'Clues', a: a, b: b};
@@ -4441,384 +4441,137 @@ var author$project$Main$wcw = {
 		[
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(150, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(202, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(16, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(71, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(112, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(209, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(196, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(88, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(213, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(27, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(130, elm$core$Maybe$Nothing)
-				]),
+				[150, 202, 16, 71, 112, 209, 196, 88, 213, 27, 130]),
 			hint: 'Red object glazed with rainwater in a poem by this quote\'s author'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(44, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(121, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(38, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(155, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(54, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(197, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(70, elm$core$Maybe$Nothing)
-				]),
+				[44, 121, 38, 155, 54, 197, 70]),
 			hint: 'Cold compress (2 wds.)'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(210, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(157, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(138, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(169, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(187, elm$core$Maybe$Nothing)
-				]),
+				[210, 157, 138, 169, 187]),
 			hint: 'In bounds'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(20, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(179, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(174, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(30, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(90, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(81, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(37, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(139, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(74, elm$core$Maybe$Nothing)
-				]),
+				[20, 179, 174, 30, 90, 81, 37, 139, 74]),
 			hint: 'Unexpected gift, in Louisiana Creole French'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(57, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(124, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(167, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(18, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(98, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(105, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(176, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(164, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(97, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(127, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(67, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(50, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(211, elm$core$Maybe$Nothing)
-				]),
+				[57, 124, 167, 18, 98, 105, 176, 164, 97, 127, 67, 50, 211]),
 			hint: '\"Great men are over-estimated and small men are _______\", George Eliot, _Adam Bede_'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(203, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(153, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(92, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(1, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(40, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(168, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(99, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(58, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(80, elm$core$Maybe$Nothing)
-				]),
+				[203, 153, 92, 1, 40, 168, 99, 58, 80]),
 			hint: 'Recipient of the Pritzker Prize'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(166, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(116, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(17, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(119, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(133, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(200, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(41, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(186, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(31, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(198, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(4, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(45, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(0, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(60, elm$core$Maybe$Nothing)
-				]),
+				[166, 116, 17, 119, 133, 200, 41, 186, 31, 198, 4, 45, 0, 60]),
 			hint: 'A spoonful of sugar helps overcome it (2 wds.)'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(219, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(191, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(95, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(193, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(103, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(149, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(36, elm$core$Maybe$Nothing)
-				]),
+				[219, 191, 95, 193, 103, 149, 36]),
 			hint: 'It means the same thing'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(132, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(68, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(52, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(220, elm$core$Maybe$Nothing)
-				]),
+				[132, 68, 52, 220]),
 			hint: 'Raises hackles'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(160, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(205, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(42, elm$core$Maybe$Nothing)
-				]),
+				[160, 205, 42]),
 			hint: 'Yuletide flip, for short'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(64, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(15, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(53, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(177, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(154, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(215, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(192, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(118, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(73, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(5, elm$core$Maybe$Nothing)
-				]),
+				[64, 15, 53, 177, 154, 215, 192, 118, 73, 5]),
 			hint: '\"No defeat is made up entirely of defeat\" poem by this quote\'s author (2 wds.)'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(134, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(125, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(161, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(143, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(10, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(190, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(14, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(165, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(201, elm$core$Maybe$Nothing)
-				]),
+				[134, 125, 161, 143, 10, 190, 14, 165, 201]),
 			hint: '\"_______ Venus\", racist exhibition of 19th Century Europe'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(185, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(173, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(91, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(216, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(156, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(135, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(140, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(19, elm$core$Maybe$Nothing)
-				]),
+				[185, 173, 91, 216, 156, 135, 140, 19]),
 			hint: 'Spellbind'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(189, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(48, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(76, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(162, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(85, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(151, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(144, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(194, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(96, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(120, elm$core$Maybe$Nothing)
-				]),
+				[189, 48, 76, 162, 85, 151, 144, 194, 96, 120]),
 			hint: 'Questions doubters (3 wds.)'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(129, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(145, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(12, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(108, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(217, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(183, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(207, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(34, elm$core$Maybe$Nothing)
-				]),
+				[129, 145, 12, 108, 217, 183, 207, 34]),
 			hint: 'Lamb-like quality'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(141, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(184, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(29, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(55, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(122, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(49, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(63, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(146, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(87, elm$core$Maybe$Nothing)
-				]),
+				[141, 184, 29, 55, 122, 49, 63, 146, 87]),
 			hint: 'Vividly remniscent'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(148, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(56, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(113, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(180, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(86, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(83, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(35, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(75, elm$core$Maybe$Nothing)
-				]),
+				[148, 56, 113, 180, 86, 83, 35, 75]),
 			hint: 'Like a pulse'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(128, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(123, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(175, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(178, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(8, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(171, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(82, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(2, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(28, elm$core$Maybe$Nothing)
-				]),
+				[128, 123, 175, 178, 8, 171, 82, 2, 28]),
 			hint: 'Grill on camera?'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(100, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(69, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(163, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(3, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(214, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(159, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(206, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(136, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(66, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(59, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(21, elm$core$Maybe$Nothing)
-				]),
+				[100, 69, 163, 3, 214, 159, 206, 136, 66, 59, 21]),
 			hint: 'Frappuccino, Coolatta, or Awful Awful (2 wds.)'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(33, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(204, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(93, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(6, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(115, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(89, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(13, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(51, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(107, elm$core$Maybe$Nothing)
-				]),
+				[33, 204, 93, 6, 115, 89, 13, 51, 107]),
 			hint: 'Couldn\'t care less'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(111, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(147, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(23, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(109, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(199, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(137, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(26, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(77, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(131, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(32, elm$core$Maybe$Nothing)
-				]),
+				[111, 147, 23, 109, 199, 137, 26, 77, 131, 32]),
 			hint: 'Fit to print'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(46, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(39, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(24, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(25, elm$core$Maybe$Nothing)
-				]),
+				[46, 39, 24, 25]),
 			hint: '\"Mad Dog\" Maddux, familiarly'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(117, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(47, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(195, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(65, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(106, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(170, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(212, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(110, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(182, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(104, elm$core$Maybe$Nothing)
-				]),
+				[117, 47, 195, 65, 106, 170, 212, 110, 182, 104]),
 			hint: 'Birthplace and hometown of this quote\'s author'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(79, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(9, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(101, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(62, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(102, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(22, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(43, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(61, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(152, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(84, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(188, elm$core$Maybe$Nothing)
-				]),
+				[79, 9, 101, 62, 102, 22, 43, 61, 152, 84, 188]),
 			hint: 'Adolescent quality, often'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(208, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(142, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(158, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(7, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(72, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(126, elm$core$Maybe$Nothing)
-				]),
+				[208, 142, 158, 7, 72, 126]),
 			hint: 'Devise; lie'
 		},
 			{
 			answer: _List_fromArray(
-				[
-					_Utils_Tuple2(94, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(218, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(114, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(78, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(172, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(11, elm$core$Maybe$Nothing),
-					_Utils_Tuple2(181, elm$core$Maybe$Nothing)
-				]),
+				[94, 218, 114, 78, 172, 11, 181]),
 			hint: 'Record breaker (2 wds.)'
 		}
 		]),
 	quote: _List_fromArray(
-		[elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing]),
+		[elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing]),
 	quoteWordLengths: _List_fromArray(
 		[3, 6, 2, 3, 3, 6, 2, 4, 4, 1, 9, 7, 4, 1, 7, 4, 1, 6, 4, 4, 4, 5, 2, 6, 4, 3, 5, 4, 5, 2, 6, 3, 5, 1, 9, 10, 8, 4, 8, 2, 5, 7, 3, 7, 4, 1, 8, 9])
 };
@@ -5226,52 +4979,88 @@ var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (savedModel) {
 	return _Utils_Tuple2(author$project$Main$testModel, elm$core$Platform$Cmd$none);
 };
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
-var author$project$Main$subscriptions = function (model) {
-	return elm$core$Platform$Sub$none;
+var author$project$Main$Down = {$: 'Down'};
+var author$project$Main$Left = {$: 'Left'};
+var author$project$Main$MoveCursor = function (a) {
+	return {$: 'MoveCursor', a: a};
 };
-var author$project$Main$withCursor = F2(
-	function (cursor, state) {
-		return _Utils_update(
-			state,
-			{cursor: cursor});
+var author$project$Main$Right = {$: 'Right'};
+var author$project$Main$SetCursor = function (a) {
+	return {$: 'SetCursor', a: a};
+};
+var author$project$Main$SwapCursor = {$: 'SwapCursor'};
+var author$project$Main$Up = {$: 'Up'};
+var elm$browser$Browser$Events$Document = {$: 'Document'};
+var elm$browser$Browser$Events$MySub = F3(
+	function (a, b, c) {
+		return {$: 'MySub', a: a, b: b, c: c};
 	});
-var elm$core$Debug$log = _Debug_log;
-var elm$core$Debug$todo = _Debug_todo;
-var author$project$Main$update = F2(
-	function (msg, model) {
-		if (model.$ === 'NoPuzzle') {
-			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-		} else {
-			var state = model.a;
-			var _n1 = A2(elm$core$Debug$log, 'msg', msg);
-			if (_n1.$ === 'SetCursor') {
-				var mc = _n1.a;
-				return _Debug_todo(
-					'Main',
-					{
-						start: {line: 76, column: 33},
-						end: {line: 76, column: 43}
-					})('SetCursor');
-			} else {
-				var cursor = _n1.a;
-				return _Utils_Tuple2(
-					author$project$Main$Playing(
-						A2(author$project$Main$withCursor, cursor, state)),
-					elm$core$Platform$Cmd$none);
-			}
-		}
+var elm$browser$Browser$Events$State = F2(
+	function (subs, pids) {
+		return {pids: pids, subs: subs};
 	});
-var author$project$Main$SelectIndex = function (a) {
-	return {$: 'SelectIndex', a: a};
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$browser$Browser$Events$init = elm$core$Task$succeed(
+	A2(elm$browser$Browser$Events$State, _List_Nil, elm$core$Dict$empty));
+var elm$browser$Browser$Events$nodeToKey = function (node) {
+	if (node.$ === 'Document') {
+		return 'd_';
+	} else {
+		return 'w_';
+	}
 };
-var author$project$Util$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-var elm$core$String$foldr = _String_foldr;
-var elm$core$String$toList = function (string) {
-	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
+var elm$browser$Browser$Events$addKey = function (sub) {
+	var node = sub.a;
+	var name = sub.b;
+	return _Utils_Tuple2(
+		_Utils_ap(
+			elm$browser$Browser$Events$nodeToKey(node),
+			name),
+		sub);
 };
-var author$project$Util$alphabetList = elm$core$String$toList(author$project$Util$alphabet);
+var elm$browser$Browser$Events$Event = F2(
+	function (key, event) {
+		return {event: event, key: key};
+	});
+var elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var elm$core$Task$andThen = _Scheduler_andThen;
+var elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -5341,341 +5130,6 @@ var elm$core$List$map = F2(
 			_List_Nil,
 			xs);
 	});
-var elm$core$String$cons = _String_cons;
-var elm$core$String$fromChar = function (_char) {
-	return A2(elm$core$String$cons, _char, '');
-};
-var elm$core$Bitwise$and = _Bitwise_and;
-var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-var elm$core$String$repeatHelp = F3(
-	function (n, chunk, result) {
-		return (n <= 0) ? result : A3(
-			elm$core$String$repeatHelp,
-			n >> 1,
-			_Utils_ap(chunk, chunk),
-			(!(n & 1)) ? result : _Utils_ap(result, chunk));
-	});
-var elm$core$String$repeat = F2(
-	function (n, chunk) {
-		return A3(elm$core$String$repeatHelp, n, chunk, '');
-	});
-var author$project$Puzzle$lettering = function () {
-	var aToZ = A2(elm$core$List$map, elm$core$String$fromChar, author$project$Util$alphabetList);
-	var aaToZZ = A2(
-		elm$core$List$map,
-		elm$core$String$repeat(2),
-		aToZ);
-	return _Utils_ap(aToZ, aaToZZ);
-}();
-var elm$core$List$drop = F2(
-	function (n, list) {
-		drop:
-		while (true) {
-			if (n <= 0) {
-				return list;
-			} else {
-				if (!list.b) {
-					return list;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs;
-					n = $temp$n;
-					list = $temp$list;
-					continue drop;
-				}
-			}
-		}
-	});
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
-};
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var author$project$Puzzle$letterFor = function (index) {
-	return A2(
-		elm$core$Maybe$withDefault,
-		'',
-		elm$core$List$head(
-			A2(elm$core$List$drop, index, author$project$Puzzle$lettering)));
-};
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
-		default:
-			return 3;
-	}
-};
-var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h3 = _VirtualDom_node('h3');
-var elm$html$Html$section = _VirtualDom_node('section');
-var elm$html$Html$span = _VirtualDom_node('span');
-var elm$html$Html$table = _VirtualDom_node('table');
-var elm$html$Html$td = _VirtualDom_node('td');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$html$Html$tr = _VirtualDom_node('tr');
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
-var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		elm$html$Html$Events$on,
-		'click',
-		elm$json$Json$Decode$succeed(msg));
-};
-var author$project$Main$playingView = function (state) {
-	return _List_fromArray(
-		[
-			A2(
-			elm$html$Html$section,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$id('board')
-				]),
-			_List_Nil),
-			A2(
-			elm$html$Html$section,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$id('clues')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h3,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('header')
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('Clues')
-						])),
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$id('clue-list')
-						]),
-					A2(
-						elm$core$List$indexedMap,
-						F2(
-							function (clueIndex, clue) {
-								var letter = author$project$Puzzle$letterFor(clueIndex);
-								return A2(
-									elm$html$Html$div,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('clue'),
-											elm$html$Html$Attributes$id(
-											'clue-' + elm$core$String$fromInt(clueIndex))
-										]),
-									_List_fromArray(
-										[
-											A2(
-											elm$html$Html$h3,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$class('hint')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													elm$html$Html$span,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('clue-letter')
-														]),
-													_List_fromArray(
-														[
-															elm$html$Html$text(letter + '. ')
-														])),
-													elm$html$Html$text(clue.hint)
-												])),
-											A2(
-											elm$html$Html$table,
-											_List_Nil,
-											_List_fromArray(
-												[
-													A2(
-													elm$html$Html$tr,
-													_List_Nil,
-													A2(
-														elm$core$List$indexedMap,
-														F2(
-															function (letterIndex, _n0) {
-																var quoteIndex = _n0.a;
-																var mc = _n0.b;
-																return A2(
-																	elm$html$Html$td,
-																	_List_fromArray(
-																		[
-																			elm$html$Html$Events$onClick(
-																			author$project$Main$SelectIndex(
-																				A2(author$project$Main$Clues, clueIndex, letterIndex))),
-																			elm$html$Html$Attributes$class('answer-letter')
-																		]),
-																	_List_fromArray(
-																		[
-																			elm$html$Html$text(
-																			elm$core$String$fromChar(
-																				A2(
-																					elm$core$Maybe$withDefault,
-																					_Utils_chr(' '),
-																					mc)))
-																		]));
-															}),
-														clue.answer)),
-													A2(
-													elm$html$Html$tr,
-													_List_Nil,
-													A2(
-														elm$core$List$indexedMap,
-														F2(
-															function (letterIndex, _n1) {
-																var quoteIndex = _n1.a;
-																var mc = _n1.b;
-																return A2(
-																	elm$html$Html$td,
-																	_List_fromArray(
-																		[
-																			elm$html$Html$Events$onClick(
-																			author$project$Main$SelectIndex(
-																				A2(author$project$Main$Clues, clueIndex, letterIndex))),
-																			elm$html$Html$Attributes$class('answer-number')
-																		]),
-																	_List_fromArray(
-																		[
-																			elm$html$Html$text(
-																			elm$core$String$fromInt(quoteIndex + 1))
-																		]));
-															}),
-														clue.answer))
-												]))
-										]));
-							}),
-						state.puzzle.clues))
-				]))
-		]);
-};
-var author$project$Main$view = function (model) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$id('crossbars-wrapper')
-			]),
-		A2(
-			elm$core$List$cons,
-			A2(
-				elm$html$Html$section,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$id('overview')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$h3,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('header')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('Crossbars — Acrostic Player')
-							]))
-					])),
-			function () {
-				if (model.$ === 'NoPuzzle') {
-					return _List_fromArray(
-						[
-							elm$html$Html$text('No puzzle loaded... 😦')
-						]);
-				} else {
-					var state = model.a;
-					return author$project$Main$playingView(state);
-				}
-			}()));
-};
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$Task$andThen = _Scheduler_andThen;
-var elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
 var elm$core$Task$map2 = F3(
 	function (func, taskA, taskB) {
 		return A2(
@@ -5739,6 +5193,21 @@ var elm$core$Task$perform = F2(
 			elm$core$Task$Perform(
 				A2(elm$core$Task$map, toMessage, task)));
 	});
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$map2 = _Json_map2;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
 var elm$core$String$length = _String_length;
 var elm$core$String$slice = _String_slice;
 var elm$core$String$dropLeft = F2(
@@ -5867,6 +5336,983 @@ var elm$url$Url$fromString = function (str) {
 		elm$url$Url$chompAfterProtocol,
 		elm$url$Url$Https,
 		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
+};
+var elm$browser$Browser$Events$spawn = F3(
+	function (router, key, _n0) {
+		var node = _n0.a;
+		var name = _n0.b;
+		var actualNode = function () {
+			if (node.$ === 'Document') {
+				return _Browser_doc;
+			} else {
+				return _Browser_window;
+			}
+		}();
+		return A2(
+			elm$core$Task$map,
+			function (value) {
+				return _Utils_Tuple2(key, value);
+			},
+			A3(
+				_Browser_on,
+				actualNode,
+				name,
+				function (event) {
+					return A2(
+						elm$core$Platform$sendToSelf,
+						router,
+						A2(elm$browser$Browser$Events$Event, key, event));
+				}));
+	});
+var elm$core$Dict$Black = {$: 'Black'};
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$Red = {$: 'Red'};
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1.$) {
+				case 'LT':
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, dict) {
+				var key = _n0.a;
+				var value = _n0.b;
+				return A3(elm$core$Dict$insert, key, value, dict);
+			}),
+		elm$core$Dict$empty,
+		assocs);
+};
+var elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3(elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _n0) {
+				stepState:
+				while (true) {
+					var list = _n0.a;
+					var result = _n0.b;
+					if (!list.b) {
+						return _Utils_Tuple2(
+							list,
+							A3(rightStep, rKey, rValue, result));
+					} else {
+						var _n2 = list.a;
+						var lKey = _n2.a;
+						var lValue = _n2.b;
+						var rest = list.b;
+						if (_Utils_cmp(lKey, rKey) < 0) {
+							var $temp$rKey = rKey,
+								$temp$rValue = rValue,
+								$temp$_n0 = _Utils_Tuple2(
+								rest,
+								A3(leftStep, lKey, lValue, result));
+							rKey = $temp$rKey;
+							rValue = $temp$rValue;
+							_n0 = $temp$_n0;
+							continue stepState;
+						} else {
+							if (_Utils_cmp(lKey, rKey) > 0) {
+								return _Utils_Tuple2(
+									list,
+									A3(rightStep, rKey, rValue, result));
+							} else {
+								return _Utils_Tuple2(
+									rest,
+									A4(bothStep, lKey, lValue, rValue, result));
+							}
+						}
+					}
+				}
+			});
+		var _n3 = A3(
+			elm$core$Dict$foldl,
+			stepState,
+			_Utils_Tuple2(
+				elm$core$Dict$toList(leftDict),
+				initialResult),
+			rightDict);
+		var leftovers = _n3.a;
+		var intermediateResult = _n3.b;
+		return A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n4, result) {
+					var k = _n4.a;
+					var v = _n4.b;
+					return A3(leftStep, k, v, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3(elm$core$Dict$foldl, elm$core$Dict$insert, t2, t1);
+	});
+var elm$core$Process$kill = _Scheduler_kill;
+var elm$browser$Browser$Events$onEffects = F3(
+	function (router, subs, state) {
+		var stepRight = F3(
+			function (key, sub, _n6) {
+				var deads = _n6.a;
+				var lives = _n6.b;
+				var news = _n6.c;
+				return _Utils_Tuple3(
+					deads,
+					lives,
+					A2(
+						elm$core$List$cons,
+						A3(elm$browser$Browser$Events$spawn, router, key, sub),
+						news));
+			});
+		var stepLeft = F3(
+			function (_n4, pid, _n5) {
+				var deads = _n5.a;
+				var lives = _n5.b;
+				var news = _n5.c;
+				return _Utils_Tuple3(
+					A2(elm$core$List$cons, pid, deads),
+					lives,
+					news);
+			});
+		var stepBoth = F4(
+			function (key, pid, _n2, _n3) {
+				var deads = _n3.a;
+				var lives = _n3.b;
+				var news = _n3.c;
+				return _Utils_Tuple3(
+					deads,
+					A3(elm$core$Dict$insert, key, pid, lives),
+					news);
+			});
+		var newSubs = A2(elm$core$List$map, elm$browser$Browser$Events$addKey, subs);
+		var _n0 = A6(
+			elm$core$Dict$merge,
+			stepLeft,
+			stepBoth,
+			stepRight,
+			state.pids,
+			elm$core$Dict$fromList(newSubs),
+			_Utils_Tuple3(_List_Nil, elm$core$Dict$empty, _List_Nil));
+		var deadPids = _n0.a;
+		var livePids = _n0.b;
+		var makeNewPids = _n0.c;
+		return A2(
+			elm$core$Task$andThen,
+			function (pids) {
+				return elm$core$Task$succeed(
+					A2(
+						elm$browser$Browser$Events$State,
+						newSubs,
+						A2(
+							elm$core$Dict$union,
+							livePids,
+							elm$core$Dict$fromList(pids))));
+			},
+			A2(
+				elm$core$Task$andThen,
+				function (_n1) {
+					return elm$core$Task$sequence(makeNewPids);
+				},
+				elm$core$Task$sequence(
+					A2(elm$core$List$map, elm$core$Process$kill, deadPids))));
+	});
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (_n0.$ === 'Just') {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var elm$browser$Browser$Events$onSelfMsg = F3(
+	function (router, _n0, state) {
+		var key = _n0.key;
+		var event = _n0.event;
+		var toMessage = function (_n2) {
+			var subKey = _n2.a;
+			var _n3 = _n2.b;
+			var node = _n3.a;
+			var name = _n3.b;
+			var decoder = _n3.c;
+			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : elm$core$Maybe$Nothing;
+		};
+		var messages = A2(elm$core$List$filterMap, toMessage, state.subs);
+		return A2(
+			elm$core$Task$andThen,
+			function (_n1) {
+				return elm$core$Task$succeed(state);
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$map,
+					elm$core$Platform$sendToApp(router),
+					messages)));
+	});
+var elm$browser$Browser$Events$subMap = F2(
+	function (func, _n0) {
+		var node = _n0.a;
+		var name = _n0.b;
+		var decoder = _n0.c;
+		return A3(
+			elm$browser$Browser$Events$MySub,
+			node,
+			name,
+			A2(elm$json$Json$Decode$map, func, decoder));
+	});
+_Platform_effectManagers['Browser.Events'] = _Platform_createManager(elm$browser$Browser$Events$init, elm$browser$Browser$Events$onEffects, elm$browser$Browser$Events$onSelfMsg, 0, elm$browser$Browser$Events$subMap);
+var elm$browser$Browser$Events$subscription = _Platform_leaf('Browser.Events');
+var elm$browser$Browser$Events$on = F3(
+	function (node, name, decoder) {
+		return elm$browser$Browser$Events$subscription(
+			A3(elm$browser$Browser$Events$MySub, node, name, decoder));
+	});
+var elm$browser$Browser$Events$onKeyDown = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keydown');
+var elm$core$Char$fromCode = _Char_fromCode;
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$html$Html$Events$keyCode = A2(elm$json$Json$Decode$field, 'keyCode', elm$json$Json$Decode$int);
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$fail = _Json_fail;
+var author$project$Main$subscriptions = function (model) {
+	return elm$browser$Browser$Events$onKeyDown(
+		A2(
+			elm$json$Json$Decode$andThen,
+			function (key) {
+				switch (key) {
+					case 8:
+						return elm$json$Json$Decode$succeed(
+							author$project$Main$SetCursor(elm$core$Maybe$Nothing));
+					case 46:
+						return elm$json$Json$Decode$succeed(
+							author$project$Main$SetCursor(elm$core$Maybe$Nothing));
+					case 9:
+						return elm$json$Json$Decode$succeed(author$project$Main$SwapCursor);
+					case 37:
+						return elm$json$Json$Decode$succeed(
+							author$project$Main$MoveCursor(author$project$Main$Left));
+					case 38:
+						return elm$json$Json$Decode$succeed(
+							author$project$Main$MoveCursor(author$project$Main$Up));
+					case 39:
+						return elm$json$Json$Decode$succeed(
+							author$project$Main$MoveCursor(author$project$Main$Right));
+					case 40:
+						return elm$json$Json$Decode$succeed(
+							author$project$Main$MoveCursor(author$project$Main$Down));
+					default:
+						var c = elm$core$Char$fromCode(key);
+						return elm$core$Char$isAlphaNum(c) ? elm$json$Json$Decode$succeed(
+							author$project$Main$SetCursor(
+								elm$core$Maybe$Just(c))) : elm$json$Json$Decode$fail('unknown key');
+				}
+			},
+			elm$html$Html$Events$keyCode));
+};
+var author$project$Main$asPuzzleIn = F2(
+	function (state, puzzle) {
+		return _Utils_update(
+			state,
+			{puzzle: puzzle});
+	});
+var author$project$Main$withCursor = F2(
+	function (cursor, state) {
+		return _Utils_update(
+			state,
+			{cursor: cursor});
+	});
+var elm$core$Debug$todo = _Debug_todo;
+var author$project$Main$moveCursor = F2(
+	function (dir, state) {
+		return function (c) {
+			return A2(author$project$Main$withCursor, c, state);
+		}(
+			function () {
+				var _n0 = state.cursor;
+				if (_n0.$ === 'Board') {
+					var index = _n0.a;
+					return _Debug_todo(
+						'Main',
+						{
+							start: {line: 74, column: 24},
+							end: {line: 74, column: 34}
+						})('moveCursor Board');
+				} else {
+					var cIndex = _n0.a;
+					var lIndex = _n0.b;
+					return _Debug_todo(
+						'Main',
+						{
+							start: {line: 75, column: 32},
+							end: {line: 75, column: 42}
+						})('moveCursor Clues');
+				}
+			}());
+	});
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var author$project$Main$selectedBoard = function (state) {
+	var _n0 = state.cursor;
+	if (_n0.$ === 'Board') {
+		var index = _n0.a;
+		return index;
+	} else {
+		var clueIndex = _n0.a;
+		var letterIndex = _n0.b;
+		return A2(
+			elm$core$Maybe$withDefault,
+			-1,
+			A2(
+				elm$core$Maybe$andThen,
+				function (clue) {
+					return elm$core$List$head(
+						A2(elm$core$List$drop, letterIndex, clue.answer));
+				},
+				elm$core$List$head(
+					A2(elm$core$List$drop, clueIndex, state.puzzle.clues))));
+	}
+};
+var author$project$Main$Board = function (a) {
+	return {$: 'Board', a: a};
+};
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
+var elm$core$List$concat = function (lists) {
+	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
+};
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
+var author$project$Main$selectedClue = function (state) {
+	var _n0 = state.cursor;
+	if (_n0.$ === 'Clues') {
+		var clue = _n0.a;
+		var letter = _n0.b;
+		return _Utils_Tuple2(clue, letter);
+	} else {
+		var index = _n0.a;
+		return function (cs) {
+			if (cs.b && (!cs.b.b)) {
+				var idx = cs.a;
+				return idx;
+			} else {
+				return _Utils_Tuple2(-1, -1);
+			}
+		}(
+			elm$core$List$concat(
+				A2(
+					elm$core$List$indexedMap,
+					F2(
+						function (clueIndex, clue) {
+							return A2(
+								elm$core$List$map,
+								elm$core$Tuple$first,
+								A2(
+									elm$core$List$filter,
+									elm$core$Tuple$second,
+									A2(
+										elm$core$List$indexedMap,
+										F2(
+											function (letterIndex, qIndex) {
+												return _Utils_Tuple2(
+													_Utils_Tuple2(clueIndex, letterIndex),
+													_Utils_eq(qIndex, index));
+											}),
+										clue.answer)));
+						}),
+					state.puzzle.clues)));
+	}
+};
+var author$project$Main$swapCursor = function (state) {
+	return function (c) {
+		return A2(author$project$Main$withCursor, c, state);
+	}(
+		function () {
+			var _n0 = state.cursor;
+			if (_n0.$ === 'Board') {
+				var _n1 = author$project$Main$selectedClue(state);
+				var cIndex = _n1.a;
+				var lIndex = _n1.b;
+				return A2(author$project$Main$Clues, cIndex, lIndex);
+			} else {
+				return author$project$Main$Board(
+					author$project$Main$selectedBoard(state));
+			}
+		}());
+};
+var author$project$Puzzle$asQuoteIn = F2(
+	function (puzzle, quote) {
+		return _Utils_update(
+			puzzle,
+			{quote: quote});
+	});
+var author$project$Util$updateIndex = F3(
+	function (index, f, l) {
+		if (!l.b) {
+			return _List_Nil;
+		} else {
+			var x = l.a;
+			var rest = l.b;
+			return (!index) ? A2(
+				elm$core$List$cons,
+				f(x),
+				rest) : A2(
+				elm$core$List$cons,
+				x,
+				A3(author$project$Util$updateIndex, index - 1, f, rest));
+		}
+	});
+var elm$core$Basics$always = F2(
+	function (a, _n0) {
+		return a;
+	});
+var elm$core$Debug$log = _Debug_log;
+var author$project$Main$update = F2(
+	function (msg, model) {
+		if (model.$ === 'NoPuzzle') {
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+		} else {
+			var state = model.a;
+			var _n1 = A2(elm$core$Debug$log, 'msg', msg);
+			switch (_n1.$) {
+				case 'SetCursor':
+					var mc = _n1.a;
+					return _Utils_Tuple2(
+						author$project$Main$Playing(
+							A2(
+								author$project$Main$asPuzzleIn,
+								state,
+								A2(
+									author$project$Puzzle$asQuoteIn,
+									state.puzzle,
+									A3(
+										author$project$Util$updateIndex,
+										author$project$Main$selectedBoard(state),
+										elm$core$Basics$always(mc),
+										state.puzzle.quote)))),
+						elm$core$Platform$Cmd$none);
+				case 'SwapCursor':
+					return _Utils_Tuple2(
+						author$project$Main$Playing(
+							author$project$Main$swapCursor(state)),
+						elm$core$Platform$Cmd$none);
+				case 'MoveCursor':
+					var dir = _n1.a;
+					return _Utils_Tuple2(
+						author$project$Main$Playing(
+							A2(author$project$Main$moveCursor, dir, state)),
+						elm$core$Platform$Cmd$none);
+				default:
+					var cursor = _n1.a;
+					return _Utils_Tuple2(
+						author$project$Main$Playing(
+							A2(author$project$Main$withCursor, cursor, state)),
+						elm$core$Platform$Cmd$none);
+			}
+		}
+	});
+var author$project$Main$SelectIndex = function (a) {
+	return {$: 'SelectIndex', a: a};
+};
+var author$project$Main$isSelected = F3(
+	function (qIndex, _n0, state) {
+		var cIndex = _n0.a;
+		var lIndex = _n0.b;
+		var _n1 = state.cursor;
+		if (_n1.$ === 'Clues') {
+			var clue = _n1.a;
+			var letter = _n1.b;
+			return _Utils_eq(clue, cIndex) && _Utils_eq(letter, lIndex);
+		} else {
+			var quote = _n1.a;
+			return _Utils_eq(quote, qIndex);
+		}
+	});
+var author$project$Util$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var elm$core$String$foldr = _String_foldr;
+var elm$core$String$toList = function (string) {
+	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
+};
+var author$project$Util$alphabetList = elm$core$String$toList(author$project$Util$alphabet);
+var elm$core$String$cons = _String_cons;
+var elm$core$String$fromChar = function (_char) {
+	return A2(elm$core$String$cons, _char, '');
+};
+var elm$core$Bitwise$and = _Bitwise_and;
+var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3(elm$core$String$repeatHelp, n, chunk, '');
+	});
+var author$project$Puzzle$lettering = function () {
+	var aToZ = A2(elm$core$List$map, elm$core$String$fromChar, author$project$Util$alphabetList);
+	var aaToZZ = A2(
+		elm$core$List$map,
+		elm$core$String$repeat(2),
+		aToZ);
+	return _Utils_ap(aToZ, aaToZZ);
+}();
+var author$project$Puzzle$letterFor = function (index) {
+	return A2(
+		elm$core$Maybe$withDefault,
+		'',
+		elm$core$List$head(
+			A2(elm$core$List$drop, index, author$project$Puzzle$lettering)));
+};
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$h3 = _VirtualDom_node('h3');
+var elm$html$Html$section = _VirtualDom_node('section');
+var elm$html$Html$span = _VirtualDom_node('span');
+var elm$html$Html$table = _VirtualDom_node('table');
+var elm$html$Html$td = _VirtualDom_node('td');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$html$Html$tr = _VirtualDom_node('tr');
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$classList = function (classes) {
+	return elm$html$Html$Attributes$class(
+		A2(
+			elm$core$String$join,
+			' ',
+			A2(
+				elm$core$List$map,
+				elm$core$Tuple$first,
+				A2(elm$core$List$filter, elm$core$Tuple$second, classes))));
+};
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$Main$playingView = function (state) {
+	var selected = author$project$Main$selectedClue(state);
+	return _List_fromArray(
+		[
+			A2(
+			elm$html$Html$section,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('board')
+				]),
+			_List_Nil),
+			A2(
+			elm$html$Html$section,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('clues')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h3,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('header')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('Clues')
+						])),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id('clue-list')
+						]),
+					A2(
+						elm$core$List$indexedMap,
+						F2(
+							function (clueIndex, clue) {
+								var letter = author$project$Puzzle$letterFor(clueIndex);
+								return A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('clue'),
+											elm$html$Html$Attributes$id(
+											'clue-' + elm$core$String$fromInt(clueIndex))
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$h3,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('hint')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$span,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('clue-letter')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(letter + '. ')
+														])),
+													elm$html$Html$text(clue.hint)
+												])),
+											A2(
+											elm$html$Html$table,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$tr,
+													_List_Nil,
+													A2(
+														elm$core$List$indexedMap,
+														F2(
+															function (letterIndex, quoteIndex) {
+																return A2(
+																	elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Events$onClick(
+																			author$project$Main$SelectIndex(
+																				A2(author$project$Main$Clues, clueIndex, letterIndex))),
+																			elm$html$Html$Attributes$classList(
+																			_List_fromArray(
+																				[
+																					_Utils_Tuple2('answer-letter', true),
+																					_Utils_Tuple2(
+																					'selected',
+																					A3(
+																						author$project$Main$isSelected,
+																						quoteIndex,
+																						_Utils_Tuple2(clueIndex, letterIndex),
+																						state))
+																				]))
+																		]),
+																	_List_fromArray(
+																		[
+																			elm$html$Html$text(
+																			elm$core$String$fromChar(
+																				A2(
+																					elm$core$Maybe$withDefault,
+																					_Utils_chr(' '),
+																					A2(
+																						elm$core$Maybe$andThen,
+																						elm$core$Basics$identity,
+																						elm$core$List$head(
+																							A2(elm$core$List$drop, quoteIndex, state.puzzle.quote))))))
+																		]));
+															}),
+														clue.answer)),
+													A2(
+													elm$html$Html$tr,
+													_List_Nil,
+													A2(
+														elm$core$List$indexedMap,
+														F2(
+															function (letterIndex, quoteIndex) {
+																return A2(
+																	elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Events$onClick(
+																			author$project$Main$SelectIndex(
+																				A2(author$project$Main$Clues, clueIndex, letterIndex))),
+																			elm$html$Html$Attributes$classList(
+																			_List_fromArray(
+																				[
+																					_Utils_Tuple2('answer-number', true),
+																					_Utils_Tuple2(
+																					'selected',
+																					A3(
+																						author$project$Main$isSelected,
+																						quoteIndex,
+																						_Utils_Tuple2(clueIndex, letterIndex),
+																						state))
+																				]))
+																		]),
+																	_List_fromArray(
+																		[
+																			elm$html$Html$text(
+																			elm$core$String$fromInt(quoteIndex + 1))
+																		]));
+															}),
+														clue.answer))
+												]))
+										]));
+							}),
+						state.puzzle.clues))
+				]))
+		]);
+};
+var author$project$Main$view = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('crossbars-wrapper')
+			]),
+		A2(
+			elm$core$List$cons,
+			A2(
+				elm$html$Html$section,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$id('overview')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$h3,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('header')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Crossbars — Acrostic Player')
+							]))
+					])),
+			function () {
+				if (model.$ === 'NoPuzzle') {
+					return _List_fromArray(
+						[
+							elm$html$Html$text('No puzzle loaded... 😦')
+						]);
+				} else {
+					var state = model.a;
+					return author$project$Main$playingView(state);
+				}
+			}()));
 };
 var elm$browser$Browser$element = _Browser_element;
 var elm$json$Json$Decode$value = _Json_decodeValue;

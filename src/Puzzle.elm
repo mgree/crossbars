@@ -368,7 +368,7 @@ encodePhase phase =
 
 type alias BlankClue =
     { hint : String
-    , answer : List (Int, Maybe Char)
+    , answer : List Int
     }
 
 type alias Blank =
@@ -381,7 +381,7 @@ type alias Blank =
 toBlank : Puzzle -> Blank
 toBlank puzzle =
     { quote = puzzle.quote |>
-              String.toList |>
+              cleanChars |>
               List.map (always Nothing)
     , quoteWordLengths = puzzle.quote |>
                          String.words |>
@@ -397,9 +397,8 @@ toBlankClue : Clue -> BlankClue
 toBlankClue clue =
     { hint = clue.hint
     , answer = clue.answer |>
-               List.map
-                   (\(mNum, c) ->
-                        ( mNum |> Maybe.withDefault (-1)
-                        , Nothing
-                        ))
+               List.map (Tuple.first >> Maybe.withDefault (-1))
     }
+
+asQuoteIn : Blank -> List (Maybe Char) -> Blank
+asQuoteIn puzzle quote = { puzzle | quote = quote }

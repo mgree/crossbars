@@ -7,16 +7,27 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onFocus)
 
 import Browser
+import Browser.Events
 
+import Json.Decode
 import Json.Encode
 
 import Puzzle
+
+import Util exposing (..)
 
 -- TYPES
 
 type alias Flags = Json.Encode.Value
 
+type Direction = Left 
+               | Up
+               | Right
+               | Down
+
 type Msg = SetCursor (Maybe Char)
+         | SwapCursor
+         | MoveCursor Direction
          | SelectIndex Cursor
 
 type Cursor = Board Int
@@ -41,8 +52,68 @@ testModel = Playing { cursor = Clues 0 0
                     , puzzle = wcw
                     }
 
+asPuzzleIn : State -> Puzzle -> State
+asPuzzleIn state puzzle = { state | puzzle = puzzle }
+
 withCursor : Cursor -> State -> State
 withCursor cursor state = { state | cursor = cursor }
+
+swapCursor : State -> State
+swapCursor state =
+    (\c -> withCursor c state) <|
+    case state.cursor of
+        Board _ -> 
+            let (cIndex, lIndex) = selectedClue state in
+            Clues cIndex lIndex
+        Clues _ _ -> Board (selectedBoard state)
+            
+moveCursor : Direction -> State -> State
+moveCursor dir state =
+    (\c -> withCursor c state) <|
+    case state.cursor of
+        Board index -> Debug.todo "moveCursor Board"
+        Clues cIndex lIndex -> Debug.todo "moveCursor Clues"
+
+isSelected : Int -> (Int, Int) -> State -> Bool
+isSelected qIndex (cIndex, lIndex) state =
+    case state.cursor of
+        Clues clue letter -> clue == cIndex && letter == lIndex
+        Board quote -> quote == qIndex
+
+selectedClue : State -> (Int, Int)
+selectedClue state =
+    case state.cursor of
+        Clues clue letter -> (clue, letter)
+        Board index ->
+            state.puzzle.clues |>
+            List.indexedMap
+                (\clueIndex clue ->
+                     clue.answer |>
+                     List.indexedMap 
+                         (\letterIndex qIndex -> 
+                              ((clueIndex, letterIndex), qIndex == index)) |>
+                     List.filter Tuple.second |>
+                     List.map Tuple.first) |>
+            List.concat |>
+            (\cs ->
+                 case cs of
+                     [idx] -> idx
+                     _ -> (-1, -1) {- YIKES -})
+
+selectedBoard : State -> Int
+selectedBoard state =
+    case state.cursor of
+        Board index -> index
+        Clues clueIndex letterIndex ->
+            state.puzzle.clues |>
+            List.drop clueIndex |>
+            List.head |>
+            Maybe.andThen
+                (\clue ->
+                     clue.answer |>
+                     List.drop letterIndex |>
+                     List.head) |>
+            Maybe.withDefault (-1) {- YIKES -}
 
 -- MAIN
 
@@ -62,7 +133,23 @@ init savedModel =
     )
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+subscriptions model = 
+    Html.Events.keyCode |>
+    Json.Decode.andThen
+        (\key ->
+             case key of
+                 8 -> Json.Decode.succeed (SetCursor Nothing) -- backspace
+                 46 -> Json.Decode.succeed (SetCursor Nothing) -- delete
+                 9  -> Json.Decode.succeed SwapCursor -- tab
+                 37 -> Json.Decode.succeed (MoveCursor Left)
+                 38 -> Json.Decode.succeed (MoveCursor Up)
+                 39 -> Json.Decode.succeed (MoveCursor Right)
+                 40 -> Json.Decode.succeed (MoveCursor Down)
+                 _ -> let c = Char.fromCode key in
+                      if Char.isAlphaNum c
+                      then Json.Decode.succeed (SetCursor (Just c))
+                      else Json.Decode.fail "unknown key") |>
+    Browser.Events.onKeyDown
 
 -- UPDATE
 
@@ -73,8 +160,25 @@ update msg model =
                     , Cmd.none)
         Playing state ->
             case msg |> Debug.log "msg" of
-                SetCursor mc -> Debug.todo "SetCursor"
-                                        
+                SetCursor mc -> 
+                    ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
+                      Puzzle.asQuoteIn state.puzzle |>
+                      asPuzzleIn state |>
+                      Playing
+                    , Cmd.none)
+                                   
+                SwapCursor -> 
+                    ( state |>
+                      swapCursor |>
+                      Playing
+                    , Cmd.none)
+                              
+                MoveCursor dir -> 
+                    ( state |>
+                      moveCursor dir |>
+                      Playing
+                    , Cmd.none)
+     
                 SelectIndex cursor -> 
                     ( state |>
                       withCursor cursor |>
@@ -85,7 +189,8 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [id "crossbars-wrapper"] 
+    div [ id "crossbars-wrapper"
+        ] 
         (  section [id "overview"]
            [ h3 [class "header"] [text "Crossbars — Acrostic Player"]
            ]
@@ -97,6 +202,10 @@ view model =
 
 playingView : State -> List (Html Msg)
 playingView state = 
+    let 
+        selected = selectedClue state
+    in
+
     [ section [id "board"]
           []
     , section [id "clues"]
@@ -119,21 +228,29 @@ playingView state =
                            [ tr []
                                 (clue.answer |>
                                  List.indexedMap 
-                                     (\letterIndex (quoteIndex, mc) ->
+                                     (\letterIndex quoteIndex ->
                                           td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
-                                             , class "answer-letter"
+                                             , classList
+                                                   [ ("answer-letter", True)
+                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state)
+                                                   ]
                                              ]
-                                             [ mc |> 
-                                               Maybe.withDefault ' ' |> 
+                                             [ List.drop quoteIndex state.puzzle.quote |>
+                                               List.head |>
+                                               Maybe.andThen identity |> 
+                                               Maybe.withDefault ' ' |>
                                                String.fromChar |>
                                                text
                                              ]))
                            , tr []
                                 (clue.answer |>
                                  List.indexedMap 
-                                     (\letterIndex (quoteIndex, mc) ->
+                                     (\letterIndex quoteIndex ->
                                           td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
-                                             , class "answer-number"
+                                             , classList
+                                                   [ ("answer-number", True)
+                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state)
+                                                   ]
                                              ]
                                              [ quoteIndex + 1 |> 
                                                String.fromInt |>
@@ -148,4 +265,4 @@ playingView state =
 -- TESTING
 
 wcw : Puzzle
-wcw = { boardColumns = 35, clues = [{ answer = [(150,Nothing),(202,Nothing),(16,Nothing),(71,Nothing),(112,Nothing),(209,Nothing),(196,Nothing),(88,Nothing),(213,Nothing),(27,Nothing),(130,Nothing)], hint = "Red object glazed with rainwater in a poem by this quote's author" },{ answer = [(44,Nothing),(121,Nothing),(38,Nothing),(155,Nothing),(54,Nothing),(197,Nothing),(70,Nothing)], hint = "Cold compress (2 wds.)" },{ answer = [(210,Nothing),(157,Nothing),(138,Nothing),(169,Nothing),(187,Nothing)], hint = "In bounds" },{ answer = [(20,Nothing),(179,Nothing),(174,Nothing),(30,Nothing),(90,Nothing),(81,Nothing),(37,Nothing),(139,Nothing),(74,Nothing)], hint = "Unexpected gift, in Louisiana Creole French" },{ answer = [(57,Nothing),(124,Nothing),(167,Nothing),(18,Nothing),(98,Nothing),(105,Nothing),(176,Nothing),(164,Nothing),(97,Nothing),(127,Nothing),(67,Nothing),(50,Nothing),(211,Nothing)], hint = "\"Great men are over-estimated and small men are _______\", George Eliot, _Adam Bede_" },{ answer = [(203,Nothing),(153,Nothing),(92,Nothing),(1,Nothing),(40,Nothing),(168,Nothing),(99,Nothing),(58,Nothing),(80,Nothing)], hint = "Recipient of the Pritzker Prize" },{ answer = [(166,Nothing),(116,Nothing),(17,Nothing),(119,Nothing),(133,Nothing),(200,Nothing),(41,Nothing),(186,Nothing),(31,Nothing),(198,Nothing),(4,Nothing),(45,Nothing),(0,Nothing),(60,Nothing)], hint = "A spoonful of sugar helps overcome it (2 wds.)" },{ answer = [(219,Nothing),(191,Nothing),(95,Nothing),(193,Nothing),(103,Nothing),(149,Nothing),(36,Nothing)], hint = "It means the same thing" },{ answer = [(132,Nothing),(68,Nothing),(52,Nothing),(220,Nothing)], hint = "Raises hackles" },{ answer = [(160,Nothing),(205,Nothing),(42,Nothing)], hint = "Yuletide flip, for short" },{ answer = [(64,Nothing),(15,Nothing),(53,Nothing),(177,Nothing),(154,Nothing),(215,Nothing),(192,Nothing),(118,Nothing),(73,Nothing),(5,Nothing)], hint = "\"No defeat is made up entirely of defeat\" poem by this quote's author (2 wds.)" },{ answer = [(134,Nothing),(125,Nothing),(161,Nothing),(143,Nothing),(10,Nothing),(190,Nothing),(14,Nothing),(165,Nothing),(201,Nothing)], hint = "\"_______ Venus\", racist exhibition of 19th Century Europe" },{ answer = [(185,Nothing),(173,Nothing),(91,Nothing),(216,Nothing),(156,Nothing),(135,Nothing),(140,Nothing),(19,Nothing)], hint = "Spellbind" },{ answer = [(189,Nothing),(48,Nothing),(76,Nothing),(162,Nothing),(85,Nothing),(151,Nothing),(144,Nothing),(194,Nothing),(96,Nothing),(120,Nothing)], hint = "Questions doubters (3 wds.)" },{ answer = [(129,Nothing),(145,Nothing),(12,Nothing),(108,Nothing),(217,Nothing),(183,Nothing),(207,Nothing),(34,Nothing)], hint = "Lamb-like quality" },{ answer = [(141,Nothing),(184,Nothing),(29,Nothing),(55,Nothing),(122,Nothing),(49,Nothing),(63,Nothing),(146,Nothing),(87,Nothing)], hint = "Vividly remniscent" },{ answer = [(148,Nothing),(56,Nothing),(113,Nothing),(180,Nothing),(86,Nothing),(83,Nothing),(35,Nothing),(75,Nothing)], hint = "Like a pulse" },{ answer = [(128,Nothing),(123,Nothing),(175,Nothing),(178,Nothing),(8,Nothing),(171,Nothing),(82,Nothing),(2,Nothing),(28,Nothing)], hint = "Grill on camera?" },{ answer = [(100,Nothing),(69,Nothing),(163,Nothing),(3,Nothing),(214,Nothing),(159,Nothing),(206,Nothing),(136,Nothing),(66,Nothing),(59,Nothing),(21,Nothing)], hint = "Frappuccino, Coolatta, or Awful Awful (2 wds.)" },{ answer = [(33,Nothing),(204,Nothing),(93,Nothing),(6,Nothing),(115,Nothing),(89,Nothing),(13,Nothing),(51,Nothing),(107,Nothing)], hint = "Couldn't care less" },{ answer = [(111,Nothing),(147,Nothing),(23,Nothing),(109,Nothing),(199,Nothing),(137,Nothing),(26,Nothing),(77,Nothing),(131,Nothing),(32,Nothing)], hint = "Fit to print" },{ answer = [(46,Nothing),(39,Nothing),(24,Nothing),(25,Nothing)], hint = "\"Mad Dog\" Maddux, familiarly" },{ answer = [(117,Nothing),(47,Nothing),(195,Nothing),(65,Nothing),(106,Nothing),(170,Nothing),(212,Nothing),(110,Nothing),(182,Nothing),(104,Nothing)], hint = "Birthplace and hometown of this quote's author" },{ answer = [(79,Nothing),(9,Nothing),(101,Nothing),(62,Nothing),(102,Nothing),(22,Nothing),(43,Nothing),(61,Nothing),(152,Nothing),(84,Nothing),(188,Nothing)], hint = "Adolescent quality, often" },{ answer = [(208,Nothing),(142,Nothing),(158,Nothing),(7,Nothing),(72,Nothing),(126,Nothing)], hint = "Devise; lie" },{ answer = [(94,Nothing),(218,Nothing),(114,Nothing),(78,Nothing),(172,Nothing),(11,Nothing),(181,Nothing)], hint = "Record breaker (2 wds.)" }], quote = [Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing], quoteWordLengths = [3,6,2,3,3,6,2,4,4,1,9,7,4,1,7,4,1,6,4,4,4,5,2,6,4,3,5,4,5,2,6,3,5,1,9,10,8,4,8,2,5,7,3,7,4,1,8,9] }
+wcw = { boardColumns = 35, clues = [{ answer = [150,202,16,71,112,209,196,88,213,27,130], hint = "Red object glazed with rainwater in a poem by this quote's author" },{ answer = [44,121,38,155,54,197,70], hint = "Cold compress (2 wds.)" },{ answer = [210,157,138,169,187], hint = "In bounds" },{ answer = [20,179,174,30,90,81,37,139,74], hint = "Unexpected gift, in Louisiana Creole French" },{ answer = [57,124,167,18,98,105,176,164,97,127,67,50,211], hint = "\"Great men are over-estimated and small men are _______\", George Eliot, _Adam Bede_" },{ answer = [203,153,92,1,40,168,99,58,80], hint = "Recipient of the Pritzker Prize" },{ answer = [166,116,17,119,133,200,41,186,31,198,4,45,0,60], hint = "A spoonful of sugar helps overcome it (2 wds.)" },{ answer = [219,191,95,193,103,149,36], hint = "It means the same thing" },{ answer = [132,68,52,220], hint = "Raises hackles" },{ answer = [160,205,42], hint = "Yuletide flip, for short" },{ answer = [64,15,53,177,154,215,192,118,73,5], hint = "\"No defeat is made up entirely of defeat\" poem by this quote's author (2 wds.)" },{ answer = [134,125,161,143,10,190,14,165,201], hint = "\"_______ Venus\", racist exhibition of 19th Century Europe" },{ answer = [185,173,91,216,156,135,140,19], hint = "Spellbind" },{ answer = [189,48,76,162,85,151,144,194,96,120], hint = "Questions doubters (3 wds.)" },{ answer = [129,145,12,108,217,183,207,34], hint = "Lamb-like quality" },{ answer = [141,184,29,55,122,49,63,146,87], hint = "Vividly remniscent" },{ answer = [148,56,113,180,86,83,35,75], hint = "Like a pulse" },{ answer = [128,123,175,178,8,171,82,2,28], hint = "Grill on camera?" },{ answer = [100,69,163,3,214,159,206,136,66,59,21], hint = "Frappuccino, Coolatta, or Awful Awful (2 wds.)" },{ answer = [33,204,93,6,115,89,13,51,107], hint = "Couldn't care less" },{ answer = [111,147,23,109,199,137,26,77,131,32], hint = "Fit to print" },{ answer = [46,39,24,25], hint = "\"Mad Dog\" Maddux, familiarly" },{ answer = [117,47,195,65,106,170,212,110,182,104], hint = "Birthplace and hometown of this quote's author" },{ answer = [79,9,101,62,102,22,43,61,152,84,188], hint = "Adolescent quality, often" },{ answer = [208,142,158,7,72,126], hint = "Devise; lie" },{ answer = [94,218,114,78,172,11,181], hint = "Record breaker (2 wds.)" }], quote = [Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing], quoteWordLengths = [3,6,2,3,3,6,2,4,4,1,9,7,4,1,7,4,1,6,4,4,4,5,2,6,4,3,5,4,5,2,6,3,5,1,9,10,8,4,8,2,5,7,3,7,4,1,8,9] }
