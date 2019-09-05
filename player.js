@@ -5826,9 +5826,12 @@ var author$project$Main$msgOfKey = A2(
 		A2(elm$json$Json$Decode$field, 'ctrlKey', elm$json$Json$Decode$bool),
 		A2(elm$json$Json$Decode$field, 'metaKey', elm$json$Json$Decode$bool),
 		A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string)));
+var author$project$Main$AsBoard = {$: 'AsBoard'};
+var author$project$Main$AsClue = {$: 'AsClue'};
 var author$project$Main$SelectIndex = function (a) {
 	return {$: 'SelectIndex', a: a};
 };
+var author$project$Main$NotSelected = {$: 'NotSelected'};
 var author$project$Main$isSelected = F3(
 	function (qIndex, _n0, state) {
 		var cIndex = _n0.a;
@@ -5837,10 +5840,10 @@ var author$project$Main$isSelected = F3(
 		if (_n1.$ === 'Clues') {
 			var clue = _n1.a;
 			var letter = _n1.b;
-			return _Utils_eq(clue, cIndex) && _Utils_eq(letter, lIndex);
+			return (_Utils_eq(clue, cIndex) && _Utils_eq(letter, lIndex)) ? author$project$Main$AsClue : author$project$Main$NotSelected;
 		} else {
 			var quote = _n1.a;
-			return _Utils_eq(quote, qIndex);
+			return _Utils_eq(quote, qIndex) ? author$project$Main$AsBoard : author$project$Main$NotSelected;
 		}
 	});
 var author$project$Util$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -5884,6 +5887,9 @@ var author$project$Puzzle$letterFor = function (index) {
 };
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h3 = _VirtualDom_node('h3');
+var elm$html$Html$h4 = _VirtualDom_node('h4');
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$p = _VirtualDom_node('p');
 var elm$html$Html$section = _VirtualDom_node('section');
 var elm$html$Html$span = _VirtualDom_node('span');
 var elm$html$Html$table = _VirtualDom_node('table');
@@ -5891,6 +5897,7 @@ var elm$html$Html$td = _VirtualDom_node('td');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$tr = _VirtualDom_node('tr');
+var elm$html$Html$ul = _VirtualDom_node('ul');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6023,11 +6030,22 @@ var author$project$Main$playingView = function (state) {
 																					_Utils_Tuple2('answer-letter', true),
 																					_Utils_Tuple2(
 																					'selected',
-																					A3(
-																						author$project$Main$isSelected,
-																						quoteIndex,
-																						_Utils_Tuple2(clueIndex, letterIndex),
-																						state))
+																					_Utils_eq(
+																						A3(
+																							author$project$Main$isSelected,
+																							quoteIndex,
+																							_Utils_Tuple2(clueIndex, letterIndex),
+																							state),
+																						author$project$Main$AsClue)),
+																					_Utils_Tuple2(
+																					'selected-bg',
+																					_Utils_eq(
+																						A3(
+																							author$project$Main$isSelected,
+																							quoteIndex,
+																							_Utils_Tuple2(clueIndex, letterIndex),
+																							state),
+																						author$project$Main$AsBoard))
 																				]))
 																		]),
 																	_List_fromArray(
@@ -6065,11 +6083,22 @@ var author$project$Main$playingView = function (state) {
 																					_Utils_Tuple2('answer-number', true),
 																					_Utils_Tuple2(
 																					'selected',
-																					A3(
-																						author$project$Main$isSelected,
-																						quoteIndex,
-																						_Utils_Tuple2(clueIndex, letterIndex),
-																						state))
+																					_Utils_eq(
+																						A3(
+																							author$project$Main$isSelected,
+																							quoteIndex,
+																							_Utils_Tuple2(clueIndex, letterIndex),
+																							state),
+																						author$project$Main$AsClue)),
+																					_Utils_Tuple2(
+																					'selected-bg',
+																					_Utils_eq(
+																						A3(
+																							author$project$Main$isSelected,
+																							quoteIndex,
+																							_Utils_Tuple2(clueIndex, letterIndex),
+																							state),
+																						author$project$Main$AsBoard))
 																				]))
 																		]),
 																	_List_fromArray(
@@ -6083,6 +6112,73 @@ var author$project$Main$playingView = function (state) {
 										]));
 							}),
 						state.puzzle.clues))
+				])),
+			A2(
+			elm$html$Html$section,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('help')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h3,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('header')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('How to use the acrostic player')
+						])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Click to select a square on the board or in clues. Good luck!')
+						])),
+					A2(
+					elm$html$Html$h4,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Keyboard shortcuts')
+						])),
+					A2(
+					elm$html$Html$ul,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('TAB - switch between board and clues')
+								])),
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('ARROW KEYS - navigate')
+								])),
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('BACKSPACE - delete current entry (and move back one)')
+								])),
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('DELETE, Ctrl-D - delete currentry (and do not move)')
+								]))
+						]))
 				]))
 		]);
 };

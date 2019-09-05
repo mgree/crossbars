@@ -10,11 +10,47 @@
 }
 
 .clue table {
-    border-spacing: 1.1em 0;
+    border-spacing: 4px 0;
+}
+
+.clue table td.answer-letter {
+    width: 1.1em;
+    font-size: 16pt;
+    text-align: center;
+    height: 16pt;
+
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+
+    border-bottom: 1px solid black;
+}
+
+.clue table td.answer-number {
+    font-size: 8pt;
+    text-align: center;
+
+    border-top: 1px solid black;
+
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    border-bottom: 2px solid transparent;
 }
 
 .clue table td.selected {
     background-color: pink;
+}
+
+.clue table td.answer-letter.selected-bg {
+    border-top: 2px dashed pink;
+    border-left: 2px dashed pink;
+    border-right: 2px dashed pink;
+}
+
+.clue table td.answer-number.selected-bg {
+    border-left: 2px dashed pink;
+    border-right: 2px dashed pink;
+    border-bottom: 2px dashed pink;
 }
 
 .clue .hint .clue-letter {
@@ -24,17 +60,4 @@
 .clue .hint {
     font-size: 12pt;
     font-weight: normal;
-}
-
-.clue .answer-letter {
-    width: 1.1em;
-    font-size: 16pt;
-    text-align: center;
-    border-bottom: 2px solid black;
-    height: 16pt;
-}
-
-.clue .answer-number {
-    font-size: 8pt;
-    text-align: center;
 }
