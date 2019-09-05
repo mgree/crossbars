@@ -1,3 +1,7 @@
+#crossbars-wrapper {
+    outline: 0px;
+}
+
 #clue-list {
     display: flex;
     flex-direction: column;
