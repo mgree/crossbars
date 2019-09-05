@@ -27,7 +27,7 @@ type Direction = Left
                | Right
                | Down
 
-type Msg = SetCursor (Maybe Char)
+type Msg = SetCursor (Maybe Char) (Maybe Direction)
          | SwapCursor
          | MoveCursor Direction
          | SelectIndex Cursor
@@ -151,50 +151,41 @@ init savedModel =
     , Task.attempt Focused (Browser.Dom.focus "crossbars-wrapper")
     )
 
-type Key
-  = Character Char
-  | Control String
-
-toKey : String -> Key
-toKey string =
-  case String.uncons string of
-    Just (char, "") ->
-      Character char
-
-    _ ->
-      Control string
-
-{- FIXME allow C-d as an in-place delete -}
 msgOfKey : Decode.Decoder (Msg, Bool)
 msgOfKey =
     Decode.map4
         (\alt ctrl meta key ->
-             if alt || ctrl || meta
-             then (IgnoreKey ( (if ctrl then "C-" else "") ++ 
-                               (if meta then "M-" else "") ++ 
-                               (if alt  then "A-" else "") ++ 
-                               key)
-                  , False)
-             else case (String.uncons key, key) of
-                      (Just (c, ""), _) ->
-                          if Char.isAlphaNum c
-                          then ( c |> Char.toUpper |> Just |> SetCursor
-                                              , True)
-                          else (IgnoreKey key, False)
-                      (_, "Tab") -> (SwapCursor, True)
-                      (_, "Backspace") -> (SetCursor Nothing, True)
-                      (_, "Delete") -> (SetCursor Nothing, True)
-                      (_, "Del") -> (SetCursor Nothing, True)
-                      (_, "Clear") -> (SetCursor Nothing, True)
-                      (_, "ArrowLeft") -> (MoveCursor Left, True)
-                      (_, "ArrowUp") -> (MoveCursor Up, True)
-                      (_, "ArrowRight") -> (MoveCursor Right, True)
-                      (_, "ArrowDown") -> (MoveCursor Down, True)
-                      (_, _) -> (IgnoreKey key, False))
+             let keyDesc = (if ctrl then "C-" else "") ++ 
+                           (if meta then "M-" else "") ++ 
+                           (if alt  then "A-" else "") ++ 
+                           key
+             in
+                 case (alt || ctrl || meta, String.uncons key, key) of
+                     (modified, Just (c, ""), _) ->
+                         if ctrl && not (alt || meta) && c == 'd'
+                         then Ok <| SetCursor Nothing Nothing
+                         else if not modified && Char.isAlphaNum c
+                         then Ok <| SetCursor (Just <| Char.toUpper c) (Just Right)
+                         else Err keyDesc
+                     (False, _, "Tab") -> Ok SwapCursor
+                     (False, _, "Backspace") -> Ok <| SetCursor Nothing (Just Left)
+                     (False, _, "Delete") -> Ok <| SetCursor Nothing Nothing
+                     (False, _, "Del") -> Ok <| SetCursor Nothing Nothing
+                     (False, _, "Clear") -> Ok <| SetCursor Nothing Nothing
+                     (False, _, "ArrowLeft") -> Ok <| MoveCursor Left
+                     (False, _, "ArrowUp") -> Ok <| MoveCursor Up
+                     (False, _, "ArrowRight") -> Ok <| MoveCursor Right
+                     (False, _, "ArrowDown") -> Ok <| MoveCursor Down
+                     (_, _, _) -> Err keyDesc)
             (Decode.field "altKey" Decode.bool)
             (Decode.field "ctrlKey" Decode.bool)
             (Decode.field "metaKey" Decode.bool)
-            (Decode.field "key" Decode.string)
+            (Decode.field "key" Decode.string) |>
+    Decode.andThen
+        (\mmsg ->
+             case mmsg of
+                 Err key -> Decode.fail ("ignoring " ++ key)
+                 Ok msg -> Decode.succeed (msg, True))
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.none
@@ -208,14 +199,13 @@ update msg model =
                     , Cmd.none)
         Playing state ->
             case msg |> Debug.log "msg" of
-                SetCursor mc -> 
+                SetCursor mc mdir -> 
                     ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
                       Puzzle.asQuoteIn state.puzzle |>
                       asPuzzleIn state |>
-                      moveCursor 
-                          (case mc of 
-                               Nothing -> Left
-                               Just _ -> Right) |>
+                      (case mdir of
+                           Nothing -> identity
+                           Just dir -> moveCursor dir) |>
                       Playing
                     , Cmd.none)
                                    

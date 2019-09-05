@@ -5328,8 +5328,6 @@ var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (model) {
 	return elm$core$Platform$Sub$none;
 };
-var author$project$Main$Left = {$: 'Left'};
-var author$project$Main$Right = {$: 'Right'};
 var author$project$Main$asPuzzleIn = F2(
 	function (state, puzzle) {
 		return _Utils_update(
@@ -5625,17 +5623,17 @@ var author$project$Main$update = F2(
 			switch (_n1.$) {
 				case 'SetCursor':
 					var mc = _n1.a;
+					var mdir = _n1.b;
 					return _Utils_Tuple2(
 						author$project$Main$Playing(
-							A2(
-								author$project$Main$moveCursor,
-								function () {
-									if (mc.$ === 'Nothing') {
-										return author$project$Main$Left;
-									} else {
-										return author$project$Main$Right;
-									}
-								}(),
+							function () {
+								if (mdir.$ === 'Nothing') {
+									return elm$core$Basics$identity;
+								} else {
+									var dir = mdir.a;
+									return author$project$Main$moveCursor(dir);
+								}
+							}()(
 								A2(
 									author$project$Main$asPuzzleIn,
 									state,
@@ -5677,139 +5675,157 @@ var author$project$Main$update = F2(
 		}
 	});
 var author$project$Main$Down = {$: 'Down'};
-var author$project$Main$IgnoreKey = function (a) {
-	return {$: 'IgnoreKey', a: a};
-};
+var author$project$Main$Left = {$: 'Left'};
 var author$project$Main$MoveCursor = function (a) {
 	return {$: 'MoveCursor', a: a};
 };
-var author$project$Main$SetCursor = function (a) {
-	return {$: 'SetCursor', a: a};
-};
+var author$project$Main$Right = {$: 'Right'};
+var author$project$Main$SetCursor = F2(
+	function (a, b) {
+		return {$: 'SetCursor', a: a, b: b};
+	});
 var author$project$Main$SwapCursor = {$: 'SwapCursor'};
 var author$project$Main$Up = {$: 'Up'};
+var elm$core$Basics$not = _Basics_not;
 var elm$core$Char$toUpper = _Char_toUpper;
+var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$bool = _Json_decodeBool;
+var elm$json$Json$Decode$fail = _Json_fail;
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$map4 = _Json_map4;
 var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$Main$msgOfKey = A5(
-	elm$json$Json$Decode$map4,
-	F4(
-		function (alt, ctrl, meta, key) {
-			if (alt || (ctrl || meta)) {
-				return _Utils_Tuple2(
-					author$project$Main$IgnoreKey(
+var author$project$Main$msgOfKey = A2(
+	elm$json$Json$Decode$andThen,
+	function (mmsg) {
+		if (mmsg.$ === 'Err') {
+			var key = mmsg.a;
+			return elm$json$Json$Decode$fail('ignoring ' + key);
+		} else {
+			var msg = mmsg.a;
+			return elm$json$Json$Decode$succeed(
+				_Utils_Tuple2(msg, true));
+		}
+	},
+	A5(
+		elm$json$Json$Decode$map4,
+		F4(
+			function (alt, ctrl, meta, key) {
+				var keyDesc = _Utils_ap(
+					ctrl ? 'C-' : '',
+					_Utils_ap(
+						meta ? 'M-' : '',
 						_Utils_ap(
-							ctrl ? 'C-' : '',
-							_Utils_ap(
-								meta ? 'M-' : '',
-								_Utils_ap(
-									alt ? 'A-' : '',
-									key)))),
-					false);
-			} else {
-				var _n0 = _Utils_Tuple2(
+							alt ? 'A-' : '',
+							key)));
+				var _n0 = _Utils_Tuple3(
+					alt || (ctrl || meta),
 					elm$core$String$uncons(key),
 					key);
 				_n0$0:
 				while (true) {
-					switch (_n0.b) {
-						case 'Tab':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
+					_n0$10:
+					while (true) {
+						if (!_n0.a) {
+							switch (_n0.c) {
+								case 'Tab':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(author$project$Main$SwapCursor);
+									}
+								case 'Backspace':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											A2(
+												author$project$Main$SetCursor,
+												elm$core$Maybe$Nothing,
+												elm$core$Maybe$Just(author$project$Main$Left)));
+									}
+								case 'Delete':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											A2(author$project$Main$SetCursor, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing));
+									}
+								case 'Del':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											A2(author$project$Main$SetCursor, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing));
+									}
+								case 'Clear':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											A2(author$project$Main$SetCursor, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing));
+									}
+								case 'ArrowLeft':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											author$project$Main$MoveCursor(author$project$Main$Left));
+									}
+								case 'ArrowUp':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											author$project$Main$MoveCursor(author$project$Main$Up));
+									}
+								case 'ArrowRight':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											author$project$Main$MoveCursor(author$project$Main$Right));
+									}
+								case 'ArrowDown':
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										return elm$core$Result$Ok(
+											author$project$Main$MoveCursor(author$project$Main$Down));
+									}
+								default:
+									if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
+										break _n0$0;
+									} else {
+										break _n0$10;
+									}
+							}
+						} else {
+							if ((_n0.b.$ === 'Just') && (_n0.b.a.b === '')) {
 								break _n0$0;
 							} else {
-								return _Utils_Tuple2(author$project$Main$SwapCursor, true);
+								break _n0$10;
 							}
-						case 'Backspace':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$SetCursor(elm$core$Maybe$Nothing),
-									true);
-							}
-						case 'Delete':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$SetCursor(elm$core$Maybe$Nothing),
-									true);
-							}
-						case 'Del':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$SetCursor(elm$core$Maybe$Nothing),
-									true);
-							}
-						case 'Clear':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$SetCursor(elm$core$Maybe$Nothing),
-									true);
-							}
-						case 'ArrowLeft':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$MoveCursor(author$project$Main$Left),
-									true);
-							}
-						case 'ArrowUp':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$MoveCursor(author$project$Main$Up),
-									true);
-							}
-						case 'ArrowRight':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$MoveCursor(author$project$Main$Right),
-									true);
-							}
-						case 'ArrowDown':
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$MoveCursor(author$project$Main$Down),
-									true);
-							}
-						default:
-							if ((_n0.a.$ === 'Just') && (_n0.a.a.b === '')) {
-								break _n0$0;
-							} else {
-								return _Utils_Tuple2(
-									author$project$Main$IgnoreKey(key),
-									false);
-							}
+						}
 					}
+					return elm$core$Result$Err(keyDesc);
 				}
-				var _n1 = _n0.a.a;
+				var modified = _n0.a;
+				var _n1 = _n0.b.a;
 				var c = _n1.a;
-				return elm$core$Char$isAlphaNum(c) ? _Utils_Tuple2(
-					author$project$Main$SetCursor(
+				return (ctrl && ((!(alt || meta)) && _Utils_eq(
+					c,
+					_Utils_chr('d')))) ? elm$core$Result$Ok(
+					A2(author$project$Main$SetCursor, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing)) : (((!modified) && elm$core$Char$isAlphaNum(c)) ? elm$core$Result$Ok(
+					A2(
+						author$project$Main$SetCursor,
 						elm$core$Maybe$Just(
-							elm$core$Char$toUpper(c))),
-					true) : _Utils_Tuple2(
-					author$project$Main$IgnoreKey(key),
-					false);
-			}
-		}),
-	A2(elm$json$Json$Decode$field, 'altKey', elm$json$Json$Decode$bool),
-	A2(elm$json$Json$Decode$field, 'ctrlKey', elm$json$Json$Decode$bool),
-	A2(elm$json$Json$Decode$field, 'metaKey', elm$json$Json$Decode$bool),
-	A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string));
+							elm$core$Char$toUpper(c)),
+						elm$core$Maybe$Just(author$project$Main$Right))) : elm$core$Result$Err(keyDesc));
+			}),
+		A2(elm$json$Json$Decode$field, 'altKey', elm$json$Json$Decode$bool),
+		A2(elm$json$Json$Decode$field, 'ctrlKey', elm$json$Json$Decode$bool),
+		A2(elm$json$Json$Decode$field, 'metaKey', elm$json$Json$Decode$bool),
+		A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string)));
 var author$project$Main$SelectIndex = function (a) {
 	return {$: 'SelectIndex', a: a};
 };
