@@ -72,7 +72,22 @@ moveCursor dir state =
     (\c -> withCursor c state) <|
     case state.cursor of
         Board index -> Debug.todo "moveCursor Board"
-        Clues cIndex lIndex -> Debug.todo "moveCursor Clues"
+        Clues cIndex lIndex -> 
+            case dir of
+                Left -> Clues cIndex (Basics.max (lIndex - 1) 0)
+                Up -> Clues (Basics.max (cIndex - 1) 0) 0
+                Down -> Clues (Basics.min 
+                                   (cIndex + 1) 
+                                   (List.length state.puzzle.clues - 1)) 
+                              0
+                Right -> Clues cIndex (Basics.min 
+                                           (lIndex + 1) 
+                                           (state.puzzle.clues |>
+                                            List.drop cIndex |>
+                                            List.head |>
+                                            Maybe.map (.answer >> List.length) |>
+                                            Maybe.withDefault lIndex))
+                        
 
 isSelected : Int -> (Int, Int) -> State -> Bool
 isSelected qIndex (cIndex, lIndex) state =
