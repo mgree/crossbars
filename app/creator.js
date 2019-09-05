@@ -519,11 +519,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.aE.X === region.aQ.X)
+	if (region.aE.X === region.aR.X)
 	{
 		return 'on line ' + region.aE.X;
 	}
-	return 'on lines ' + region.aE.X + ' through ' + region.aQ.X;
+	return 'on lines ' + region.aE.X + ' through ' + region.aR.X;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.bU,
-		impl.cn,
-		impl.cg,
+		impl.bW,
+		impl.cp,
+		impl.ci,
 		function() { return function() {} }
 	);
 });
@@ -2321,25 +2321,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.bJ.a(response)));
+			callback(toTask(request.bL.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done(elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done(elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.bJ.b, xhr)); });
-		elm$core$Maybe$isJust(request.cm) && _Http_track(router, xhr, request.cm.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.bL.b, xhr)); });
+		elm$core$Maybe$isJust(request.co) && _Http_track(router, xhr, request.co.a);
 
 		try {
-			xhr.open(request.bW, request.S, true);
+			xhr.open(request.bY, request.S, true);
 		} catch (e) {
 			return done(elm$http$Http$BadUrl_(request.S));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.bB.a && xhr.setRequestHeader('Content-Type', request.bB.a);
-		xhr.send(request.bB.b);
+		request.bD.a && xhr.setRequestHeader('Content-Type', request.bD.a);
+		xhr.send(request.bD.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -2350,12 +2350,12 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.bR; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.bT; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.cl.a || 0;
-	xhr.responseType = request.bJ.d;
+	xhr.timeout = request.cn.a || 0;
+	xhr.responseType = request.bL.d;
 	xhr.withCredentials = request.K;
 }
 
@@ -2378,9 +2378,9 @@ function _Http_toMetadata(xhr)
 {
 	return {
 		S: xhr.responseURL,
-		bq: xhr.status,
-		cf: xhr.statusText,
-		bR: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		bs: xhr.status,
+		ch: xhr.statusText,
+		bT: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -2475,14 +2475,14 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Sending({
-			cc: event.loaded,
+			ce: event.loaded,
 			aD: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Receiving({
-			b9: event.loaded,
+			cb: event.loaded,
 			aD: event.lengthComputable ? elm$core$Maybe$Just(event.total) : elm$core$Maybe$Nothing
 		}))));
 	});
@@ -4271,11 +4271,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.bU,
-		impl.cn,
-		impl.cg,
+		impl.bW,
+		impl.cp,
+		impl.ci,
 		function(sendToApp, initialModel) {
-			var view = impl.co;
+			var view = impl.cq;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -4307,12 +4307,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.bU,
-		impl.cn,
-		impl.cg,
+		impl.bW,
+		impl.cp,
+		impl.ci,
 		function(sendToApp, initialModel) {
 			var divertHrefToApp = impl.ab && impl.ab(sendToApp)
-			var view = impl.co;
+			var view = impl.cq;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4320,12 +4320,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.bB);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.bD);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.bv) && (_VirtualDom_doc.title = title = doc.bv);
+				(title !== doc.bx) && (_VirtualDom_doc.title = title = doc.bx);
 			});
 		}
 	);
@@ -4381,8 +4381,8 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.b5;
-	var onUrlRequest = impl.b6;
+	var onUrlChange = impl.b7;
+	var onUrlRequest = impl.b8;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
@@ -4402,9 +4402,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.bd === next.bd
-							&& curr.aZ === next.aZ
-							&& curr.a9.a === next.a9.a
+							&& curr.be === next.be
+							&& curr.a_ === next.a_
+							&& curr.ba.a === next.ba.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4412,13 +4412,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		bU: function(flags)
+		bW: function(flags)
 		{
-			return A3(impl.bU, flags, _Browser_getUrl(), key);
+			return A3(impl.bW, flags, _Browser_getUrl(), key);
 		},
-		co: impl.co,
-		cn: impl.cn,
-		cg: impl.cg
+		cq: impl.cq,
+		cp: impl.cp,
+		ci: impl.ci
 	});
 }
 
@@ -4484,17 +4484,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { bS: 'hidden', bD: 'visibilitychange' }
+		? { bU: 'hidden', bF: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { bS: 'mozHidden', bD: 'mozvisibilitychange' }
+		? { bU: 'mozHidden', bF: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { bS: 'msHidden', bD: 'msvisibilitychange' }
+		? { bU: 'msHidden', bF: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { bS: 'webkitHidden', bD: 'webkitvisibilitychange' }
-		: { bS: 'hidden', bD: 'visibilitychange' };
+		? { bU: 'webkitHidden', bF: 'webkitvisibilitychange' }
+		: { bU: 'hidden', bF: 'visibilitychange' };
 }
 
 
@@ -4575,8 +4575,8 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		bm: _Browser_getScene(),
-		bx: {
+		bo: _Browser_getScene(),
+		bz: {
 			as: _Browser_window.pageXOffset,
 			at: _Browser_window.pageYOffset,
 			U: _Browser_doc.documentElement.clientWidth,
@@ -4614,11 +4614,11 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			bm: {
+			bo: {
 				U: node.scrollWidth,
 				N: node.scrollHeight
 			},
-			bx: {
+			bz: {
 				as: node.scrollLeft,
 				at: node.scrollTop,
 				U: node.clientWidth,
@@ -4652,14 +4652,14 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			bm: _Browser_getScene(),
-			bx: {
+			bo: _Browser_getScene(),
+			bz: {
 				as: x,
 				at: y,
 				U: _Browser_doc.documentElement.clientWidth,
 				N: _Browser_doc.documentElement.clientHeight
 			},
-			bH: {
+			bJ: {
 				as: x + rect.left,
 				at: y + rect.top,
 				U: rect.width,
@@ -4797,7 +4797,7 @@ var author$project$Puzzle$emptyPuzzle = {
 	w: 0,
 	aC: '',
 	C: elm$time$Time$millisToPosix(0),
-	bv: ''
+	bx: ''
 };
 var author$project$SMT$SolverUnloaded = 0;
 var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
@@ -5256,7 +5256,7 @@ var author$project$Puzzle$decodeClue = A4(
 	elm$json$Json$Decode$map3,
 	F3(
 		function (hint, text, answer) {
-			return {ag: answer, aY: hint, cj: text};
+			return {ag: answer, aZ: hint, cl: text};
 		}),
 	A2(elm$json$Json$Decode$field, 'hint', elm$json$Json$Decode$string),
 	A2(elm$json$Json$Decode$field, 'text', elm$json$Json$Decode$string),
@@ -5286,7 +5286,7 @@ var author$project$Puzzle$decodePuzzle = A7(
 	elm$json$Json$Decode$map6,
 	F6(
 		function (title, author, quote, clues, phase, timeModified) {
-			return {aJ: author, W: clues, w: phase, aC: quote, C: timeModified, bv: title};
+			return {aJ: author, W: clues, w: phase, aC: quote, C: timeModified, bx: title};
 		}),
 	A2(elm$json$Json$Decode$field, 'title', elm$json$Json$Decode$string),
 	A2(elm$json$Json$Decode$field, 'author', elm$json$Json$Decode$string),
@@ -6072,7 +6072,7 @@ var elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return elm$core$Result$Err(
-					elm$http$Http$BadStatus(metadata.bq));
+					elm$http$Http$BadStatus(metadata.bs));
 			default:
 				var body = response.b;
 				return A2(
@@ -6092,7 +6092,7 @@ var elm$http$Http$Request = function (a) {
 };
 var elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {bg: reqs, bt: subs};
+		return {bi: reqs, bv: subs};
 	});
 var elm$http$Http$init = elm$core$Task$succeed(
 	A2(elm$http$Http$State, elm$core$Dict$empty, _List_Nil));
@@ -6136,7 +6136,7 @@ var elm$http$Http$updateReqs = F3(
 					return A2(
 						elm$core$Task$andThen,
 						function (pid) {
-							var _n4 = req.cm;
+							var _n4 = req.co;
 							if (_n4.$ === 1) {
 								return A3(elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -6166,7 +6166,7 @@ var elm$http$Http$onEffects = F4(
 				return elm$core$Task$succeed(
 					A2(elm$http$Http$State, reqs, subs));
 			},
-			A3(elm$http$Http$updateReqs, router, cmds, state.bg));
+			A3(elm$http$Http$updateReqs, router, cmds, state.bi));
 	});
 var elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6209,7 +6209,7 @@ var elm$http$Http$onSelfMsg = F3(
 				A2(
 					elm$core$List$filterMap,
 					A3(elm$http$Http$maybeSend, router, tracker, progress),
-					state.bt)));
+					state.bv)));
 	});
 var elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -6224,12 +6224,12 @@ var elm$http$Http$cmdMap = F2(
 			return elm$http$Http$Request(
 				{
 					K: r.K,
-					bB: r.bB,
-					bJ: A2(_Http_mapExpect, func, r.bJ),
-					bR: r.bR,
-					bW: r.bW,
-					cl: r.cl,
-					cm: r.cm,
+					bD: r.bD,
+					bL: A2(_Http_mapExpect, func, r.bL),
+					bT: r.bT,
+					bY: r.bY,
+					cn: r.cn,
+					co: r.co,
 					S: r.S
 				});
 		}
@@ -6253,7 +6253,7 @@ var elm$http$Http$subscription = _Platform_leaf('Http');
 var elm$http$Http$request = function (r) {
 	return elm$http$Http$command(
 		elm$http$Http$Request(
-			{K: false, bB: r.bB, bJ: r.bJ, bR: r.bR, bW: r.bW, cl: r.cl, cm: r.cm, S: r.S}));
+			{K: false, bD: r.bD, bL: r.bL, bT: r.bT, bY: r.bY, cn: r.cn, co: r.co, S: r.S}));
 };
 var elm$json$Json$Decode$decodeValue = _Json_run;
 var elm$time$Time$Name = function (a) {
@@ -6279,13 +6279,13 @@ var author$project$Main$init = function (savedModel) {
 					function (wl) {
 						return elm$http$Http$request(
 							{
-								bB: elm$http$Http$emptyBody,
-								bJ: elm$http$Http$expectString(
+								bD: elm$http$Http$emptyBody,
+								bL: elm$http$Http$expectString(
 									author$project$Main$GotWordlist(wl)),
-								bR: _List_Nil,
-								bW: 'GET',
-								cl: elm$core$Maybe$Nothing,
-								cm: elm$core$Maybe$Just(wl.S),
+								bT: _List_Nil,
+								bY: 'GET',
+								cn: elm$core$Maybe$Nothing,
+								co: elm$core$Maybe$Just(wl.S),
 								S: wl.S
 							});
 					},
@@ -6460,7 +6460,7 @@ var author$project$Main$trySave = F2(
 			elm$core$List$all,
 			elm$core$String$isEmpty,
 			_List_fromArray(
-				[puzzle.bv, puzzle.aJ])) ? savedPuzzles : A3(author$project$Util$insertWith, author$project$Puzzle$comparePuzzles, puzzle, savedPuzzles);
+				[puzzle.bx, puzzle.aJ])) ? savedPuzzles : A3(author$project$Util$insertWith, author$project$Puzzle$comparePuzzles, puzzle, savedPuzzles);
 	});
 var author$project$Main$withSolverResult = F2(
 	function (mResult, model) {
@@ -6690,10 +6690,10 @@ var author$project$Puzzle$encodeClue = function (clue) {
 			[
 				_Utils_Tuple2(
 				'hint',
-				elm$json$Json$Encode$string(clue.aY)),
+				elm$json$Json$Encode$string(clue.aZ)),
 				_Utils_Tuple2(
 				'text',
-				elm$json$Json$Encode$string(clue.cj)),
+				elm$json$Json$Encode$string(clue.cl)),
 				_Utils_Tuple2(
 				'answer',
 				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeAnswer, clue.ag))
@@ -6718,7 +6718,7 @@ var author$project$Puzzle$encodePuzzle = function (puzzle) {
 			[
 				_Utils_Tuple2(
 				'title',
-				elm$json$Json$Encode$string(puzzle.bv)),
+				elm$json$Json$Encode$string(puzzle.bx)),
 				_Utils_Tuple2(
 				'author',
 				elm$json$Json$Encode$string(puzzle.aJ)),
@@ -6757,8 +6757,8 @@ var author$project$Puzzle$defaultClue = function (s) {
 			elm$core$List$map,
 			elm$core$Tuple$pair(elm$core$Maybe$Nothing),
 			elm$core$String$toList(s)),
-		aY: '',
-		cj: elm$core$String$toUpper(s)
+		aZ: '',
+		cl: elm$core$String$toUpper(s)
 	};
 };
 var elm$core$String$filter = _String_filter;
@@ -6766,7 +6766,7 @@ var author$project$Puzzle$initialism = function (puzzle) {
 	return A2(
 		elm$core$String$filter,
 		elm$core$Char$isAlphaNum,
-		_Utils_ap(puzzle.aJ, puzzle.bv));
+		_Utils_ap(puzzle.aJ, puzzle.bx));
 };
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$String$startsWith = _String_startsWith;
@@ -6821,7 +6821,7 @@ var author$project$Puzzle$setTitle = F2(
 	function (title, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{bv: title});
+			{bx: title});
 	});
 var author$project$Util$cleanString = function (s) {
 	return A2(
@@ -6932,7 +6932,7 @@ var author$project$Puzzle$updateAnswer = F3(
 									elm$core$String$toUpper(answer))));
 						return _Utils_update(
 							clue,
-							{ag: numberedAnswer, cj: answer});
+							{ag: numberedAnswer, cl: answer});
 					},
 					puzzle.W)
 			});
@@ -6948,7 +6948,7 @@ var author$project$Puzzle$updateHint = F3(
 					function (clue) {
 						return _Utils_update(
 							clue,
-							{aY: hint});
+							{aZ: hint});
 					},
 					puzzle.W)
 			});
@@ -7069,7 +7069,7 @@ var elm$parser$Parser$Advanced$AddRight = F2(
 	});
 var elm$parser$Parser$Advanced$DeadEnd = F4(
 	function (row, col, problem, contextStack) {
-		return {ah: col, bF: contextStack, ba: problem, aa: row};
+		return {ah: col, bH: contextStack, bb: problem, aa: row};
 	});
 var elm$parser$Parser$Advanced$Empty = {$: 0};
 var elm$parser$Parser$Advanced$fromState = F2(
@@ -7162,37 +7162,37 @@ var elm$parser$Parser$Advanced$number = function (c) {
 			var baseOffset = zeroOffset + 1;
 			return A3(elm$parser$Parser$Advanced$isAsciiCode, 120, zeroOffset, s.a) ? A5(
 				elm$parser$Parser$Advanced$finalizeInt,
-				c.bV,
-				c.aX,
+				c.bX,
+				c.aY,
 				baseOffset,
 				A2(elm$parser$Parser$Advanced$consumeBase16, baseOffset, s.a),
 				s) : (A3(elm$parser$Parser$Advanced$isAsciiCode, 111, zeroOffset, s.a) ? A5(
 				elm$parser$Parser$Advanced$finalizeInt,
-				c.bV,
-				c.a6,
+				c.bX,
+				c.a7,
 				baseOffset,
 				A3(elm$parser$Parser$Advanced$consumeBase, 8, baseOffset, s.a),
 				s) : (A3(elm$parser$Parser$Advanced$isAsciiCode, 98, zeroOffset, s.a) ? A5(
 				elm$parser$Parser$Advanced$finalizeInt,
-				c.bV,
+				c.bX,
 				c.aK,
 				baseOffset,
 				A3(elm$parser$Parser$Advanced$consumeBase, 2, baseOffset, s.a),
 				s) : A6(
 				elm$parser$Parser$Advanced$finalizeFloat,
-				c.bV,
-				c.aS,
-				c.a$,
+				c.bX,
 				c.aT,
+				c.a0,
+				c.aU,
 				_Utils_Tuple2(zeroOffset, 0),
 				s)));
 		} else {
 			return A6(
 				elm$parser$Parser$Advanced$finalizeFloat,
-				c.bV,
-				c.aS,
-				c.a$,
+				c.bX,
 				c.aT,
+				c.a0,
+				c.aU,
 				A3(elm$parser$Parser$Advanced$consumeBase, 10, s.b, s.a),
 				s);
 		}
@@ -7203,12 +7203,12 @@ var elm$parser$Parser$Advanced$int = F2(
 		return elm$parser$Parser$Advanced$number(
 			{
 				aK: elm$core$Result$Err(invalid),
-				aS: expecting,
-				aT: elm$core$Result$Err(invalid),
-				aX: elm$core$Result$Err(invalid),
-				a$: elm$core$Result$Ok(elm$core$Basics$identity),
-				bV: invalid,
-				a6: elm$core$Result$Err(invalid)
+				aT: expecting,
+				aU: elm$core$Result$Err(invalid),
+				aY: elm$core$Result$Err(invalid),
+				a0: elm$core$Result$Ok(elm$core$Basics$identity),
+				bX: invalid,
+				a7: elm$core$Result$Err(invalid)
 			});
 	});
 var elm$parser$Parser$int = A2(elm$parser$Parser$Advanced$int, elm$parser$Parser$ExpectingInt, elm$parser$Parser$ExpectingInt);
@@ -7473,10 +7473,10 @@ var author$project$Solver$smtAnswerParser = elm$parser$Parser$oneOf(
 		]));
 var elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
-		return {ah: col, ba: problem, aa: row};
+		return {ah: col, bb: problem, aa: row};
 	});
 var elm$parser$Parser$problemToDeadEnd = function (p) {
-	return A3(elm$parser$Parser$DeadEnd, p.aa, p.ah, p.ba);
+	return A3(elm$parser$Parser$DeadEnd, p.aa, p.ah, p.bb);
 };
 var elm$parser$Parser$Advanced$bagToList = F2(
 	function (bag, list) {
@@ -8012,7 +8012,7 @@ var author$project$Wordlist$generateWordlist = F2(
 				elm$core$List$map,
 				function (word) {
 					return {
-						aP: '',
+						aQ: '',
 						ap: source,
 						S: '',
 						E: elm$core$String$toUpper(word)
@@ -8049,7 +8049,7 @@ var elm$http$Http$fractionReceived = function (p) {
 		return 0;
 	} else {
 		var n = _n0.a;
-		return (!n) ? 1 : A3(elm$core$Basics$clamp, 0, 1, p.b9 / n);
+		return (!n) ? 1 : A3(elm$core$Basics$clamp, 0, 1, p.cb / n);
 	}
 };
 var author$project$Main$update = F2(
@@ -8805,7 +8805,7 @@ var author$project$Puzzle$letterFor = function (index) {
 		elm$core$List$head(
 			A2(elm$core$List$drop, index, author$project$Puzzle$lettering)));
 };
-var author$project$Util$emptySplitList = {bO: _List_Nil, bQ: _List_Nil, cd: _List_Nil, ce: _List_Nil, ck: _List_Nil};
+var author$project$Util$emptySplitList = {bQ: _List_Nil, bS: _List_Nil, cf: _List_Nil, cg: _List_Nil, cm: _List_Nil};
 var author$project$Util$splitList = function (list) {
 	var loop = F2(
 		function (l, sl) {
@@ -8841,7 +8841,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									ck: A2(elm$core$List$cons, s, sl.ck)
+									cm: A2(elm$core$List$cons, s, sl.cm)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8851,7 +8851,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									bQ: A2(elm$core$List$cons, s, sl.bQ)
+									bS: A2(elm$core$List$cons, s, sl.bS)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8861,7 +8861,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									bO: A2(elm$core$List$cons, s, sl.bO)
+									bQ: A2(elm$core$List$cons, s, sl.bQ)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8871,7 +8871,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									ce: A2(elm$core$List$cons, s, sl.ce)
+									cg: A2(elm$core$List$cons, s, sl.cg)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8881,7 +8881,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									cd: A2(elm$core$List$cons, s, sl.cd)
+									cf: A2(elm$core$List$cons, s, sl.cf)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -9232,11 +9232,11 @@ var author$project$Main$anagramAssistance = F4(
 									_List_Nil));
 						},
 						anagrams)),
-					A3(anagramEntry, 3, '3 letters', split.ck),
-					A3(anagramEntry, 4, '4 letters', split.bQ),
-					A3(anagramEntry, 5, '5 letters', split.bO),
-					A3(anagramEntry, 6, '6 letters', split.ce),
-					A3(anagramEntry, 7, '7+ letters', split.cd)
+					A3(anagramEntry, 3, '3 letters', split.cm),
+					A3(anagramEntry, 4, '4 letters', split.bS),
+					A3(anagramEntry, 5, '5 letters', split.bQ),
+					A3(anagramEntry, 6, '6 letters', split.cg),
+					A3(anagramEntry, 7, '7+ letters', split.cf)
 				]));
 	});
 var author$project$Main$baseTabs = 3;
@@ -9538,7 +9538,7 @@ var author$project$Puzzle$duplicateNumberings = function (puz) {
 var author$project$Puzzle$phases = _List_fromArray(
 	[0, 1, 2]);
 var author$project$Puzzle$shortPuzzleDescription = function (puzzle) {
-	return elm$core$String$toUpper(puzzle.aJ) + (' — ' + elm$core$String$toUpper(puzzle.bv));
+	return elm$core$String$toUpper(puzzle.aJ) + (' — ' + elm$core$String$toUpper(puzzle.bx));
 };
 var elm$core$String$padLeft = F3(
 	function (n, _char, string) {
@@ -9606,15 +9606,15 @@ var elm$time$Time$toCivil = function (minutes) {
 	var month = mp + ((mp < 10) ? 3 : (-9));
 	var year = yearOfEra + (era * 400);
 	return {
-		aN: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
-		a4: month,
-		by: year + ((month <= 2) ? 1 : 0)
+		aO: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		a5: month,
+		bA: year + ((month <= 2) ? 1 : 0)
 	};
 };
 var elm$time$Time$toDay = F2(
 	function (zone, time) {
 		return elm$time$Time$toCivil(
-			A2(elm$time$Time$toAdjustedMinutes, zone, time)).aN;
+			A2(elm$time$Time$toAdjustedMinutes, zone, time)).aO;
 	});
 var elm$time$Time$Apr = 3;
 var elm$time$Time$Aug = 7;
@@ -9631,7 +9631,7 @@ var elm$time$Time$Sep = 8;
 var elm$time$Time$toMonth = F2(
 	function (zone, time) {
 		var _n0 = elm$time$Time$toCivil(
-			A2(elm$time$Time$toAdjustedMinutes, zone, time)).a4;
+			A2(elm$time$Time$toAdjustedMinutes, zone, time)).a5;
 		switch (_n0) {
 			case 1:
 				return 0;
@@ -9662,7 +9662,7 @@ var elm$time$Time$toMonth = F2(
 var elm$time$Time$toYear = F2(
 	function (zone, time) {
 		return elm$time$Time$toCivil(
-			A2(elm$time$Time$toAdjustedMinutes, zone, time)).by;
+			A2(elm$time$Time$toAdjustedMinutes, zone, time)).bA;
 	});
 var author$project$Util$iso8601Date = F2(
 	function (here, now) {
@@ -9846,7 +9846,7 @@ var author$project$Puzzle$unclued = function (puz) {
 			elm$core$List$indexedMap,
 			F2(
 				function (cIndex, clue) {
-					return elm$core$String$isEmpty(clue.aY) ? elm$core$Maybe$Just(cIndex) : elm$core$Maybe$Nothing;
+					return elm$core$String$isEmpty(clue.aZ) ? elm$core$Maybe$Just(cIndex) : elm$core$Maybe$Nothing;
 				}),
 			puz.W));
 };
@@ -10295,7 +10295,7 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$Attributes$readonly(quoteFixed)
 							]),
 						'Title',
-						puzzle.bv,
+						puzzle.bx,
 						author$project$Main$Title),
 						A4(
 						author$project$Main$textInput,
@@ -10549,7 +10549,7 @@ var author$project$Main$view = function (model) {
 											author$project$Main$anagramDatalistId(letter))
 										]),
 									initialStr + '...',
-									clue.cj,
+									clue.cl,
 									author$project$Main$Answer(index))
 								]));
 					},
@@ -10760,10 +10760,10 @@ var author$project$Main$view = function (model) {
 														elm$html$Html$Attributes$tabindex(
 														(author$project$Main$baseTabs + elm$core$List$length(puzzle.W)) + 1),
 														elm$html$Html$Attributes$class('clue-hint'),
-														elm$html$Html$Attributes$value(clue.aY)
+														elm$html$Html$Attributes$value(clue.aZ)
 													]),
 												'Clue hint text',
-												clue.aY,
+												clue.aZ,
 												author$project$Main$Hint(index)),
 												A2(
 												elm$html$Html$table,
@@ -11103,7 +11103,7 @@ var elm$core$String$left = F2(
 var elm$core$String$contains = _String_contains;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {aU: fragment, aZ: host, a7: path, a9: port_, bd: protocol, be: query};
+		return {aV: fragment, a_: host, a8: path, ba: port_, be: protocol, bf: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -11209,5 +11209,5 @@ var elm$url$Url$fromString = function (str) {
 };
 var elm$browser$Browser$element = _Browser_element;
 var author$project$Main$main = elm$browser$Browser$element(
-	{bU: author$project$Main$init, cg: author$project$Main$subscriptions, cn: author$project$Main$update, co: author$project$Main$view});
+	{bW: author$project$Main$init, ci: author$project$Main$subscriptions, cp: author$project$Main$update, cq: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(elm$json$Json$Decode$value)(0)}});}(this));

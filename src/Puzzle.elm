@@ -363,3 +363,43 @@ encodePhase phase =
                               QuoteEntry -> "QuoteEntry"
                               Anagramming -> "Anagramming"
                               CluingLettering -> "CluingLettering"
+
+-- BLANKS FOR PLAYING
+
+type alias BlankClue =
+    { hint : String
+    , answer : List (Int, Maybe Char)
+    }
+
+type alias Blank =
+    { quote : List (Maybe Char)
+    , quoteWordLengths : List Int
+    , boardColumns : Int
+    , clues : List BlankClue
+    }
+
+toBlank : Puzzle -> Blank
+toBlank puzzle =
+    { quote = puzzle.quote |>
+              String.toList |>
+              List.map (always Nothing)
+    , quoteWordLengths = puzzle.quote |>
+                         String.words |>
+                         List.map cleanChars |>
+                         List.filter (not << List.isEmpty) |>
+                         List.map List.length
+    , boardColumns = 35
+    , clues = puzzle.clues |>
+              List.map toBlankClue
+    }
+
+toBlankClue : Clue -> BlankClue
+toBlankClue clue =
+    { hint = clue.hint
+    , answer = clue.answer |>
+               List.map
+                   (\(mNum, c) ->
+                        ( mNum |> Maybe.withDefault (-1)
+                        , Nothing
+                        ))
+    }
