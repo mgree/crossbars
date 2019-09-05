@@ -91,13 +91,14 @@ moveCursor dir state =
                                             List.head |>
                                             Maybe.map (.answer >> List.length >> (\n -> n - 1)) |>
                                             Maybe.withDefault lIndex))
-                        
 
-isSelected : Int -> (Int, Int) -> State -> Bool
+type SelectionMode = NotSelected | AsClue | AsBoard
+                        
+isSelected : Int -> (Int, Int) -> State -> SelectionMode
 isSelected qIndex (cIndex, lIndex) state =
     case state.cursor of
-        Clues clue letter -> clue == cIndex && letter == lIndex
-        Board quote -> quote == qIndex
+        Clues clue letter -> if clue == cIndex && letter == lIndex then AsClue else NotSelected
+        Board quote -> if quote == qIndex then AsBoard else NotSelected
 
 selectedClue : State -> (Int, Int)
 selectedClue state =
@@ -284,7 +285,8 @@ playingView state =
                                           td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
                                              , classList
                                                    [ ("answer-letter", True)
-                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state)
+                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state == AsClue)
+                                                   , ("selected-bg", isSelected quoteIndex (clueIndex, letterIndex) state == AsBoard)
                                                    ]
                                              ]
                                              [ List.drop quoteIndex state.puzzle.quote |>
@@ -301,7 +303,8 @@ playingView state =
                                           td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
                                              , classList
                                                    [ ("answer-number", True)
-                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state)
+                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state == AsClue)
+                                                   , ("selected-bg", isSelected quoteIndex (clueIndex, letterIndex) state == AsBoard)
                                                    ]
                                              ]
                                              [ quoteIndex + 1 |> 
@@ -312,7 +315,18 @@ playingView state =
                        ]) |>
                   div [id "clue-list"]
             ]
+    , section [id "help"]
+        [ h3 [ class "header" ] [text "How to use the acrostic player"]
+        , p [] [ text "Click to select a square on the board or in clues. Good luck!"]
+        , h4 [] [text "Keyboard shortcuts"]
+        , ul [] 
+            [ li [] [text "TAB - switch between board and clues"]
+            , li [] [text "ARROW KEYS - navigate"]
+            , li [] [text "BACKSPACE - delete current entry (and move back one)"]
+            , li [] [text "DELETE, Ctrl-D - delete currentry (and do not move)"]
+            ]
         ]
+    ]
 
 -- TESTING
 
