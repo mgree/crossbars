@@ -5757,37 +5757,16 @@ var author$project$Main$withCursor = F2(
 			state,
 			{cursor: cursor});
 	});
-var elm$core$Debug$todo = _Debug_todo;
-var author$project$Main$moveCursor = F2(
-	function (dir, state) {
-		return function (c) {
-			return A2(author$project$Main$withCursor, c, state);
-		}(
-			function () {
-				var _n0 = state.cursor;
-				if (_n0.$ === 'Board') {
-					var index = _n0.a;
-					return _Debug_todo(
-						'Main',
-						{
-							start: {line: 74, column: 24},
-							end: {line: 74, column: 34}
-						})('moveCursor Board');
-				} else {
-					var cIndex = _n0.a;
-					var lIndex = _n0.b;
-					return _Debug_todo(
-						'Main',
-						{
-							start: {line: 75, column: 32},
-							end: {line: 75, column: 42}
-						})('moveCursor Clues');
-				}
-			}());
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
 	});
-var elm$core$Basics$negate = function (n) {
-	return -n;
-};
+var elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var elm$core$Debug$todo = _Debug_todo;
 var elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -5818,11 +5797,12 @@ var elm$core$List$head = function (list) {
 		return elm$core$Maybe$Nothing;
 	}
 };
-var elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
 		} else {
 			return elm$core$Maybe$Nothing;
 		}
@@ -5834,6 +5814,79 @@ var elm$core$Maybe$withDefault = F2(
 			return value;
 		} else {
 			return _default;
+		}
+	});
+var author$project$Main$moveCursor = F2(
+	function (dir, state) {
+		return function (c) {
+			return A2(author$project$Main$withCursor, c, state);
+		}(
+			function () {
+				var _n0 = state.cursor;
+				if (_n0.$ === 'Board') {
+					var index = _n0.a;
+					return _Debug_todo(
+						'Main',
+						{
+							start: {line: 74, column: 24},
+							end: {line: 74, column: 34}
+						})('moveCursor Board');
+				} else {
+					var cIndex = _n0.a;
+					var lIndex = _n0.b;
+					switch (dir.$) {
+						case 'Left':
+							return A2(
+								author$project$Main$Clues,
+								cIndex,
+								A2(elm$core$Basics$max, lIndex - 1, 0));
+						case 'Up':
+							return A2(
+								author$project$Main$Clues,
+								A2(elm$core$Basics$max, cIndex - 1, 0),
+								0);
+						case 'Down':
+							return A2(
+								author$project$Main$Clues,
+								A2(
+									elm$core$Basics$min,
+									cIndex + 1,
+									elm$core$List$length(state.puzzle.clues) - 1),
+								0);
+						default:
+							return A2(
+								author$project$Main$Clues,
+								cIndex,
+								A2(
+									elm$core$Basics$min,
+									lIndex + 1,
+									A2(
+										elm$core$Maybe$withDefault,
+										lIndex,
+										A2(
+											elm$core$Maybe$map,
+											A2(
+												elm$core$Basics$composeR,
+												function ($) {
+													return $.answer;
+												},
+												elm$core$List$length),
+											elm$core$List$head(
+												A2(elm$core$List$drop, cIndex, state.puzzle.clues))))));
+					}
+				}
+			}());
+	});
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
 		}
 	});
 var author$project$Main$selectedBoard = function (state) {
