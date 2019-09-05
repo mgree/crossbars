@@ -10,8 +10,8 @@ import Browser
 import Browser.Events
 import Browser.Dom
 
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 
 import Task
 
@@ -20,7 +20,7 @@ import Util exposing (..)
 
 -- TYPES
 
-type alias Flags = Json.Encode.Value
+type alias Flags = Encode.Value
 
 type Direction = Left 
                | Up
@@ -31,6 +31,8 @@ type Msg = SetCursor (Maybe Char)
          | SwapCursor
          | MoveCursor Direction
          | SelectIndex Cursor
+         | Focused (Result Browser.Dom.Error ())
+         | IgnoreKey String
 
 type Cursor = Board Int
             | Clues Int Int
@@ -146,7 +148,7 @@ main = Browser.element
 init : Flags -> (Model, Cmd Msg)
 init savedModel =
     ( testModel
-    , Cmd.none
+    , Task.attempt Focused (Browser.Dom.focus "crossbars-wrapper")
     )
 
 type Key
@@ -162,30 +164,40 @@ toKey string =
     _ ->
       Control string
 
-msgOfKey : Json.Decode.Decoder Msg
+{- FIXME allow C-d as an in-place delete -}
+msgOfKey : Decode.Decoder (Msg, Bool)
 msgOfKey =
-    Json.Decode.field "key" Json.Decode.string |>
-    Json.Decode.andThen
-        (\keyName ->
-             case (String.uncons keyName, keyName) of
-                 (Just (c, ""), _) ->
-                     if Char.isAlphaNum c
-                     then c |> Char.toUpper |> Just |> SetCursor |> Json.Decode.succeed
-                     else Json.Decode.fail "unknown key"
-                 (_, "Tab") -> Json.Decode.succeed SwapCursor
-                 (_, "Backspace") -> Json.Decode.succeed (SetCursor Nothing)
-                 (_, "Delete") -> Json.Decode.succeed (SetCursor Nothing)
-                 (_, "Del") -> Json.Decode.succeed (SetCursor Nothing)
-                 (_, "Clear") -> Json.Decode.succeed (SetCursor Nothing)
-                 (_, "ArrowLeft") -> Json.Decode.succeed (MoveCursor Left)
-                 (_, "ArrowUp") -> Json.Decode.succeed (MoveCursor Up)
-                 (_, "ArrowRight") -> Json.Decode.succeed (MoveCursor Right)
-                 (_, "ArrowDown") -> Json.Decode.succeed (MoveCursor Down)
-                 (_, _) -> Json.Decode.fail "unknown control key")
-
+    Decode.map4
+        (\alt ctrl meta key ->
+             if alt || ctrl || meta
+             then (IgnoreKey ( (if ctrl then "C-" else "") ++ 
+                               (if meta then "M-" else "") ++ 
+                               (if alt  then "A-" else "") ++ 
+                               key)
+                  , False)
+             else case (String.uncons key, key) of
+                      (Just (c, ""), _) ->
+                          if Char.isAlphaNum c
+                          then ( c |> Char.toUpper |> Just |> SetCursor
+                                              , True)
+                          else (IgnoreKey key, False)
+                      (_, "Tab") -> (SwapCursor, True)
+                      (_, "Backspace") -> (SetCursor Nothing, True)
+                      (_, "Delete") -> (SetCursor Nothing, True)
+                      (_, "Del") -> (SetCursor Nothing, True)
+                      (_, "Clear") -> (SetCursor Nothing, True)
+                      (_, "ArrowLeft") -> (MoveCursor Left, True)
+                      (_, "ArrowUp") -> (MoveCursor Up, True)
+                      (_, "ArrowRight") -> (MoveCursor Right, True)
+                      (_, "ArrowDown") -> (MoveCursor Down, True)
+                      (_, _) -> (IgnoreKey key, False))
+            (Decode.field "altKey" Decode.bool)
+            (Decode.field "ctrlKey" Decode.bool)
+            (Decode.field "metaKey" Decode.bool)
+            (Decode.field "key" Decode.string)
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Browser.Events.onKeyDown msgOfKey
+subscriptions model = Sub.none
 
 -- UPDATE
 
@@ -200,7 +212,10 @@ update msg model =
                     ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
                       Puzzle.asQuoteIn state.puzzle |>
                       asPuzzleIn state |>
-                      moveCursor Right |>
+                      moveCursor 
+                          (case mc of 
+                               Nothing -> Left
+                               Just _ -> Right) |>
                       Playing
                     , Cmd.none)
                                    
@@ -222,11 +237,21 @@ update msg model =
                       Playing
                     , Cmd.none)
 
+                Focused _ -> ( state |>
+                               Playing {- FIXME warning that keyboard controls won't work -}
+                             , Cmd.none)
+
+                IgnoreKey _ -> ( state |>
+                                 Playing
+                               , Cmd.none)
+
 -- VIEW
 
 view : Model -> Html Msg
 view model =
     div [ id "crossbars-wrapper"
+        , tabindex 0
+        , Html.Events.preventDefaultOn "keydown" msgOfKey
         ] 
         (  section [id "overview"]
            [ h3 [class "header"] [text "Crossbars — Acrostic Player"]
