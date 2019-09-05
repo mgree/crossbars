@@ -19,22 +19,12 @@
     text-align: center;
     height: 16pt;
 
-    border-top: 2px solid transparent;
-    border-left: 2px solid transparent;
-    border-right: 2px solid transparent;
-
-    border-bottom: 1px solid black;
+    border-bottom: 2px solid black;
 }
 
 .clue table td.answer-number {
     font-size: 8pt;
     text-align: center;
-
-    border-top: 1px solid black;
-
-    border-left: 2px solid transparent;
-    border-right: 2px solid transparent;
-    border-bottom: 2px solid transparent;
 }
 
 .clue table td.selected {
@@ -42,15 +32,7 @@
 }
 
 .clue table td.answer-letter.selected-bg {
-    border-top: 2px dashed pink;
-    border-left: 2px dashed pink;
-    border-right: 2px dashed pink;
-}
-
-.clue table td.answer-number.selected-bg {
-    border-left: 2px dashed pink;
-    border-right: 2px dashed pink;
-    border-bottom: 2px dashed pink;
+    border-bottom: 2px solid pink;
 }
 
 .clue .hint .clue-letter {
