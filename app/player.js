@@ -4990,6 +4990,22 @@ var author$project$Main$SetCursor = function (a) {
 };
 var author$project$Main$SwapCursor = {$: 'SwapCursor'};
 var author$project$Main$Up = {$: 'Up'};
+var author$project$Main$Character = function (a) {
+	return {$: 'Character', a: a};
+};
+var author$project$Main$Control = function (a) {
+	return {$: 'Control', a: a};
+};
+var author$project$Main$toKey = function (string) {
+	var _n0 = elm$core$String$uncons(string);
+	if ((_n0.$ === 'Just') && (_n0.a.b === '')) {
+		var _n1 = _n0.a;
+		var _char = _n1.a;
+		return author$project$Main$Character(_char);
+	} else {
+		return author$project$Main$Control(string);
+	}
+};
 var elm$browser$Browser$Events$Document = {$: 'Document'};
 var elm$browser$Browser$Events$MySub = F3(
 	function (a, b, c) {
@@ -5704,46 +5720,61 @@ var elm$browser$Browser$Events$on = F3(
 			A3(elm$browser$Browser$Events$MySub, node, name, decoder));
 	});
 var elm$browser$Browser$Events$onKeyDown = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keydown');
-var elm$core$Char$fromCode = _Char_fromCode;
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$int = _Json_decodeInt;
-var elm$html$Html$Events$keyCode = A2(elm$json$Json$Decode$field, 'keyCode', elm$json$Json$Decode$int);
+var elm$core$Char$toUpper = _Char_toUpper;
+var elm$core$Debug$log = _Debug_log;
 var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Main$subscriptions = function (model) {
 	return elm$browser$Browser$Events$onKeyDown(
 		A2(
 			elm$json$Json$Decode$andThen,
 			function (key) {
-				switch (key) {
-					case 8:
-						return elm$json$Json$Decode$succeed(
-							author$project$Main$SetCursor(elm$core$Maybe$Nothing));
-					case 46:
-						return elm$json$Json$Decode$succeed(
-							author$project$Main$SetCursor(elm$core$Maybe$Nothing));
-					case 9:
-						return elm$json$Json$Decode$succeed(author$project$Main$SwapCursor);
-					case 37:
-						return elm$json$Json$Decode$succeed(
-							author$project$Main$MoveCursor(author$project$Main$Left));
-					case 38:
-						return elm$json$Json$Decode$succeed(
-							author$project$Main$MoveCursor(author$project$Main$Up));
-					case 39:
-						return elm$json$Json$Decode$succeed(
-							author$project$Main$MoveCursor(author$project$Main$Right));
-					case 40:
-						return elm$json$Json$Decode$succeed(
-							author$project$Main$MoveCursor(author$project$Main$Down));
-					default:
-						var c = elm$core$Char$fromCode(key);
-						return elm$core$Char$isAlphaNum(c) ? elm$json$Json$Decode$succeed(
-							author$project$Main$SetCursor(
-								elm$core$Maybe$Just(c))) : elm$json$Json$Decode$fail('unknown key');
+				var _n0 = A2(elm$core$Debug$log, 'key', key);
+				if (_n0.$ === 'Character') {
+					var c = _n0.a;
+					return elm$core$Char$isAlphaNum(c) ? elm$json$Json$Decode$succeed(
+						author$project$Main$SetCursor(
+							elm$core$Maybe$Just(
+								elm$core$Char$toUpper(c)))) : elm$json$Json$Decode$fail('unknown key');
+				} else {
+					switch (_n0.a) {
+						case 'Tab':
+							return elm$json$Json$Decode$succeed(author$project$Main$SwapCursor);
+						case 'Backspace':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$SetCursor(elm$core$Maybe$Nothing));
+						case 'Delete':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$SetCursor(elm$core$Maybe$Nothing));
+						case 'Del':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$SetCursor(elm$core$Maybe$Nothing));
+						case 'Clear':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$SetCursor(elm$core$Maybe$Nothing));
+						case 'ArrowLeft':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$MoveCursor(author$project$Main$Left));
+						case 'ArrowUp':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$MoveCursor(author$project$Main$Up));
+						case 'ArrowRight':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$MoveCursor(author$project$Main$Right));
+						case 'ArrowDown':
+							return elm$json$Json$Decode$succeed(
+								author$project$Main$MoveCursor(author$project$Main$Down));
+						default:
+							return elm$json$Json$Decode$fail('unknown control key');
+					}
 				}
 			},
-			elm$html$Html$Events$keyCode));
+			A2(
+				elm$json$Json$Decode$map,
+				author$project$Main$toKey,
+				A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string))));
 };
 var author$project$Main$asPuzzleIn = F2(
 	function (state, puzzle) {
@@ -5828,8 +5859,8 @@ var author$project$Main$moveCursor = F2(
 					return _Debug_todo(
 						'Main',
 						{
-							start: {line: 74, column: 24},
-							end: {line: 74, column: 34}
+							start: {line: 76, column: 24},
+							end: {line: 76, column: 34}
 						})('moveCursor Board');
 				} else {
 					var cIndex = _n0.a;
@@ -5870,7 +5901,12 @@ var author$project$Main$moveCursor = F2(
 												function ($) {
 													return $.answer;
 												},
-												elm$core$List$length),
+												A2(
+													elm$core$Basics$composeR,
+													elm$core$List$length,
+													function (n) {
+														return n - 1;
+													})),
 											elm$core$List$head(
 												A2(elm$core$List$drop, cIndex, state.puzzle.clues))))));
 					}
@@ -6022,7 +6058,6 @@ var elm$core$Basics$always = F2(
 	function (a, _n0) {
 		return a;
 	});
-var elm$core$Debug$log = _Debug_log;
 var author$project$Main$update = F2(
 	function (msg, model) {
 		if (model.$ === 'NoPuzzle') {

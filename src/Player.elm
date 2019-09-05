@@ -8,12 +8,14 @@ import Html.Events exposing (onClick, onInput, onFocus)
 
 import Browser
 import Browser.Events
+import Browser.Dom
 
 import Json.Decode
 import Json.Encode
 
-import Puzzle
+import Task
 
+import Puzzle
 import Util exposing (..)
 
 -- TYPES
@@ -85,7 +87,7 @@ moveCursor dir state =
                                            (state.puzzle.clues |>
                                             List.drop cIndex |>
                                             List.head |>
-                                            Maybe.map (.answer >> List.length) |>
+                                            Maybe.map (.answer >> List.length >> (\n -> n - 1)) |>
                                             Maybe.withDefault lIndex))
                         
 
@@ -147,23 +149,39 @@ init savedModel =
     , Cmd.none
     )
 
+type Key
+  = Character Char
+  | Control String
+
+toKey : String -> Key
+toKey string =
+  case String.uncons string of
+    Just (char, "") ->
+      Character char
+
+    _ ->
+      Control string
+
 subscriptions : Model -> Sub Msg
 subscriptions model = 
-    Html.Events.keyCode |>
+    Json.Decode.map toKey (Json.Decode.field "key" Json.Decode.string) |>
     Json.Decode.andThen
         (\key ->
-             case key of
-                 8 -> Json.Decode.succeed (SetCursor Nothing) -- backspace
-                 46 -> Json.Decode.succeed (SetCursor Nothing) -- delete
-                 9  -> Json.Decode.succeed SwapCursor -- tab
-                 37 -> Json.Decode.succeed (MoveCursor Left)
-                 38 -> Json.Decode.succeed (MoveCursor Up)
-                 39 -> Json.Decode.succeed (MoveCursor Right)
-                 40 -> Json.Decode.succeed (MoveCursor Down)
-                 _ -> let c = Char.fromCode key in
-                      if Char.isAlphaNum c
-                      then Json.Decode.succeed (SetCursor (Just c))
-                      else Json.Decode.fail "unknown key") |>
+             case key |> Debug.log "key" of
+                 Character c ->
+                     if Char.isAlphaNum c
+                     then c |> Char.toUpper |> Just |> SetCursor |> Json.Decode.succeed
+                     else Json.Decode.fail "unknown key"
+                 Control "Tab" -> Json.Decode.succeed SwapCursor
+                 Control "Backspace" -> Json.Decode.succeed (SetCursor Nothing)
+                 Control "Delete" -> Json.Decode.succeed (SetCursor Nothing)
+                 Control "Del" -> Json.Decode.succeed (SetCursor Nothing)
+                 Control "Clear" -> Json.Decode.succeed (SetCursor Nothing)
+                 Control "ArrowLeft" -> Json.Decode.succeed (MoveCursor Left)
+                 Control "ArrowUp" -> Json.Decode.succeed (MoveCursor Up)
+                 Control "ArrowRight" -> Json.Decode.succeed (MoveCursor Right)
+                 Control "ArrowDown" -> Json.Decode.succeed (MoveCursor Down)
+                 _ -> Json.Decode.fail "unknown control key") |>
     Browser.Events.onKeyDown
 
 -- UPDATE
