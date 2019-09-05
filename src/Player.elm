@@ -197,6 +197,7 @@ update msg model =
                     ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
                       Puzzle.asQuoteIn state.puzzle |>
                       asPuzzleIn state |>
+                      moveCursor Right |>
                       Playing
                     , Cmd.none)
                                    
