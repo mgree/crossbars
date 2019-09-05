@@ -6071,16 +6071,19 @@ var author$project$Main$update = F2(
 					return _Utils_Tuple2(
 						author$project$Main$Playing(
 							A2(
-								author$project$Main$asPuzzleIn,
-								state,
+								author$project$Main$moveCursor,
+								author$project$Main$Right,
 								A2(
-									author$project$Puzzle$asQuoteIn,
-									state.puzzle,
-									A3(
-										author$project$Util$updateIndex,
-										author$project$Main$selectedBoard(state),
-										elm$core$Basics$always(mc),
-										state.puzzle.quote)))),
+									author$project$Main$asPuzzleIn,
+									state,
+									A2(
+										author$project$Puzzle$asQuoteIn,
+										state.puzzle,
+										A3(
+											author$project$Util$updateIndex,
+											author$project$Main$selectedBoard(state),
+											elm$core$Basics$always(mc),
+											state.puzzle.quote))))),
 						elm$core$Platform$Cmd$none);
 				case 'SwapCursor':
 					return _Utils_Tuple2(
