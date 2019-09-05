@@ -162,27 +162,30 @@ toKey string =
     _ ->
       Control string
 
-subscriptions : Model -> Sub Msg
-subscriptions model = 
-    Json.Decode.map toKey (Json.Decode.field "key" Json.Decode.string) |>
+msgOfKey : Json.Decode.Decoder Msg
+msgOfKey =
+    Json.Decode.field "key" Json.Decode.string |>
     Json.Decode.andThen
-        (\key ->
-             case key |> Debug.log "key" of
-                 Character c ->
+        (\keyName ->
+             case (String.uncons keyName, keyName) of
+                 (Just (c, ""), _) ->
                      if Char.isAlphaNum c
                      then c |> Char.toUpper |> Just |> SetCursor |> Json.Decode.succeed
                      else Json.Decode.fail "unknown key"
-                 Control "Tab" -> Json.Decode.succeed SwapCursor
-                 Control "Backspace" -> Json.Decode.succeed (SetCursor Nothing)
-                 Control "Delete" -> Json.Decode.succeed (SetCursor Nothing)
-                 Control "Del" -> Json.Decode.succeed (SetCursor Nothing)
-                 Control "Clear" -> Json.Decode.succeed (SetCursor Nothing)
-                 Control "ArrowLeft" -> Json.Decode.succeed (MoveCursor Left)
-                 Control "ArrowUp" -> Json.Decode.succeed (MoveCursor Up)
-                 Control "ArrowRight" -> Json.Decode.succeed (MoveCursor Right)
-                 Control "ArrowDown" -> Json.Decode.succeed (MoveCursor Down)
-                 _ -> Json.Decode.fail "unknown control key") |>
-    Browser.Events.onKeyDown
+                 (_, "Tab") -> Json.Decode.succeed SwapCursor
+                 (_, "Backspace") -> Json.Decode.succeed (SetCursor Nothing)
+                 (_, "Delete") -> Json.Decode.succeed (SetCursor Nothing)
+                 (_, "Del") -> Json.Decode.succeed (SetCursor Nothing)
+                 (_, "Clear") -> Json.Decode.succeed (SetCursor Nothing)
+                 (_, "ArrowLeft") -> Json.Decode.succeed (MoveCursor Left)
+                 (_, "ArrowUp") -> Json.Decode.succeed (MoveCursor Up)
+                 (_, "ArrowRight") -> Json.Decode.succeed (MoveCursor Right)
+                 (_, "ArrowDown") -> Json.Decode.succeed (MoveCursor Down)
+                 (_, _) -> Json.Decode.fail "unknown control key")
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model = Browser.Events.onKeyDown msgOfKey
 
 -- UPDATE
 
