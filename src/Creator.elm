@@ -914,7 +914,7 @@ boardToSVG numCols qIndexUses puzzle =
             let number idx count l =
                     let row = count // numCols in
                     case l of
-                        [] -> List.range (remainderBy numCols count) numCols
+                        [] -> List.range (remainderBy numCols count) (numCols - 1)
                               |> List.map (\col -> { char = ' '
                                                    , qIndex = -1
                                                    , col = col
