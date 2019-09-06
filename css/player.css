@@ -8,7 +8,7 @@
 }
 
 #board-wrapper svg#board {
-    width: 95vw;
+    width: 100vw;
 }
 
 #board-wrapper svg#board .board-square {
@@ -49,44 +49,47 @@
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    height: 600px;
+    justify-content: left;
+    width: 95vw;
+    max-height: 50vh;
 }
 
-.clue table {
+#clue-list .clue table {
     border-spacing: 4px 0;
 }
 
-.clue table td.answer-letter {
+#clue-list .clue table td.answer-letter {
     width: 1.1em;
-    font-size: 10pt;
+    font-size: 6pt;
     text-align: center;
-    height: 10pt;
+    height: 6pt;
 
     border-bottom: 2px solid black;
 }
 
-.clue table td.answer-number {
-    font-size: 6pt;
+#clue-list .clue table td.answer-number {
+    font-size: 4pt;
     text-align: center;
 }
 
-.clue table td.selected {
+#clue-list .clue table td.selected {
     background-color: pink;
 }
 
-.clue table td.answer-letter.selected-bg {
+#clue-list .clue table td.answer-letter.selected-bg {
     border-bottom: 2px solid pink;
 }
 
-.clue .hint {
+#clue-list .clue .hint {
     font-size: 8pt;
+    max-width: 20vw;
 }
 
-.clue .hint .clue-letter {
+#clue-list .clue .hint .clue-letter {
     font-weight: bold;
 }
 
-.clue .hint .hint-text {
+#clue-list .clue .hint .hint-text {
     font-weight: normal;
 }
 
