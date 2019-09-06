@@ -4439,7 +4439,7 @@ var elm$core$Set$toList = function (_n0) {
 	return elm$core$Dict$keys(dict);
 };
 var author$project$Main$wcw = {
-	boardColumns: 35,
+	boardColumns: 40,
 	clues: _List_fromArray(
 		[
 			{
@@ -6372,7 +6372,7 @@ var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var author$project$Main$boardView = function (state) {
-	var width = 300;
+	var width = 360;
 	var uses = elm$core$Dict$fromList(
 		elm$core$List$concat(
 			A2(
