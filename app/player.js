@@ -5887,17 +5887,12 @@ var author$project$Puzzle$letterFor = function (index) {
 };
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h3 = _VirtualDom_node('h3');
-var elm$html$Html$h4 = _VirtualDom_node('h4');
-var elm$html$Html$li = _VirtualDom_node('li');
-var elm$html$Html$p = _VirtualDom_node('p');
-var elm$html$Html$section = _VirtualDom_node('section');
 var elm$html$Html$span = _VirtualDom_node('span');
 var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$td = _VirtualDom_node('td');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$tr = _VirtualDom_node('tr');
-var elm$html$Html$ul = _VirtualDom_node('ul');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5935,8 +5930,149 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
+var author$project$Main$clueView = F3(
+	function (state, clueIndex, clue) {
+		var letter = author$project$Puzzle$letterFor(clueIndex);
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('clue'),
+					elm$html$Html$Attributes$id(
+					'clue-' + elm$core$String$fromInt(clueIndex))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h3,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('hint')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$span,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('clue-letter')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(letter + '. ')
+								])),
+							elm$html$Html$text(clue.hint)
+						])),
+					A2(
+					elm$html$Html$table,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$tr,
+							_List_Nil,
+							A2(
+								elm$core$List$indexedMap,
+								F2(
+									function (letterIndex, quoteIndex) {
+										return A2(
+											elm$html$Html$td,
+											_List_fromArray(
+												[
+													elm$html$Html$Events$onClick(
+													author$project$Main$SelectIndex(
+														A2(author$project$Main$Clues, clueIndex, letterIndex))),
+													elm$html$Html$Attributes$classList(
+													_List_fromArray(
+														[
+															_Utils_Tuple2('answer-letter', true),
+															_Utils_Tuple2(
+															'selected',
+															_Utils_eq(
+																A3(
+																	author$project$Main$isSelected,
+																	quoteIndex,
+																	_Utils_Tuple2(clueIndex, letterIndex),
+																	state),
+																author$project$Main$AsClue)),
+															_Utils_Tuple2(
+															'selected-bg',
+															_Utils_eq(
+																A3(
+																	author$project$Main$isSelected,
+																	quoteIndex,
+																	_Utils_Tuple2(clueIndex, letterIndex),
+																	state),
+																author$project$Main$AsBoard))
+														]))
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(
+													elm$core$String$fromChar(
+														A2(
+															elm$core$Maybe$withDefault,
+															_Utils_chr(' '),
+															A2(
+																elm$core$Maybe$andThen,
+																elm$core$Basics$identity,
+																elm$core$List$head(
+																	A2(elm$core$List$drop, quoteIndex, state.puzzle.quote))))))
+												]));
+									}),
+								clue.answer)),
+							A2(
+							elm$html$Html$tr,
+							_List_Nil,
+							A2(
+								elm$core$List$indexedMap,
+								F2(
+									function (letterIndex, quoteIndex) {
+										return A2(
+											elm$html$Html$td,
+											_List_fromArray(
+												[
+													elm$html$Html$Events$onClick(
+													author$project$Main$SelectIndex(
+														A2(author$project$Main$Clues, clueIndex, letterIndex))),
+													elm$html$Html$Attributes$classList(
+													_List_fromArray(
+														[
+															_Utils_Tuple2('answer-number', true),
+															_Utils_Tuple2(
+															'selected',
+															_Utils_eq(
+																A3(
+																	author$project$Main$isSelected,
+																	quoteIndex,
+																	_Utils_Tuple2(clueIndex, letterIndex),
+																	state),
+																author$project$Main$AsClue)),
+															_Utils_Tuple2(
+															'selected-bg',
+															_Utils_eq(
+																A3(
+																	author$project$Main$isSelected,
+																	quoteIndex,
+																	_Utils_Tuple2(clueIndex, letterIndex),
+																	state),
+																author$project$Main$AsBoard))
+														]))
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(
+													elm$core$String$fromInt(quoteIndex + 1))
+												]));
+									}),
+								clue.answer))
+						]))
+				]));
+	});
+var elm$html$Html$h4 = _VirtualDom_node('h4');
+var elm$html$Html$p = _VirtualDom_node('p');
+var elm$html$Html$section = _VirtualDom_node('section');
 var author$project$Main$playingView = function (state) {
-	var selected = author$project$Main$selectedClue(state);
 	return _List_fromArray(
 		[
 			A2(
@@ -5972,145 +6108,7 @@ var author$project$Main$playingView = function (state) {
 						]),
 					A2(
 						elm$core$List$indexedMap,
-						F2(
-							function (clueIndex, clue) {
-								var letter = author$project$Puzzle$letterFor(clueIndex);
-								return A2(
-									elm$html$Html$div,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('clue'),
-											elm$html$Html$Attributes$id(
-											'clue-' + elm$core$String$fromInt(clueIndex))
-										]),
-									_List_fromArray(
-										[
-											A2(
-											elm$html$Html$h3,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$class('hint')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													elm$html$Html$span,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('clue-letter')
-														]),
-													_List_fromArray(
-														[
-															elm$html$Html$text(letter + '. ')
-														])),
-													elm$html$Html$text(clue.hint)
-												])),
-											A2(
-											elm$html$Html$table,
-											_List_Nil,
-											_List_fromArray(
-												[
-													A2(
-													elm$html$Html$tr,
-													_List_Nil,
-													A2(
-														elm$core$List$indexedMap,
-														F2(
-															function (letterIndex, quoteIndex) {
-																return A2(
-																	elm$html$Html$td,
-																	_List_fromArray(
-																		[
-																			elm$html$Html$Events$onClick(
-																			author$project$Main$SelectIndex(
-																				A2(author$project$Main$Clues, clueIndex, letterIndex))),
-																			elm$html$Html$Attributes$classList(
-																			_List_fromArray(
-																				[
-																					_Utils_Tuple2('answer-letter', true),
-																					_Utils_Tuple2(
-																					'selected',
-																					_Utils_eq(
-																						A3(
-																							author$project$Main$isSelected,
-																							quoteIndex,
-																							_Utils_Tuple2(clueIndex, letterIndex),
-																							state),
-																						author$project$Main$AsClue)),
-																					_Utils_Tuple2(
-																					'selected-bg',
-																					_Utils_eq(
-																						A3(
-																							author$project$Main$isSelected,
-																							quoteIndex,
-																							_Utils_Tuple2(clueIndex, letterIndex),
-																							state),
-																						author$project$Main$AsBoard))
-																				]))
-																		]),
-																	_List_fromArray(
-																		[
-																			elm$html$Html$text(
-																			elm$core$String$fromChar(
-																				A2(
-																					elm$core$Maybe$withDefault,
-																					_Utils_chr(' '),
-																					A2(
-																						elm$core$Maybe$andThen,
-																						elm$core$Basics$identity,
-																						elm$core$List$head(
-																							A2(elm$core$List$drop, quoteIndex, state.puzzle.quote))))))
-																		]));
-															}),
-														clue.answer)),
-													A2(
-													elm$html$Html$tr,
-													_List_Nil,
-													A2(
-														elm$core$List$indexedMap,
-														F2(
-															function (letterIndex, quoteIndex) {
-																return A2(
-																	elm$html$Html$td,
-																	_List_fromArray(
-																		[
-																			elm$html$Html$Events$onClick(
-																			author$project$Main$SelectIndex(
-																				A2(author$project$Main$Clues, clueIndex, letterIndex))),
-																			elm$html$Html$Attributes$classList(
-																			_List_fromArray(
-																				[
-																					_Utils_Tuple2('answer-number', true),
-																					_Utils_Tuple2(
-																					'selected',
-																					_Utils_eq(
-																						A3(
-																							author$project$Main$isSelected,
-																							quoteIndex,
-																							_Utils_Tuple2(clueIndex, letterIndex),
-																							state),
-																						author$project$Main$AsClue)),
-																					_Utils_Tuple2(
-																					'selected-bg',
-																					_Utils_eq(
-																						A3(
-																							author$project$Main$isSelected,
-																							quoteIndex,
-																							_Utils_Tuple2(clueIndex, letterIndex),
-																							state),
-																						author$project$Main$AsBoard))
-																				]))
-																		]),
-																	_List_fromArray(
-																		[
-																			elm$html$Html$text(
-																			elm$core$String$fromInt(quoteIndex + 1))
-																		]));
-															}),
-														clue.answer))
-												]))
-										]));
-							}),
+						author$project$Main$clueView(state),
 						state.puzzle.clues))
 				])),
 			A2(
@@ -6146,33 +6144,36 @@ var author$project$Main$playingView = function (state) {
 							elm$html$Html$text('Keyboard shortcuts')
 						])),
 					A2(
-					elm$html$Html$ul,
-					_List_Nil,
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id('kbd-help')
+						]),
 					_List_fromArray(
 						[
 							A2(
-							elm$html$Html$li,
+							elm$html$Html$span,
 							_List_Nil,
 							_List_fromArray(
 								[
 									elm$html$Html$text('TAB - switch between board and clues')
 								])),
 							A2(
-							elm$html$Html$li,
+							elm$html$Html$span,
 							_List_Nil,
 							_List_fromArray(
 								[
 									elm$html$Html$text('ARROW KEYS - navigate')
 								])),
 							A2(
-							elm$html$Html$li,
+							elm$html$Html$span,
 							_List_Nil,
 							_List_fromArray(
 								[
 									elm$html$Html$text('BACKSPACE - delete current entry (and move back one)')
 								])),
 							A2(
-							elm$html$Html$li,
+							elm$html$Html$span,
 							_List_Nil,
 							_List_fromArray(
 								[

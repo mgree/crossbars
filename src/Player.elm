@@ -255,78 +255,76 @@ view model =
 
 playingView : State -> List (Html Msg)
 playingView state = 
-    let 
-        selected = selectedClue state
-    in
-
     [ section [id "board"]
           []
     , section [id "clues"]
         [ h3 [class "header"] [text "Clues"]
         , state.puzzle.clues |>
-          List.indexedMap
-              (\clueIndex clue ->
-                   let 
-                       letter = Puzzle.letterFor clueIndex 
-                   in
-
-                   div [ class "clue", 
-                         id ("clue-" ++ String.fromInt clueIndex)
-                       ]
-                       [ h3 [ class "hint" ] 
-                            [ span [class "clue-letter"] [ text (letter ++ ". ") ]
-                            , text clue.hint {- FIXME support markdown -}
-                            ]
-                       , table []
-                           [ tr []
-                                (clue.answer |>
-                                 List.indexedMap 
-                                     (\letterIndex quoteIndex ->
-                                          td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
-                                             , classList
-                                                   [ ("answer-letter", True)
-                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state == AsClue)
-                                                   , ("selected-bg", isSelected quoteIndex (clueIndex, letterIndex) state == AsBoard)
-                                                   ]
-                                             ]
-                                             [ List.drop quoteIndex state.puzzle.quote |>
-                                               List.head |>
-                                               Maybe.andThen identity |> 
-                                               Maybe.withDefault ' ' |>
-                                               String.fromChar |>
-                                               text
-                                             ]))
-                           , tr []
-                                (clue.answer |>
-                                 List.indexedMap 
-                                     (\letterIndex quoteIndex ->
-                                          td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
-                                             , classList
-                                                   [ ("answer-number", True)
-                                                   , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state == AsClue)
-                                                   , ("selected-bg", isSelected quoteIndex (clueIndex, letterIndex) state == AsBoard)
-                                                   ]
-                                             ]
-                                             [ quoteIndex + 1 |> 
-                                               String.fromInt |>
-                                               text
-                                             ]))
-                           ]
-                       ]) |>
-                  div [id "clue-list"]
-            ]
+          List.indexedMap (clueView state) |>
+          div [id "clue-list"]
+        ]
     , section [id "help"]
         [ h3 [ class "header" ] [text "How to use the acrostic player"]
         , p [] [ text "Click to select a square on the board or in clues. Good luck!"]
         , h4 [] [text "Keyboard shortcuts"]
-        , ul [] 
-            [ li [] [text "TAB - switch between board and clues"]
-            , li [] [text "ARROW KEYS - navigate"]
-            , li [] [text "BACKSPACE - delete current entry (and move back one)"]
-            , li [] [text "DELETE, Ctrl-D - delete currentry (and do not move)"]
+        , div [ id "kbd-help" ] 
+            [ span [] [text "TAB - switch between board and clues"]
+            , span [] [text "ARROW KEYS - navigate"]
+            , span [] [text "BACKSPACE - delete current entry (and move back one)"]
+            , span [] [text "DELETE, Ctrl-D - delete currentry (and do not move)"]
             ]
         ]
     ]
+
+clueView : State -> Int -> Clue -> Html Msg
+clueView state clueIndex clue =
+    let 
+        letter = Puzzle.letterFor clueIndex 
+    in
+
+    div [ class "clue", 
+          id ("clue-" ++ String.fromInt clueIndex)
+        ]
+        [ h3 [ class "hint" ] 
+             [ span [class "clue-letter"] [ text (letter ++ ". ") ]
+             , text clue.hint {- FIXME support markdown -}
+             ]
+        , table []
+            [ tr []
+                 (clue.answer |>
+                  List.indexedMap 
+                      (\letterIndex quoteIndex ->
+                           td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
+                              , classList
+                                    [ ("answer-letter", True)
+                                    , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state == AsClue)
+                                    , ("selected-bg", isSelected quoteIndex (clueIndex, letterIndex) state == AsBoard)
+                                    ]
+                              ]
+                              [ List.drop quoteIndex state.puzzle.quote |>
+                                List.head |>
+                                Maybe.andThen identity |> 
+                                Maybe.withDefault ' ' |>
+                                String.fromChar |>
+                                text
+                              ]))
+            , tr []
+                 (clue.answer |>
+                  List.indexedMap 
+                      (\letterIndex quoteIndex ->
+                           td [ onClick (SelectIndex (Clues clueIndex letterIndex)) 
+                              , classList
+                                    [ ("answer-number", True)
+                                    , ("selected", isSelected quoteIndex (clueIndex, letterIndex) state == AsClue)
+                                    , ("selected-bg", isSelected quoteIndex (clueIndex, letterIndex) state == AsBoard)
+                                    ]
+                              ]
+                              [ quoteIndex + 1 |> 
+                                String.fromInt |>
+                                text
+                              ]))
+            ]
+        ]
 
 -- TESTING
 
