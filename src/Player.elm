@@ -6,6 +6,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onFocus)
 
+import Svg
+import Svg.Attributes
+
 import Browser
 import Browser.Events
 import Browser.Dom
@@ -251,12 +254,11 @@ view model =
                NoPuzzle -> [ text "No puzzle loaded... 😦" ]
                Playing state -> playingView state
         )
-              
 
 playingView : State -> List (Html Msg)
 playingView state = 
-    [ section [id "board"]
-          []
+    [ section [id "board-wrapper"]
+          [ boardView state ]
     , section [id "clues"]
         [ h3 [class "header"] [text "Clues"]
         , state.puzzle.clues |>
@@ -275,6 +277,119 @@ playingView state =
             ]
         ]
     ]
+
+type UnnumberedSquare = White Int (Maybe Char) | Black
+
+boardView : State -> Html Msg
+boardView state =
+    let 
+
+        uses = state.puzzle.clues |>
+               List.indexedMap 
+                   (\cIndex clue ->
+                        clue.answer |> List.map (\qIndex -> (qIndex, cIndex))) |>
+               List.concat |>
+               Dict.fromList
+
+        width = 300
+
+        numCols = state.puzzle.boardColumns
+
+        indexedQuote = List.indexedMap Tuple.pair state.puzzle.quote
+                  
+        squares = 
+            let collect quote lens =
+                    case lens of
+                        [] -> [] {- FIXME quote had better be empty---yikes! -}
+                        len::rest ->
+                            List.map (\(idx, mc) -> White idx mc) (List.take len quote) ++
+                            Black :: 
+                            collect (List.drop len quote) rest
+            in
+                collect indexedQuote state.puzzle.quoteWordLengths
+
+        numSquares = List.length squares
+
+        boxWidth = width / toFloat numCols
+
+        numRows = (numSquares // numCols) +
+                  if remainderBy numCols numSquares == 0 then 0 else 1
+                
+        height = (toFloat numRows) * boxWidth
+
+        numberedSquares =
+            let number idx count l =
+                    let row = count // numCols in
+                    case l of
+                        [] -> List.range (remainderBy numCols count) numCols |>
+                              List.map
+                                  (\col -> { square = Black
+                                           , col = col
+                                           , row = row
+                                           })
+                        (sq::rest) ->
+                            { square = sq
+                            , col = remainderBy numCols count
+                            , row = row
+                            } :: number (idx + if sq == Black then 0 else 1) (count + 1) rest
+            in
+                number 0 0 squares
+
+    in
+
+    Svg.svg [ id "board"
+            , Svg.Attributes.viewBox ("0 0 " ++ String.fromFloat width ++ " " ++ String.fromFloat height) ] 
+        (numberedSquares |>
+         List.map
+             (\square ->
+                  let x = toFloat square.col * boxWidth
+                      y = toFloat square.row * boxWidth
+                      thirdBox = boxWidth / 3
+                      textLength = thirdBox |> String.fromFloat
+                      box cls = Svg.rect [ x |> String.fromFloat |> Svg.Attributes.x
+                                         , y |> String.fromFloat |> Svg.Attributes.y
+                                         , boxWidth |> String.fromFloat |> Svg.Attributes.width
+                                         , boxWidth |> String.fromFloat |> Svg.Attributes.height 
+                                         , Svg.Attributes.class "board-square" 
+                                         , Svg.Attributes.class cls
+                                         ]
+                                []
+                  in
+
+                      case square.square of
+                          Black -> box "board-black"
+                          White index mc ->
+                              let
+                                  usedIn = Dict.get index uses |>
+                                           Maybe.withDefault (-1) {- FIXME yikes -}
+                              in
+
+                              Svg.g 
+                                  [ onClick (SelectIndex (Board index)) ]
+                                  [ box "board-white" 
+                                  , Svg.text_
+                                       [ x + 1 |> String.fromFloat |> Svg.Attributes.x
+                                       , y + thirdBox |> String.fromFloat |> Svg.Attributes.y
+                                       , Svg.Attributes.textAnchor "start"
+                                       , Svg.Attributes.class "number"
+                                       ]
+                                       [ index + 1 |> String.fromInt |> Svg.text ]
+                                 , Svg.text_
+                                       [ x + boxWidth - 1 |> String.fromFloat |> Svg.Attributes.x
+                                       , y + thirdBox |> String.fromFloat |> Svg.Attributes.y
+                                       , Svg.Attributes.textAnchor "end"
+                                       , Svg.Attributes.class "clue-letter"
+                                       ]
+                                       [ usedIn |> Puzzle.letterFor |> Svg.text ]
+                                 , Svg.text_
+                                       [ x + (boxWidth / 2) |> String.fromFloat |> Svg.Attributes.x
+                                       , y + boxWidth - 2 |> String.fromFloat |> Svg.Attributes.y
+                                       , Svg.Attributes.textAnchor "middle"
+                                       , Svg.Attributes.class "letter"
+                                       ]
+                                       [ mc |> Maybe.withDefault ' ' |> String.fromChar |> Svg.text ]
+                                  ]))
+             
 
 clueView : State -> Int -> Clue -> Html Msg
 clueView state clueIndex clue =

@@ -402,3 +402,5 @@ toBlankClue clue =
 
 asQuoteIn : Blank -> List (Maybe Char) -> Blank
 asQuoteIn puzzle quote = { puzzle | quote = quote }
+
+{- FIXME puzzle validation -}

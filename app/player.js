@@ -5411,8 +5411,8 @@ var author$project$Main$moveCursor = F2(
 					return _Debug_todo(
 						'Main',
 						{
-							start: {line: 78, column: 24},
-							end: {line: 78, column: 34}
+							start: {line: 81, column: 24},
+							end: {line: 81, column: 34}
 						})('moveCursor Board');
 				} else {
 					var cIndex = _n0.a;
@@ -5826,25 +5826,13 @@ var author$project$Main$msgOfKey = A2(
 		A2(elm$json$Json$Decode$field, 'ctrlKey', elm$json$Json$Decode$bool),
 		A2(elm$json$Json$Decode$field, 'metaKey', elm$json$Json$Decode$bool),
 		A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string)));
-var author$project$Main$AsBoard = {$: 'AsBoard'};
-var author$project$Main$AsClue = {$: 'AsClue'};
+var author$project$Main$Black = {$: 'Black'};
 var author$project$Main$SelectIndex = function (a) {
 	return {$: 'SelectIndex', a: a};
 };
-var author$project$Main$NotSelected = {$: 'NotSelected'};
-var author$project$Main$isSelected = F3(
-	function (qIndex, _n0, state) {
-		var cIndex = _n0.a;
-		var lIndex = _n0.b;
-		var _n1 = state.cursor;
-		if (_n1.$ === 'Clues') {
-			var clue = _n1.a;
-			var letter = _n1.b;
-			return (_Utils_eq(clue, cIndex) && _Utils_eq(letter, lIndex)) ? author$project$Main$AsClue : author$project$Main$NotSelected;
-		} else {
-			var quote = _n1.a;
-			return _Utils_eq(quote, qIndex) ? author$project$Main$AsBoard : author$project$Main$NotSelected;
-		}
+var author$project$Main$White = F2(
+	function (a, b) {
+		return {$: 'White', a: a, b: b};
 	});
 var author$project$Util$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 var elm$core$String$foldr = _String_foldr;
@@ -5885,14 +5873,291 @@ var author$project$Puzzle$letterFor = function (index) {
 		elm$core$List$head(
 			A2(elm$core$List$drop, index, author$project$Puzzle$lettering)));
 };
-var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h3 = _VirtualDom_node('h3');
-var elm$html$Html$span = _VirtualDom_node('span');
-var elm$html$Html$table = _VirtualDom_node('table');
-var elm$html$Html$td = _VirtualDom_node('td');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$html$Html$tr = _VirtualDom_node('tr');
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$core$Dict$Black = {$: 'Black'};
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$Red = {$: 'Red'};
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1.$) {
+				case 'LT':
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, dict) {
+				var key = _n0.a;
+				var value = _n0.b;
+				return A3(elm$core$Dict$insert, key, value, dict);
+			}),
+		elm$core$Dict$empty,
+		assocs);
+};
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2(elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return elm$core$List$reverse(
+			A3(elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _n0 = _Utils_Tuple2(n, list);
+			_n0$1:
+			while (true) {
+				_n0$5:
+				while (true) {
+					if (!_n0.b.b) {
+						return list;
+					} else {
+						if (_n0.b.b.b) {
+							switch (_n0.a) {
+								case 1:
+									break _n0$1;
+								case 2:
+									var _n2 = _n0.b;
+									var x = _n2.a;
+									var _n3 = _n2.b;
+									var y = _n3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_n0.b.b.b.b) {
+										var _n4 = _n0.b;
+										var x = _n4.a;
+										var _n5 = _n4.b;
+										var y = _n5.a;
+										var _n6 = _n5.b;
+										var z = _n6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _n0$5;
+									}
+								default:
+									if (_n0.b.b.b.b && _n0.b.b.b.b.b) {
+										var _n7 = _n0.b;
+										var x = _n7.a;
+										var _n8 = _n7.b;
+										var y = _n8.a;
+										var _n9 = _n8.b;
+										var z = _n9.a;
+										var _n10 = _n9.b;
+										var w = _n10.a;
+										var tl = _n10.b;
+										return (ctr > 1000) ? A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A2(elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A3(elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _n0$5;
+									}
+							}
+						} else {
+							if (_n0.a === 1) {
+								break _n0$1;
+							} else {
+								break _n0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _n1 = _n0.b;
+			var x = _n1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var elm$core$List$take = F2(
+	function (n, list) {
+		return A3(elm$core$List$takeFast, 0, n, list);
+	});
+var elm$core$String$fromFloat = _String_fromNumber;
+var elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5901,17 +6166,6 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			key,
 			elm$json$Json$Encode$string(string));
 	});
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
-var elm$html$Html$Attributes$classList = function (classes) {
-	return elm$html$Html$Attributes$class(
-		A2(
-			elm$core$String$join,
-			' ',
-			A2(
-				elm$core$List$map,
-				elm$core$Tuple$first,
-				A2(elm$core$List$filter, elm$core$Tuple$second, classes))));
-};
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -5929,6 +6183,242 @@ var elm$html$Html$Events$onClick = function (msg) {
 		elm$html$Html$Events$on,
 		'click',
 		elm$json$Json$Decode$succeed(msg));
+};
+var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
+var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
+var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$svg$Svg$text = elm$virtual_dom$VirtualDom$text;
+var elm$svg$Svg$text_ = elm$svg$Svg$trustedNode('text');
+var elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var author$project$Main$boardView = function (state) {
+	var width = 300;
+	var uses = elm$core$Dict$fromList(
+		elm$core$List$concat(
+			A2(
+				elm$core$List$indexedMap,
+				F2(
+					function (cIndex, clue) {
+						return A2(
+							elm$core$List$map,
+							function (qIndex) {
+								return _Utils_Tuple2(qIndex, cIndex);
+							},
+							clue.answer);
+					}),
+				state.puzzle.clues)));
+	var numCols = state.puzzle.boardColumns;
+	var indexedQuote = A2(elm$core$List$indexedMap, elm$core$Tuple$pair, state.puzzle.quote);
+	var squares = function () {
+		var collect = F2(
+			function (quote, lens) {
+				if (!lens.b) {
+					return _List_Nil;
+				} else {
+					var len = lens.a;
+					var rest = lens.b;
+					return _Utils_ap(
+						A2(
+							elm$core$List$map,
+							function (_n3) {
+								var idx = _n3.a;
+								var mc = _n3.b;
+								return A2(author$project$Main$White, idx, mc);
+							},
+							A2(elm$core$List$take, len, quote)),
+						A2(
+							elm$core$List$cons,
+							author$project$Main$Black,
+							A2(
+								collect,
+								A2(elm$core$List$drop, len, quote),
+								rest)));
+				}
+			});
+		return A2(collect, indexedQuote, state.puzzle.quoteWordLengths);
+	}();
+	var numSquares = elm$core$List$length(squares);
+	var numRows = ((numSquares / numCols) | 0) + ((!(numSquares % numCols)) ? 0 : 1);
+	var numberedSquares = function () {
+		var number = F3(
+			function (idx, count, l) {
+				var row = (count / numCols) | 0;
+				if (!l.b) {
+					return A2(
+						elm$core$List$map,
+						function (col) {
+							return {col: col, row: row, square: author$project$Main$Black};
+						},
+						A2(elm$core$List$range, count % numCols, numCols));
+				} else {
+					var sq = l.a;
+					var rest = l.b;
+					return A2(
+						elm$core$List$cons,
+						{col: count % numCols, row: row, square: sq},
+						A3(
+							number,
+							idx + (_Utils_eq(sq, author$project$Main$Black) ? 0 : 1),
+							count + 1,
+							rest));
+				}
+			});
+		return A3(number, 0, 0, squares);
+	}();
+	var boxWidth = width / numCols;
+	var height = numRows * boxWidth;
+	return A2(
+		elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('board'),
+				elm$svg$Svg$Attributes$viewBox(
+				'0 0 ' + (elm$core$String$fromFloat(width) + (' ' + elm$core$String$fromFloat(height))))
+			]),
+		A2(
+			elm$core$List$map,
+			function (square) {
+				var y = square.row * boxWidth;
+				var x = square.col * boxWidth;
+				var thirdBox = boxWidth / 3;
+				var textLength = elm$core$String$fromFloat(thirdBox);
+				var box = function (cls) {
+					return A2(
+						elm$svg$Svg$rect,
+						_List_fromArray(
+							[
+								elm$svg$Svg$Attributes$x(
+								elm$core$String$fromFloat(x)),
+								elm$svg$Svg$Attributes$y(
+								elm$core$String$fromFloat(y)),
+								elm$svg$Svg$Attributes$width(
+								elm$core$String$fromFloat(boxWidth)),
+								elm$svg$Svg$Attributes$height(
+								elm$core$String$fromFloat(boxWidth)),
+								elm$svg$Svg$Attributes$class('board-square'),
+								elm$svg$Svg$Attributes$class(cls)
+							]),
+						_List_Nil);
+				};
+				var _n0 = square.square;
+				if (_n0.$ === 'Black') {
+					return box('board-black');
+				} else {
+					var index = _n0.a;
+					var mc = _n0.b;
+					var usedIn = A2(
+						elm$core$Maybe$withDefault,
+						-1,
+						A2(elm$core$Dict$get, index, uses));
+					return A2(
+						elm$svg$Svg$g,
+						_List_fromArray(
+							[
+								elm$html$Html$Events$onClick(
+								author$project$Main$SelectIndex(
+									author$project$Main$Board(index)))
+							]),
+						_List_fromArray(
+							[
+								box('board-white'),
+								A2(
+								elm$svg$Svg$text_,
+								_List_fromArray(
+									[
+										elm$svg$Svg$Attributes$x(
+										elm$core$String$fromFloat(x + 1)),
+										elm$svg$Svg$Attributes$y(
+										elm$core$String$fromFloat(y + thirdBox)),
+										elm$svg$Svg$Attributes$textAnchor('start'),
+										elm$svg$Svg$Attributes$class('number')
+									]),
+								_List_fromArray(
+									[
+										elm$svg$Svg$text(
+										elm$core$String$fromInt(index + 1))
+									])),
+								A2(
+								elm$svg$Svg$text_,
+								_List_fromArray(
+									[
+										elm$svg$Svg$Attributes$x(
+										elm$core$String$fromFloat((x + boxWidth) - 1)),
+										elm$svg$Svg$Attributes$y(
+										elm$core$String$fromFloat(y + thirdBox)),
+										elm$svg$Svg$Attributes$textAnchor('end'),
+										elm$svg$Svg$Attributes$class('clue-letter')
+									]),
+								_List_fromArray(
+									[
+										elm$svg$Svg$text(
+										author$project$Puzzle$letterFor(usedIn))
+									])),
+								A2(
+								elm$svg$Svg$text_,
+								_List_fromArray(
+									[
+										elm$svg$Svg$Attributes$x(
+										elm$core$String$fromFloat(x + (boxWidth / 2))),
+										elm$svg$Svg$Attributes$y(
+										elm$core$String$fromFloat((y + boxWidth) - 2)),
+										elm$svg$Svg$Attributes$textAnchor('middle'),
+										elm$svg$Svg$Attributes$class('letter')
+									]),
+								_List_fromArray(
+									[
+										elm$svg$Svg$text(
+										elm$core$String$fromChar(
+											A2(
+												elm$core$Maybe$withDefault,
+												_Utils_chr(' '),
+												mc)))
+									]))
+							]));
+				}
+			},
+			numberedSquares));
+};
+var author$project$Main$AsBoard = {$: 'AsBoard'};
+var author$project$Main$AsClue = {$: 'AsClue'};
+var author$project$Main$NotSelected = {$: 'NotSelected'};
+var author$project$Main$isSelected = F3(
+	function (qIndex, _n0, state) {
+		var cIndex = _n0.a;
+		var lIndex = _n0.b;
+		var _n1 = state.cursor;
+		if (_n1.$ === 'Clues') {
+			var clue = _n1.a;
+			var letter = _n1.b;
+			return (_Utils_eq(clue, cIndex) && _Utils_eq(letter, lIndex)) ? author$project$Main$AsClue : author$project$Main$NotSelected;
+		} else {
+			var quote = _n1.a;
+			return _Utils_eq(quote, qIndex) ? author$project$Main$AsBoard : author$project$Main$NotSelected;
+		}
+	});
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$h3 = _VirtualDom_node('h3');
+var elm$html$Html$span = _VirtualDom_node('span');
+var elm$html$Html$table = _VirtualDom_node('table');
+var elm$html$Html$td = _VirtualDom_node('td');
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$html$Html$tr = _VirtualDom_node('tr');
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$classList = function (classes) {
+	return elm$html$Html$Attributes$class(
+		A2(
+			elm$core$String$join,
+			' ',
+			A2(
+				elm$core$List$map,
+				elm$core$Tuple$first,
+				A2(elm$core$List$filter, elm$core$Tuple$second, classes))));
 };
 var author$project$Main$clueView = F3(
 	function (state, clueIndex, clue) {
@@ -6079,9 +6569,12 @@ var author$project$Main$playingView = function (state) {
 			elm$html$Html$section,
 			_List_fromArray(
 				[
-					elm$html$Html$Attributes$id('board')
+					elm$html$Html$Attributes$id('board-wrapper')
 				]),
-			_List_Nil),
+			_List_fromArray(
+				[
+					author$project$Main$boardView(state)
+				])),
 			A2(
 			elm$html$Html$section,
 			_List_fromArray(
