@@ -6611,7 +6611,16 @@ var author$project$Main$clueView = F3(
 								[
 									elm$html$Html$text(letter + '. ')
 								])),
-							elm$html$Html$text(clue.hint)
+							A2(
+							elm$html$Html$span,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('hint-text')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(clue.hint)
+								]))
 						])),
 					A2(
 					elm$html$Html$table,

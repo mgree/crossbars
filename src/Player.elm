@@ -492,8 +492,8 @@ clueView state clueIndex clue =
           id ("clue-" ++ String.fromInt clueIndex)
         ]
         [ h3 [ class "hint" ] 
-             [ span [class "clue-letter"] [ text (letter ++ ". ") ]
-             , text clue.hint {- FIXME support markdown -}
+             [ span [ class "clue-letter" ] [ text (letter ++ ". ") ]
+             , span [ class "hint-text" ] [ text clue.hint ] {- FIXME support markdown -}
              ]
         , table []
             [ tr []
