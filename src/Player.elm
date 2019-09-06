@@ -23,7 +23,9 @@ import Util exposing (..)
 
 {- PICK UP HERE
 
-   fix up clue sizing
+   grab focus whenever visibility comes back
+
+   warning when not in focus
 
    support for markdown
 
@@ -43,7 +45,6 @@ type Msg = SetCursor (Maybe Char) (Maybe Direction)
          | MoveCursor Direction
          | SelectIndex Cursor
          | Focused (Result Browser.Dom.Error ())
-         | IgnoreKey String
 
 type Cursor = Board Int
             | Clues Int Int
@@ -286,10 +287,6 @@ update msg model =
                 Focused _ -> ( state |>
                                Playing {- FIXME warning that keyboard controls won't work -}
                              , Cmd.none)
-
-                IgnoreKey _ -> ( state |>
-                                 Playing
-                               , Cmd.none)
 
 -- VIEW
 

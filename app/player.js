@@ -5957,10 +5957,6 @@ var author$project$Main$update = F2(
 						author$project$Main$Playing(
 							A2(author$project$Main$withCursor, cursor, state)),
 						elm$core$Platform$Cmd$none);
-				case 'Focused':
-					return _Utils_Tuple2(
-						author$project$Main$Playing(state),
-						elm$core$Platform$Cmd$none);
 				default:
 					return _Utils_Tuple2(
 						author$project$Main$Playing(state),
