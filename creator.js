@@ -9289,7 +9289,7 @@ var author$project$Main$boardToSVG = F3(
 							function (col) {
 								return {L: ' ', ah: col, P: -1, aa: row};
 							},
-							A2(elm$core$List$range, count % numCols, numCols));
+							A2(elm$core$List$range, count % numCols, numCols - 1));
 					} else {
 						var c = l.a;
 						var rest = l.b;
