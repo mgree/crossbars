@@ -335,29 +335,47 @@ boardView state =
             in
                 number 0 0 squares
 
+        selection = { index = selectedBoard state
+                    , fg = case state.cursor of
+                               Board _ -> True
+                               Clues _ _ -> False
+                    }
+
+        orderedSquares =
+            let (selected,unselected) = 
+                    numberedSquares |>
+                    List.partition
+                        (\square ->
+                             case square.square of
+                                 Black -> False
+                                 White index _ -> index == selection.index)
+            in
+                unselected ++ selected
+
     in
 
     Svg.svg [ id "board"
             , Svg.Attributes.viewBox ("0 0 " ++ String.fromFloat width ++ " " ++ String.fromFloat height) ] 
-        (numberedSquares |>
+        (orderedSquares |>
          List.map
              (\square ->
                   let x = toFloat square.col * boxWidth
                       y = toFloat square.row * boxWidth
                       thirdBox = boxWidth / 3
                       textLength = thirdBox |> String.fromFloat
-                      box cls = Svg.rect [ x |> String.fromFloat |> Svg.Attributes.x
-                                         , y |> String.fromFloat |> Svg.Attributes.y
-                                         , boxWidth |> String.fromFloat |> Svg.Attributes.width
-                                         , boxWidth |> String.fromFloat |> Svg.Attributes.height 
-                                         , Svg.Attributes.class "board-square" 
-                                         , Svg.Attributes.class cls
-                                         ]
+                      box clss = Svg.rect 
+                                 ( List.map (Svg.Attributes.class) clss ++
+                                   [ x |> String.fromFloat |> Svg.Attributes.x
+                                   , y |> String.fromFloat |> Svg.Attributes.y
+                                   , boxWidth |> String.fromFloat |> Svg.Attributes.width
+                                   , boxWidth |> String.fromFloat |> Svg.Attributes.height 
+                                   , Svg.Attributes.class "board-square" 
+                                   ])
                                 []
                   in
 
                       case square.square of
-                          Black -> box "board-black"
+                          Black -> box ["board-black"]
                           White index mc ->
                               let
                                   usedIn = Dict.get index uses |>
@@ -366,7 +384,12 @@ boardView state =
 
                               Svg.g 
                                   [ onClick (SelectIndex (Board index)) ]
-                                  [ box "board-white" 
+                                  [ box ( "board-white" :: 
+                                          if selection.index == index
+                                          then if selection.fg 
+                                               then ["selected"]
+                                               else ["selected-bg"]
+                                          else [])
                                   , Svg.text_
                                        [ x + 1 |> String.fromFloat |> Svg.Attributes.x
                                        , y + thirdBox |> String.fromFloat |> Svg.Attributes.y
@@ -383,7 +406,7 @@ boardView state =
                                        [ usedIn |> Puzzle.letterFor |> Svg.text ]
                                  , Svg.text_
                                        [ x + (boxWidth / 2) |> String.fromFloat |> Svg.Attributes.x
-                                       , y + boxWidth - 2 |> String.fromFloat |> Svg.Attributes.y
+                                       , y + boxWidth - 1.5 |> String.fromFloat |> Svg.Attributes.y
                                        , Svg.Attributes.textAnchor "middle"
                                        , Svg.Attributes.class "letter"
                                        ]
