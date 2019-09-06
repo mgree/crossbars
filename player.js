@@ -6027,6 +6027,24 @@ var elm$core$Dict$get = F2(
 			}
 		}
 	});
+var elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _n0) {
+				var trues = _n0.a;
+				var falses = _n0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2(elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2(elm$core$List$cons, x, falses));
+			});
+		return A3(
+			elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
 var elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -6214,6 +6232,17 @@ var author$project$Main$boardView = function (state) {
 							clue.answer);
 					}),
 				state.puzzle.clues)));
+	var selection = {
+		fg: function () {
+			var _n6 = state.cursor;
+			if (_n6.$ === 'Board') {
+				return true;
+			} else {
+				return false;
+			}
+		}(),
+		index: author$project$Main$selectedBoard(state)
+	};
 	var numCols = state.puzzle.boardColumns;
 	var indexedQuote = A2(elm$core$List$indexedMap, elm$core$Tuple$pair, state.puzzle.quote);
 	var squares = function () {
@@ -6227,9 +6256,9 @@ var author$project$Main$boardView = function (state) {
 					return _Utils_ap(
 						A2(
 							elm$core$List$map,
-							function (_n3) {
-								var idx = _n3.a;
-								var mc = _n3.b;
+							function (_n5) {
+								var idx = _n5.a;
+								var mc = _n5.b;
 								return A2(author$project$Main$White, idx, mc);
 							},
 							A2(elm$core$List$take, len, quote)),
@@ -6272,6 +6301,23 @@ var author$project$Main$boardView = function (state) {
 			});
 		return A3(number, 0, 0, squares);
 	}();
+	var orderedSquares = function () {
+		var _n1 = A2(
+			elm$core$List$partition,
+			function (square) {
+				var _n2 = square.square;
+				if (_n2.$ === 'Black') {
+					return false;
+				} else {
+					var index = _n2.a;
+					return _Utils_eq(index, selection.index);
+				}
+			},
+			numberedSquares);
+		var selected = _n1.a;
+		var unselected = _n1.b;
+		return _Utils_ap(unselected, selected);
+	}();
 	var boxWidth = width / numCols;
 	var height = numRows * boxWidth;
 	return A2(
@@ -6289,27 +6335,30 @@ var author$project$Main$boardView = function (state) {
 				var x = square.col * boxWidth;
 				var thirdBox = boxWidth / 3;
 				var textLength = elm$core$String$fromFloat(thirdBox);
-				var box = function (cls) {
+				var box = function (clss) {
 					return A2(
 						elm$svg$Svg$rect,
-						_List_fromArray(
-							[
-								elm$svg$Svg$Attributes$x(
-								elm$core$String$fromFloat(x)),
-								elm$svg$Svg$Attributes$y(
-								elm$core$String$fromFloat(y)),
-								elm$svg$Svg$Attributes$width(
-								elm$core$String$fromFloat(boxWidth)),
-								elm$svg$Svg$Attributes$height(
-								elm$core$String$fromFloat(boxWidth)),
-								elm$svg$Svg$Attributes$class('board-square'),
-								elm$svg$Svg$Attributes$class(cls)
-							]),
+						_Utils_ap(
+							A2(elm$core$List$map, elm$svg$Svg$Attributes$class, clss),
+							_List_fromArray(
+								[
+									elm$svg$Svg$Attributes$x(
+									elm$core$String$fromFloat(x)),
+									elm$svg$Svg$Attributes$y(
+									elm$core$String$fromFloat(y)),
+									elm$svg$Svg$Attributes$width(
+									elm$core$String$fromFloat(boxWidth)),
+									elm$svg$Svg$Attributes$height(
+									elm$core$String$fromFloat(boxWidth)),
+									elm$svg$Svg$Attributes$class('board-square')
+								])),
 						_List_Nil);
 				};
 				var _n0 = square.square;
 				if (_n0.$ === 'Black') {
-					return box('board-black');
+					return box(
+						_List_fromArray(
+							['board-black']));
 				} else {
 					var index = _n0.a;
 					var mc = _n0.b;
@@ -6327,7 +6376,13 @@ var author$project$Main$boardView = function (state) {
 							]),
 						_List_fromArray(
 							[
-								box('board-white'),
+								box(
+								A2(
+									elm$core$List$cons,
+									'board-white',
+									_Utils_eq(selection.index, index) ? (selection.fg ? _List_fromArray(
+										['selected']) : _List_fromArray(
+										['selected-bg'])) : _List_Nil)),
 								A2(
 								elm$svg$Svg$text_,
 								_List_fromArray(
@@ -6367,7 +6422,7 @@ var author$project$Main$boardView = function (state) {
 										elm$svg$Svg$Attributes$x(
 										elm$core$String$fromFloat(x + (boxWidth / 2))),
 										elm$svg$Svg$Attributes$y(
-										elm$core$String$fromFloat((y + boxWidth) - 2)),
+										elm$core$String$fromFloat((y + boxWidth) - 1.5)),
 										elm$svg$Svg$Attributes$textAnchor('middle'),
 										elm$svg$Svg$Attributes$class('letter')
 									]),
@@ -6383,7 +6438,7 @@ var author$project$Main$boardView = function (state) {
 							]));
 				}
 			},
-			numberedSquares));
+			orderedSquares));
 };
 var author$project$Main$AsBoard = {$: 'AsBoard'};
 var author$project$Main$AsClue = {$: 'AsClue'};

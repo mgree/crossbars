@@ -15,6 +15,14 @@
     stroke: black;
 }
 
+#board-wrapper svg#board .board-white.selected-bg {
+    stroke: pink;
+}
+
+#board-wrapper svg#board .board-white.selected {
+    fill: pink;
+}
+
 #board-wrapper svg#board .board-black {
     fill: black;
 }
@@ -24,16 +32,15 @@
 }
 
 #board-wrapper svg#board .number {
-    font-size: 2.5pt;
+    font-size: 2pt;
 }
 
 #board-wrapper svg#board .clue-letter {
-    font-size: 2.5pt;
+    font-size: 2pt;
 }
 
 #board-wrapper svg#board .letter {
-    font-size: 6.5pt;
-    font-family: monospace;
+    font-size: 3.5pt;
     text-transform: uppercase;
 }
 
