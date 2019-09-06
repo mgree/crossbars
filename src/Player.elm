@@ -27,7 +27,11 @@ import Util exposing (..)
 
    warning when not in focus
 
-   support for markdown
+   support for markdown in hints
+
+   loading games
+     JSON file (upload, URL?)
+     uuencoded (from URL, copy/paste?)
 
  -}
 
