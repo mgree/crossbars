@@ -58,15 +58,15 @@
 
 .clue table td.answer-letter {
     width: 1.1em;
-    font-size: 16pt;
+    font-size: 10pt;
     text-align: center;
-    height: 16pt;
+    height: 10pt;
 
     border-bottom: 2px solid black;
 }
 
 .clue table td.answer-number {
-    font-size: 8pt;
+    font-size: 6pt;
     text-align: center;
 }
 
@@ -78,14 +78,18 @@
     border-bottom: 2px solid pink;
 }
 
+.clue .hint {
+    font-size: 8pt;
+}
+
 .clue .hint .clue-letter {
     font-weight: bold;
 }
 
-.clue .hint {
-    font-size: 12pt;
+.clue .hint .hint-text {
     font-weight: normal;
 }
+
 
 #kbd-help {
     display: flex;
