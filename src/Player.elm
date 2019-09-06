@@ -360,7 +360,7 @@ boardSquares puzzle =
             let number idx count l =
                     let row = count // puzzle.boardColumns in
                     case l of
-                        [] -> List.range (remainderBy puzzle.boardColumns count) puzzle.boardColumns |>
+                        [] -> List.range (remainderBy puzzle.boardColumns count) (puzzle.boardColumns - 1) |>
                               List.map
                                   (\col -> { square = Black
                                            , col = col
@@ -399,8 +399,7 @@ boardView state =
 
         boxWidth = width / toFloat numCols
 
-        numRows = (numSquares // numCols) +
-                  if remainderBy numCols numSquares == 0 then 0 else 1
+        numRows = (numSquares // numCols)
                 
         height = (toFloat numRows) * boxWidth
 
