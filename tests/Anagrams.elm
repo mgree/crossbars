@@ -5,7 +5,10 @@ import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 
 import Hist exposing (Hist)
-import Wordlist exposing (..)
+
+import Trie exposing (Trie, Entry)
+import Wordlist exposing (Wordlist)
+
 
 import Util exposing (..)
 
@@ -18,22 +21,22 @@ suite =
               \_ -> 
                 "AC" |>
                 String.toList |>
-                anagramsFor testingWordlist sampleHist |>
+                Wordlist.anagramsFor testingWordlist sampleHist |>
                 Expect.equal ["ACF"]
         , test "lookup on word hits behaves correctly" <|
             \_ ->
                 sampleWords |>
                 List.all
-                    (\w -> (trieLookup w sampleWL |> Maybe.map .word) == Just w) |>
+                    (\w -> (Trie.lookup w sampleWL |> Maybe.map .word) == Just w) |>
                 Expect.true "Expected all words to be present."                
         , fuzzWith { runs = 1000 } string "lookup behaves the same as a naive implementation" <|
             \s ->
                 naiveWordlistLookup s sampleNWL |>
-                Expect.equal (trieLookup s sampleWL)
+                Expect.equal (Trie.lookup s sampleWL)
         , fuzzWith { runs = 1000 } string "suffixes behaves the same as a naive implementation" <|
             \s ->
                 naiveWordlistSuffixes (String.toList s) s sampleNWL |>
-                Expect.equal (trieSuffixes (String.toList s) s sampleWL)
+                Expect.equal (Trie.suffixes (String.toList s) s sampleWL)
         , test "parse list of words w/final newline" <|
             \_ ->
                 testingWords |>
@@ -54,13 +57,13 @@ testingWords = ["ABC", "ABCD", "ABF", "ABD", "ACF", "AFC", "BCD", "BFD", "BDF", 
 
 testingWordlist : Wordlist
 testingWordlist = 
-    generateWordlist "testing" testingWords
+    Wordlist.fromSourceStrings "testing" testingWords
 
 sampleNWL : NaiveWordlist
-sampleNWL = generateNaiveWordlist "testing" sampleWords
+sampleNWL = naiveFromSourceStrings "testing" sampleWords
 
 sampleWL : Wordlist
-sampleWL = generateWordlist "testing" sampleWords
+sampleWL = Wordlist.fromSourceStrings "testing" sampleWords
 
 sampleWords : List String
 sampleWords = 
@@ -79,7 +82,7 @@ emptyNaiveWordlist = []
 naiveWordlistInsert : Entry -> NaiveWordlist -> NaiveWordlist
 naiveWordlistInsert e nwl = 
     if String.length e.word >= 3 
-    then insertWith compareEntry e nwl
+    then insertWith Trie.compareEntry e nwl
     else nwl
 
 naiveWordlistLookup : String -> NaiveWordlist -> Maybe Entry
@@ -97,8 +100,8 @@ naiveWordlistSuffixes word s nwl =
     then []
     else List.filter (.word >> String.startsWith s) nwl
 
-generateNaiveWordlist : String -> List String -> NaiveWordlist
-generateNaiveWordlist source words =
+naiveFromSourceStrings : String -> List String -> NaiveWordlist
+naiveFromSourceStrings source words =
     words |>
     List.sort |>
     List.map 

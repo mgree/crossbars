@@ -30,6 +30,9 @@ encodeNullable encode ma =
         Nothing -> Json.Encode.null
         Just a -> encode a
 
+addIndex : List a -> List (Int, a)
+addIndex l = List.indexedMap Tuple.pair l
+
 updateIndex : Int -> (a -> a) -> List a -> List a
 updateIndex index f l =
     case l of

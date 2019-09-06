@@ -33,6 +33,9 @@ import Util exposing (..)
      JSON file (upload, URL?)
      uuencoded (from URL, copy/paste?)
 
+   NITS
+
+    spacebar behavior?
  -}
 
 -- TYPES

@@ -59,7 +59,7 @@ import Browser
 import Http
 
 {- FIXME don't just expose everything -}
-import Puzzle exposing (..)
+import Puzzle exposing (Puzzle, Phase(..))
 import Hist exposing (Hist)
 import SMT exposing (SolverState(..))
 import Solver
@@ -138,7 +138,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { puzzle = emptyPuzzle
+    { puzzle = Puzzle.empty
     , pendingDelete = False
     , selectedClues = []
     , savedPuzzles = []
@@ -190,7 +190,7 @@ loadPuzzle : Puzzle -> Model -> Model
 loadPuzzle puzzle model =
     { model
         | savedPuzzles = model.savedPuzzles
-                           |> List.filter (not << samePuzzle puzzle)
+                           |> List.filter (not << Puzzle.equal puzzle)
                            |> trySave model.puzzle
         , puzzle = puzzle
         , selectedClues = []
@@ -207,7 +207,7 @@ trySave : Puzzle -> List Puzzle -> List Puzzle
 trySave puzzle savedPuzzles =
     if List.all String.isEmpty [puzzle.title, puzzle.author]
     then savedPuzzles
-    else insertWith comparePuzzles puzzle savedPuzzles
+    else insertWith Puzzle.compare puzzle savedPuzzles
     
 andSave : SaveMode -> Model -> (Model, Cmd Msg)
 andSave mode model = (model, Task.perform (Save mode) Time.now)
@@ -256,8 +256,8 @@ decodeModel =
              | puzzle = puzzle
              , savedPuzzles = savedPuzzles
              })
-        (Json.Decode.field "currentPuzzle" decodePuzzle)
-        (Json.Decode.field "savedPuzzles" (Json.Decode.list decodePuzzle))
+        (Json.Decode.field "currentPuzzle" Puzzle.decode)
+        (Json.Decode.field "savedPuzzles" (Json.Decode.list Puzzle.decode))
     
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -277,25 +277,25 @@ update msg model =
     case msg of
         Title title -> 
             model.puzzle |> 
-            setTitle title |> 
-            fixupAnswerInitials |> 
+            Puzzle.setTitle title |> 
+            Puzzle.fixupAnswerInitials |> 
             asCurrentPuzzleIn model |> 
             andSave CurrentPuzzle
         Author author -> 
             model.puzzle |> 
-            setAuthor author |>
-            fixupAnswerInitials |>
+            Puzzle.setAuthor author |>
+            Puzzle.fixupAnswerInitials |>
             asCurrentPuzzleIn model |>
             andSave CurrentPuzzle
         Quote quote -> 
             model.puzzle |>
-            setQuote quote |>
-            fixupAnswerInitials |>
+            Puzzle.setQuote quote |>
+            Puzzle.fixupAnswerInitials |>
             asCurrentPuzzleIn model |>
             andSave CurrentPuzzle
         Answer idx answer -> 
             model.puzzle |>
-            updateAnswer idx answer |>
+            Puzzle.updateAnswer idx answer |>
             asCurrentPuzzleIn model |>
             andSave CurrentPuzzle
         SelectClue idx -> 
@@ -314,36 +314,38 @@ update msg model =
             andSave CurrentPuzzle
         Hint idx hint -> 
             model.puzzle |>
-            updateHint idx hint |>
+            Puzzle.updateHint idx hint |>
             asCurrentPuzzleIn model |>
             andSave CurrentPuzzle
         Number idx numIdx newNum -> 
             model.puzzle |>
-            updateNumbering idx numIdx (newNum |> String.toInt) |>
+            Puzzle.updateNumbering idx numIdx (newNum |> String.toInt) |>
             asCurrentPuzzleIn model |>
             andSave CurrentPuzzle
         Phase phase ->
             model.puzzle |>
-            setPhase phase |>
+            Puzzle.setPhase phase |>
             asCurrentPuzzleIn model |>
             andSave CurrentPuzzle
         Save CurrentPuzzle now ->
-            let newModel = model.puzzle |> setTimeModified now |> asCurrentPuzzleIn model in
-            (newModel, saveCurrentPuzzle (encodePuzzle newModel.puzzle))
+            let newModel = model.puzzle |> 
+                           Puzzle.setTimeModified now |> 
+                           asCurrentPuzzleIn model in
+            (newModel, saveCurrentPuzzle (Puzzle.encode newModel.puzzle))
         Save All _ ->
             (model, 
-             Cmd.batch [ saveCurrentPuzzle (encodePuzzle model.puzzle)
-                       , savePuzzles (Json.Encode.list encodePuzzle model.savedPuzzles)
+             Cmd.batch [ saveCurrentPuzzle (Puzzle.encode model.puzzle)
+                       , savePuzzles (Json.Encode.list Puzzle.encode model.savedPuzzles)
                        ]
             )
         NewPuzzle -> 
             model |>
-            popCurrentPuzzle emptyPuzzle |>
+            popCurrentPuzzle Puzzle.empty |>
             andSave All
         DeletePuzzle -> (model |> pendingDeletion True, Cmd.none)
         ReallyDeletePuzzle False -> (model |> pendingDeletion False, Cmd.none)
         ReallyDeletePuzzle True -> 
-            emptyPuzzle |>
+            Puzzle.empty |>
             asCurrentPuzzleIn model |>
             pendingDeletion False |>
             andSave CurrentPuzzle
@@ -363,7 +365,7 @@ update msg model =
             andSave All
         ClearNumbering -> 
             model.puzzle |> 
-            clearNumbering |> 
+            Puzzle.clearNumbering |> 
             asCurrentPuzzleIn model |> 
             withSolverResult Nothing |>
             andSave CurrentPuzzle
@@ -417,7 +419,7 @@ view model =
 
         answersFixed = puzzle.phase /= Anagramming
 
-        initials = initialism puzzle 
+        initials = Puzzle.initialism puzzle 
 
         initialismHist = Hist.fromString initials
 
@@ -427,7 +429,7 @@ view model =
 
         viable = Hist.isExhausted missingHist
 
-        clueHist = Hist.fromString (puzzle.clues |> List.map clueAnswer |> String.concat)
+        clueHist = Hist.fromString (puzzle.clues |> List.map Puzzle.clueAnswer |> String.concat)
 
         remainingHist = Hist.difference clueHist quoteHist
 
@@ -449,11 +451,11 @@ view model =
             List.isEmpty dupNumberings &&
             List.isEmpty (Puzzle.unclued puzzle)
                     
-        qIndices = quoteIndices puzzle
+        qIndices = Puzzle.quoteIndices puzzle
 
-        qIndexWords = quoteIndexWords puzzle
+        qIndexWords = Puzzle.quoteIndexWords puzzle
                            
-        qIndexUses = quoteIndexUses puzzle
+        qIndexUses = Puzzle.quoteIndexUses puzzle
 
     in
 
@@ -467,11 +469,11 @@ view model =
                                             , class "phase"
                                             , class (if p == puzzle.phase then "active" else "inactive")
                                             , disabled (not (readyForPhase p))
-                                            , value (stringOfPhase p)
+                                            , value (Puzzle.stringOfPhase p)
                                             , onClick (Phase p)
                                             ]
                                             [])
-                                 phases))
+                                 Puzzle.phases))
               , div [ id "next-steps" ]
                   [ text <|
                     if completed
@@ -491,7 +493,7 @@ view model =
                  ([ span [] 
                        [ text "Current puzzle: "
                        , model.puzzle |> 
-                         shortPuzzleDescription |> 
+                         Puzzle.shortDescription |> 
                          text
                        ]
                   ] ++ (if model.pendingDelete
@@ -543,7 +545,7 @@ view model =
                                         , selected (model.selectedPuzzle == Just savedPuzzle)
                                         ]
                                         [savedPuzzle |> 
-                                         puzzleDescription model.timeZone |>
+                                         Puzzle.description model.timeZone |>
                                          text]))
                               model.savedPuzzles))
                   , input ([ type_ "button"
@@ -630,16 +632,16 @@ view model =
                   , Hist.toSVG quoteHist remainingHist ])
         , section [id "clues"]
             (puzzle.clues 
-                |> addInitials (String.toList initials) 
+                |> List.map2 Tuple.pair (String.toList initials) 
                 |> addIndex 
                 |> List.map 
                      (\(index, (initial, clue)) -> 
                           let 
-                              answer = clueAnswer clue
+                              answer = Puzzle.clueAnswer clue
 
                               initialStr = String.fromChar initial
 
-                              letter = letterFor index 
+                              letter = Puzzle.letterFor index 
                  
                               validCls = class <| 
                                          if String.startsWith (String.toUpper initialStr)  (String.toUpper answer)
@@ -683,9 +685,9 @@ view model =
                           (\index ->
                                let 
                                                 
-                                   clueLetter = letterFor index
+                                   clueLetter = Puzzle.letterFor index
                         
-                                   clue = clueFor index puzzle
+                                   clue = Puzzle.clueFor index puzzle
                         
                                    answer = clue.answer
                         
@@ -703,7 +705,7 @@ view model =
                                                                    Maybe.withDefault [] |> 
                                                                    List.filter (\(uIdx, uNumIdx) -> uIdx /= index || (uIdx == index && uNumIdx /= numIndex))
                         
-                                                            clueMention (cIdx, cNumIdx) = letterFor cIdx ++ ". " ++ (cNumIdx + 1 |> String.fromInt)
+                                                            clueMention (cIdx, cNumIdx) = Puzzle.letterFor cIdx ++ ". " ++ (cNumIdx + 1 |> String.fromInt)
                         
                                                             useText =
                                                                 if List.isEmpty uses
@@ -786,7 +788,7 @@ view model =
                                                                  case mNum of
                                                                      Nothing -> "unentered"
                                                                      Just num ->
-                                                                         if quoteIndex puzzle num |> 
+                                                                         if Puzzle.quoteIndex puzzle num |> 
                                                                             Maybe.map (\qC -> c == Char.toUpper qC) |> 
                                                                             Maybe.withDefault False
                                                                          then "valid"
@@ -830,7 +832,7 @@ view model =
 
                       clueRef (cIndex, ansIndex) = 
                           span [ onClick (SelectClue cIndex) ]
-                               [ text (letterFor cIndex ++ String.fromInt (ansIndex + 1)) ]
+                               [ text (Puzzle.letterFor cIndex ++ String.fromInt (ansIndex + 1)) ]
 
                       unnumbered = 
                           Puzzle.unnumbered puzzle |>
@@ -851,7 +853,7 @@ view model =
                           List.map
                               (\cIndex ->
                                    span [ onClick (SelectClue cIndex) ]
-                                        [ text (letterFor cIndex) ]) |>
+                                        [ text (Puzzle.letterFor cIndex) ]) |>
                           tag "Missing clues"
 
                    in
@@ -988,7 +990,7 @@ boardToSVG numCols qIndexUses puzzle =
                                        , Svg.Attributes.class "clue-letter"
                                        ]
                                        [ usedIn 
-                                         |> List.map letterFor
+                                         |> List.map Puzzle.letterFor
                                          |> String.concat
                                          |> Svg.text
                                        ]
@@ -1020,12 +1022,12 @@ anagramAssistance : Puzzle -> Wordlist -> Hist -> Int -> Html Msg
 anagramAssistance puzzle wordlist remainingHist index =
     let
 
-        letter = letterFor index
+        letter = Puzzle.letterFor index
 
-        clue = clueFor index puzzle
+        clue = Puzzle.clueFor index puzzle
 
         prefix = case List.map Tuple.second clue.answer of
-                     [] -> initialism puzzle |>
+                     [] -> Puzzle.initialism puzzle |>
                            String.toList |>
                            List.drop index |>
                            List.take 1 |>

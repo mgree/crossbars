@@ -15,7 +15,7 @@ import Json.Decode
 
 import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces)
 
-import Puzzle exposing (..)
+import Puzzle exposing (Puzzle)
 import SMT
 import Util exposing (..)
 
@@ -115,7 +115,7 @@ missingResult = { answer = SMTFailed
 applySMTNumbering : SMTNumbering -> Puzzle -> Puzzle
 applySMTNumbering nums puz =
     let apply num newPuz =
-            updateNumbering num.clue num.letter (Just num.number) newPuz
+            Puzzle.updateNumbering num.clue num.letter (Just num.number) newPuz
     in
         List.foldr apply puz nums
 

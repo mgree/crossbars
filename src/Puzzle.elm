@@ -1,9 +1,55 @@
-module Puzzle exposing (..)
+module Puzzle exposing 
+    ( Puzzle
+    , empty
+    , compare
+    , equal
+    , encode
+    , decode
+
+    , Phase(..)
+    , phases
+    , stringOfPhase
+
+    , Clue
+    , defaultClue
+    , letterFor
+
+    , setPhase
+    , setTimeModified
+    , setTitle
+    , setAuthor
+    , setQuote
+    , clearNumbering
+    , updateNumbering
+    , updateHint
+    , updateAnswer
+    , fixupAnswerInitials
+        
+    , clueAnswer
+    , clueFor
+    , description
+    , shortDescription
+    , initialism
+    , quoteIndex
+    , quoteIndices
+    , quoteIndexWords
+    , quoteIndexUses
+
+    , duplicateNumberings
+    , unclued
+    , unnumbered
+
+    , Blank
+    , BlankClue
+    , encodeBlank
+    , toBlank
+    , asQuoteIn
+    )
 
 import Dict exposing (Dict)
 
-import Json.Encode
-import Json.Decode
+import Json.Encode as Encode
+import Json.Decode as Decode
 
 import Time
 
@@ -37,8 +83,8 @@ type alias Puzzle =
     , timeModified : Time.Posix
     }
 
-emptyPuzzle :  Puzzle
-emptyPuzzle =
+empty :  Puzzle
+empty =
     { title = ""
     , author = ""
     , quote = ""
@@ -47,20 +93,22 @@ emptyPuzzle =
     , timeModified = Time.millisToPosix 0
     }
 
-shortPuzzleDescription : Puzzle -> String
-shortPuzzleDescription puzzle = 
+shortDescription : Puzzle -> String
+shortDescription puzzle = 
     String.toUpper puzzle.author ++ " — " ++ String.toUpper puzzle.title
 
-puzzleDescription : Time.Zone -> Puzzle -> String
-puzzleDescription here puzzle =
-    shortPuzzleDescription puzzle ++ " (" ++ iso8601DateTime here puzzle.timeModified ++ ")"
+description : Time.Zone -> Puzzle -> String
+description here puzzle =
+    shortDescription puzzle ++ " (" ++ iso8601DateTime here puzzle.timeModified ++ ")"
     
-comparePuzzles : Puzzle -> Puzzle -> Order
-comparePuzzles puz1 puz2 =
-    compare (Time.posixToMillis puz1.timeModified) (Time.posixToMillis puz2.timeModified)
+compare : Puzzle -> Puzzle -> Order
+compare puz1 puz2 =
+    Basics.compare 
+        (Time.posixToMillis puz1.timeModified) 
+        (Time.posixToMillis puz2.timeModified)
 
-samePuzzle : Puzzle -> Puzzle -> Bool
-samePuzzle puz1 puz2 = comparePuzzles puz1 puz2 == EQ
+equal : Puzzle -> Puzzle -> Bool
+equal puz1 puz2 = compare puz1 puz2 == EQ
 
 unnumbered : Puzzle -> List (Int, Int)
 unnumbered puz =
@@ -219,12 +267,6 @@ stringOfPhase p =
 phases : List Phase
 phases = [QuoteEntry, Anagramming, CluingLettering]
          
-addInitials : List Char -> List a -> List (Char, a)
-addInitials initial clues = List.map2 Tuple.pair initial clues
-
-addIndex : List a -> List (Int, a)
-addIndex l = List.indexedMap Tuple.pair l
-
 lettering : List String
 lettering =
     let 
@@ -279,9 +321,9 @@ quoteIndexUses puzzle =
 
 -- SAVING/LOADING
 
-decodePuzzle : Json.Decode.Decoder Puzzle
-decodePuzzle =
-    Json.Decode.map6
+decode : Decode.Decoder Puzzle
+decode =
+    Decode.map6
         (\title author quote clues phase timeModified ->
              { title = title
              , author = author
@@ -290,76 +332,76 @@ decodePuzzle =
              , phase = phase
              , timeModified = timeModified
              })
-        (Json.Decode.field "title" Json.Decode.string)
-        (Json.Decode.field "author" Json.Decode.string)
-        (Json.Decode.field "quote" Json.Decode.string)
-        (Json.Decode.field "clues" (Json.Decode.list decodeClue))
-        (Json.Decode.field "phase" decodePhase)
-        (Json.Decode.field "timeModified" (Json.Decode.int |>
-                                               Json.Decode.map Time.millisToPosix))
+        (Decode.field "title" Decode.string)
+        (Decode.field "author" Decode.string)
+        (Decode.field "quote" Decode.string)
+        (Decode.field "clues" (Decode.list decodeClue))
+        (Decode.field "phase" decodePhase)
+        (Decode.field "timeModified" (Decode.int |>
+                                               Decode.map Time.millisToPosix))
 
-decodeClue : Json.Decode.Decoder Clue
+decodeClue : Decode.Decoder Clue
 decodeClue =
-    Json.Decode.map3
+    Decode.map3
         (\hint text answer ->
              { hint = hint
              , text = text
              , answer = answer
              })
-        (Json.Decode.field "hint" Json.Decode.string)
-        (Json.Decode.field "text" Json.Decode.string)
-        (Json.Decode.field "answer" (Json.Decode.list decodeAnswer))
+        (Decode.field "hint" Decode.string)
+        (Decode.field "text" Decode.string)
+        (Decode.field "answer" (Decode.list decodeAnswer))
 
-decodeAnswer : Json.Decode.Decoder (Maybe Int, Char)
+decodeAnswer : Decode.Decoder (Maybe Int, Char)
 decodeAnswer =
-    Json.Decode.map2
+    Decode.map2
         Tuple.pair
-        (Json.Decode.field "number" (Json.Decode.nullable Json.Decode.int))
-        (Json.Decode.field "char" (Json.Decode.string |> Json.Decode.andThen
+        (Decode.field "number" (Decode.nullable Decode.int))
+        (Decode.field "char" (Decode.string |> Decode.andThen
                            (\s ->
                                 case String.uncons s of
-                                    Just (c, "") -> Json.Decode.succeed c
-                                    _ -> Json.Decode.fail ("expected single character in answer, found '" ++ s ++ "'"))))
+                                    Just (c, "") -> Decode.succeed c
+                                    _ -> Decode.fail ("expected single character in answer, found '" ++ s ++ "'"))))
 
-decodePhase : Json.Decode.Decoder Phase
+decodePhase : Decode.Decoder Phase
 decodePhase =
-    Json.Decode.string |> Json.Decode.andThen
+    Decode.string |> Decode.andThen
         (\s ->
              case s of
-                 "QuoteEntry" -> Json.Decode.succeed QuoteEntry
-                 "Anagramming" -> Json.Decode.succeed Anagramming
-                 "CluingLettering" -> Json.Decode.succeed CluingLettering
-                 _ -> Json.Decode.fail ("invalid phase '" ++ s ++ "'"))
+                 "QuoteEntry" -> Decode.succeed QuoteEntry
+                 "Anagramming" -> Decode.succeed Anagramming
+                 "CluingLettering" -> Decode.succeed CluingLettering
+                 _ -> Decode.fail ("invalid phase '" ++ s ++ "'"))
 
-encodePuzzle : Puzzle -> Json.Encode.Value
-encodePuzzle puzzle =
-    Json.Encode.object
-        [ ("title", Json.Encode.string puzzle.title)
-        , ("author", Json.Encode.string puzzle.author)
-        , ("quote", Json.Encode.string puzzle.quote)
-        , ("clues", Json.Encode.list encodeClue puzzle.clues)
+encode : Puzzle -> Encode.Value
+encode puzzle =
+    Encode.object
+        [ ("title", Encode.string puzzle.title)
+        , ("author", Encode.string puzzle.author)
+        , ("quote", Encode.string puzzle.quote)
+        , ("clues", Encode.list encodeClue puzzle.clues)
         , ("phase", encodePhase puzzle.phase)
-        , ("timeModified", Json.Encode.int <| Time.posixToMillis <| puzzle.timeModified)
+        , ("timeModified", Encode.int <| Time.posixToMillis <| puzzle.timeModified)
         ]
 
-encodeClue : Clue -> Json.Encode.Value
+encodeClue : Clue -> Encode.Value
 encodeClue clue =
-    Json.Encode.object
-        [ ("hint", Json.Encode.string clue.hint)
-        , ("text", Json.Encode.string clue.text)
-        , ("answer", Json.Encode.list encodeAnswer clue.answer)
+    Encode.object
+        [ ("hint", Encode.string clue.hint)
+        , ("text", Encode.string clue.text)
+        , ("answer", Encode.list encodeAnswer clue.answer)
         ]
 
-encodeAnswer : (Maybe Int, Char) -> Json.Encode.Value
+encodeAnswer : (Maybe Int, Char) -> Encode.Value
 encodeAnswer (mNum, c) =
-    Json.Encode.object
-        [ ("number", encodeNullable Json.Encode.int mNum)
-        , ("char", Json.Encode.string <| String.fromChar <| c)
+    Encode.object
+        [ ("number", encodeNullable Encode.int mNum)
+        , ("char", Encode.string <| String.fromChar <| c)
         ]
 
-encodePhase : Phase -> Json.Encode.Value
+encodePhase : Phase -> Encode.Value
 encodePhase phase =
-    Json.Encode.string <| case phase of
+    Encode.string <| case phase of
                               QuoteEntry -> "QuoteEntry"
                               Anagramming -> "Anagramming"
                               CluingLettering -> "CluingLettering"
@@ -377,6 +419,22 @@ type alias Blank =
     , boardColumns : Int
     , clues : List BlankClue
     }
+
+encodeBlank : Blank -> Encode.Value
+encodeBlank b =
+    Encode.object
+        [ ("quote", Encode.list (Maybe.map String.fromChar >> encodeNullable Encode.string) b.quote)
+        , ("quoteWordLengths", Encode.list Encode.int b.quoteWordLengths)
+        , ("boardColumns", Encode.int b.boardColumns)
+        , ("clues", Encode.list encodeBlankClue b.clues)
+        ]
+
+encodeBlankClue : BlankClue -> Encode.Value
+encodeBlankClue c =
+    Encode.object
+        [ ("hint", Encode.string c.hint)
+        , ("answer", Encode.list Encode.int c.answer)
+        ]
 
 toBlank : Puzzle -> Blank
 toBlank puzzle =
