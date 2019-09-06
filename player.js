@@ -5533,7 +5533,7 @@ var author$project$Main$boardSquares = function (puzzle) {
 						function (col) {
 							return {col: col, row: row, square: author$project$Main$Black};
 						},
-						A2(elm$core$List$range, count % puzzle.boardColumns, puzzle.boardColumns));
+						A2(elm$core$List$range, count % puzzle.boardColumns, puzzle.boardColumns - 1));
 				} else {
 					var sq = l.a;
 					var rest = l.b;
@@ -6418,7 +6418,7 @@ var author$project$Main$boardView = function (state) {
 	}();
 	var numSquares = elm$core$List$length(numberedSquares);
 	var numCols = state.puzzle.boardColumns;
-	var numRows = ((numSquares / numCols) | 0) + ((!(numSquares % numCols)) ? 0 : 1);
+	var numRows = (numSquares / numCols) | 0;
 	var boxWidth = width / numCols;
 	var height = numRows * boxWidth;
 	return A2(
