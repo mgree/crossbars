@@ -78,7 +78,51 @@ moveCursor : Direction -> State -> State
 moveCursor dir state =
     (\c -> withCursor c state) <|
     case state.cursor of
-        Board index -> Debug.todo "moveCursor Board"
+        Board index -> 
+            let 
+                squares = boardSquares state.puzzle
+
+                selected = squares |>
+                           List.filter
+                               (\square -> 
+                                    case square.square of
+                                        Black -> False
+                                        White sqIndex _ -> index == sqIndex) |>
+                           List.head |> {- FIXME YIKES -}
+                           Maybe.withDefault { square = Black, row = 0, col = 0 }
+
+                aligned = squares |>
+                          List.filter
+                              (\square -> 
+                                   remainderBy state.puzzle.boardColumns square.col == 
+                                   remainderBy state.puzzle.boardColumns selected.col)
+            in
+
+            case dir of 
+                Left -> Board <| Basics.max 0 <| index - 1
+                Right -> Board <| Basics.min (List.length state.puzzle.quote) <| index + 1
+                Up -> aligned |>
+                      List.filter (\square -> square.row < selected.row) |>
+                      List.sortBy .row |>
+                      List.reverse |>
+                      List.filterMap (\square -> 
+                                          case square.square of
+                                              Black -> Nothing
+                                              White qIndex _ -> Just qIndex) |>
+                      List.head |>
+                      Maybe.withDefault index |>
+                      Board
+                Down -> aligned |>
+                      List.filter (\square -> square.row > selected.row) |>
+                      List.sortBy .row |>
+                      List.filterMap (\square -> 
+                                          case square.square of
+                                              Black -> Nothing
+                                              White qIndex _ -> Just qIndex) |>
+                      List.head |>
+                      Maybe.withDefault index |>
+                      Board
+
         Clues cIndex lIndex -> 
             case dir of
                 Left -> Clues cIndex (Basics.max (lIndex - 1) 0)
@@ -202,7 +246,7 @@ update msg model =
         NoPuzzle -> ( model
                     , Cmd.none)
         Playing state ->
-            case msg |> Debug.log "msg" of
+            case msg of
                 SetCursor mc mdir -> 
                     ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
                       Puzzle.asQuoteIn state.puzzle |>
@@ -280,6 +324,51 @@ playingView state =
 
 type UnnumberedSquare = White Int (Maybe Char) | Black
 
+type alias Square = 
+    { square : UnnumberedSquare
+    , row : Int
+    , col : Int
+    }
+
+boardSquares : Puzzle -> List Square
+boardSquares puzzle =
+    let         
+
+        indexedQuote = List.indexedMap Tuple.pair puzzle.quote
+                  
+        squares = 
+            let collect quote lens =
+                    case lens of
+                        [] -> [] {- FIXME quote had better be empty---yikes! -}
+                        len::rest ->
+                            List.map (\(idx, mc) -> White idx mc) (List.take len quote) ++
+                            Black :: 
+                            collect (List.drop len quote) rest
+            in
+                collect indexedQuote puzzle.quoteWordLengths
+
+        numberedSquares =
+            let number idx count l =
+                    let row = count // puzzle.boardColumns in
+                    case l of
+                        [] -> List.range (remainderBy puzzle.boardColumns count) puzzle.boardColumns |>
+                              List.map
+                                  (\col -> { square = Black
+                                           , col = col
+                                           , row = row
+                                           })
+                        (sq::rest) ->
+                            { square = sq
+                            , col = remainderBy puzzle.boardColumns count
+                            , row = row
+                            } :: number (idx + if sq == Black then 0 else 1) (count + 1) rest
+            in
+                number 0 0 squares
+
+    in
+
+        numberedSquares
+
 boardView : State -> Html Msg
 boardView state =
     let 
@@ -295,20 +384,9 @@ boardView state =
 
         numCols = state.puzzle.boardColumns
 
-        indexedQuote = List.indexedMap Tuple.pair state.puzzle.quote
-                  
-        squares = 
-            let collect quote lens =
-                    case lens of
-                        [] -> [] {- FIXME quote had better be empty---yikes! -}
-                        len::rest ->
-                            List.map (\(idx, mc) -> White idx mc) (List.take len quote) ++
-                            Black :: 
-                            collect (List.drop len quote) rest
-            in
-                collect indexedQuote state.puzzle.quoteWordLengths
+        numberedSquares = boardSquares state.puzzle
 
-        numSquares = List.length squares
+        numSquares = List.length numberedSquares
 
         boxWidth = width / toFloat numCols
 
@@ -316,24 +394,6 @@ boardView state =
                   if remainderBy numCols numSquares == 0 then 0 else 1
                 
         height = (toFloat numRows) * boxWidth
-
-        numberedSquares =
-            let number idx count l =
-                    let row = count // numCols in
-                    case l of
-                        [] -> List.range (remainderBy numCols count) numCols |>
-                              List.map
-                                  (\col -> { square = Black
-                                           , col = col
-                                           , row = row
-                                           })
-                        (sq::rest) ->
-                            { square = sq
-                            , col = remainderBy numCols count
-                            , row = row
-                            } :: number (idx + if sq == Black then 0 else 1) (count + 1) rest
-            in
-                number 0 0 squares
 
         selection = { index = selectedBoard state
                     , fg = case state.cursor of
