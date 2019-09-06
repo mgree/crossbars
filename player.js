@@ -5334,22 +5334,14 @@ var author$project$Main$asPuzzleIn = F2(
 			state,
 			{puzzle: puzzle});
 	});
-var author$project$Main$withCursor = F2(
-	function (cursor, state) {
-		return _Utils_update(
-			state,
-			{cursor: cursor});
+var author$project$Main$Black = {$: 'Black'};
+var author$project$Main$Board = function (a) {
+	return {$: 'Board', a: a};
+};
+var author$project$Main$White = F2(
+	function (a, b) {
+		return {$: 'White', a: a, b: b};
 	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var elm$core$Debug$todo = _Debug_todo;
 var elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -5371,6 +5363,238 @@ var elm$core$List$drop = F2(
 			}
 		}
 	});
+var elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2(elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return elm$core$List$reverse(
+			A3(elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _n0 = _Utils_Tuple2(n, list);
+			_n0$1:
+			while (true) {
+				_n0$5:
+				while (true) {
+					if (!_n0.b.b) {
+						return list;
+					} else {
+						if (_n0.b.b.b) {
+							switch (_n0.a) {
+								case 1:
+									break _n0$1;
+								case 2:
+									var _n2 = _n0.b;
+									var x = _n2.a;
+									var _n3 = _n2.b;
+									var y = _n3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_n0.b.b.b.b) {
+										var _n4 = _n0.b;
+										var x = _n4.a;
+										var _n5 = _n4.b;
+										var y = _n5.a;
+										var _n6 = _n5.b;
+										var z = _n6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _n0$5;
+									}
+								default:
+									if (_n0.b.b.b.b && _n0.b.b.b.b.b) {
+										var _n7 = _n0.b;
+										var x = _n7.a;
+										var _n8 = _n7.b;
+										var y = _n8.a;
+										var _n9 = _n8.b;
+										var z = _n9.a;
+										var _n10 = _n9.b;
+										var w = _n10.a;
+										var tl = _n10.b;
+										return (ctr > 1000) ? A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A2(elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A3(elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _n0$5;
+									}
+							}
+						} else {
+							if (_n0.a === 1) {
+								break _n0$1;
+							} else {
+								break _n0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _n1 = _n0.b;
+			var x = _n1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var elm$core$List$take = F2(
+	function (n, list) {
+		return A3(elm$core$List$takeFast, 0, n, list);
+	});
+var elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var author$project$Main$boardSquares = function (puzzle) {
+	var indexedQuote = A2(elm$core$List$indexedMap, elm$core$Tuple$pair, puzzle.quote);
+	var squares = function () {
+		var collect = F2(
+			function (quote, lens) {
+				if (!lens.b) {
+					return _List_Nil;
+				} else {
+					var len = lens.a;
+					var rest = lens.b;
+					return _Utils_ap(
+						A2(
+							elm$core$List$map,
+							function (_n2) {
+								var idx = _n2.a;
+								var mc = _n2.b;
+								return A2(author$project$Main$White, idx, mc);
+							},
+							A2(elm$core$List$take, len, quote)),
+						A2(
+							elm$core$List$cons,
+							author$project$Main$Black,
+							A2(
+								collect,
+								A2(elm$core$List$drop, len, quote),
+								rest)));
+				}
+			});
+		return A2(collect, indexedQuote, puzzle.quoteWordLengths);
+	}();
+	var numberedSquares = function () {
+		var number = F3(
+			function (idx, count, l) {
+				var row = (count / puzzle.boardColumns) | 0;
+				if (!l.b) {
+					return A2(
+						elm$core$List$map,
+						function (col) {
+							return {col: col, row: row, square: author$project$Main$Black};
+						},
+						A2(elm$core$List$range, count % puzzle.boardColumns, puzzle.boardColumns));
+				} else {
+					var sq = l.a;
+					var rest = l.b;
+					return A2(
+						elm$core$List$cons,
+						{col: count % puzzle.boardColumns, row: row, square: sq},
+						A3(
+							number,
+							idx + (_Utils_eq(sq, author$project$Main$Black) ? 0 : 1),
+							count + 1,
+							rest));
+				}
+			});
+		return A3(number, 0, 0, squares);
+	}();
+	return numberedSquares;
+};
+var author$project$Main$withCursor = F2(
+	function (cursor, state) {
+		return _Utils_update(
+			state,
+			{cursor: cursor});
+	});
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (_n0.$ === 'Just') {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -5380,6 +5604,7 @@ var elm$core$List$head = function (list) {
 		return elm$core$Maybe$Nothing;
 	}
 };
+var elm$core$List$sortBy = _List_sortBy;
 var elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5408,12 +5633,97 @@ var author$project$Main$moveCursor = F2(
 				var _n0 = state.cursor;
 				if (_n0.$ === 'Board') {
 					var index = _n0.a;
-					return _Debug_todo(
-						'Main',
-						{
-							start: {line: 81, column: 24},
-							end: {line: 81, column: 34}
-						})('moveCursor Board');
+					var squares = author$project$Main$boardSquares(state.puzzle);
+					var selected = A2(
+						elm$core$Maybe$withDefault,
+						{col: 0, row: 0, square: author$project$Main$Black},
+						elm$core$List$head(
+							A2(
+								elm$core$List$filter,
+								function (square) {
+									var _n4 = square.square;
+									if (_n4.$ === 'Black') {
+										return false;
+									} else {
+										var sqIndex = _n4.a;
+										return _Utils_eq(index, sqIndex);
+									}
+								},
+								squares)));
+					var aligned = A2(
+						elm$core$List$filter,
+						function (square) {
+							return _Utils_eq(square.col % state.puzzle.boardColumns, selected.col % state.puzzle.boardColumns);
+						},
+						squares);
+					switch (dir.$) {
+						case 'Left':
+							return author$project$Main$Board(
+								A2(elm$core$Basics$max, 0, index - 1));
+						case 'Right':
+							return author$project$Main$Board(
+								A2(
+									elm$core$Basics$min,
+									elm$core$List$length(state.puzzle.quote),
+									index + 1));
+						case 'Up':
+							return author$project$Main$Board(
+								A2(
+									elm$core$Maybe$withDefault,
+									index,
+									elm$core$List$head(
+										A2(
+											elm$core$List$filterMap,
+											function (square) {
+												var _n2 = square.square;
+												if (_n2.$ === 'Black') {
+													return elm$core$Maybe$Nothing;
+												} else {
+													var qIndex = _n2.a;
+													return elm$core$Maybe$Just(qIndex);
+												}
+											},
+											elm$core$List$reverse(
+												A2(
+													elm$core$List$sortBy,
+													function ($) {
+														return $.row;
+													},
+													A2(
+														elm$core$List$filter,
+														function (square) {
+															return _Utils_cmp(square.row, selected.row) < 0;
+														},
+														aligned)))))));
+						default:
+							return author$project$Main$Board(
+								A2(
+									elm$core$Maybe$withDefault,
+									index,
+									elm$core$List$head(
+										A2(
+											elm$core$List$filterMap,
+											function (square) {
+												var _n3 = square.square;
+												if (_n3.$ === 'Black') {
+													return elm$core$Maybe$Nothing;
+												} else {
+													var qIndex = _n3.a;
+													return elm$core$Maybe$Just(qIndex);
+												}
+											},
+											A2(
+												elm$core$List$sortBy,
+												function ($) {
+													return $.row;
+												},
+												A2(
+													elm$core$List$filter,
+													function (square) {
+														return _Utils_cmp(square.row, selected.row) > 0;
+													},
+													aligned))))));
+					}
 				} else {
 					var cIndex = _n0.a;
 					var lIndex = _n0.b;
@@ -5498,9 +5808,6 @@ var author$project$Main$selectedBoard = function (state) {
 					A2(elm$core$List$drop, clueIndex, state.puzzle.clues))));
 	}
 };
-var author$project$Main$Board = function (a) {
-	return {$: 'Board', a: a};
-};
 var elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -5512,17 +5819,6 @@ var elm$core$List$append = F2(
 var elm$core$List$concat = function (lists) {
 	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
 };
-var elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var elm$core$Tuple$second = function (_n0) {
 	var y = _n0.b;
 	return y;
@@ -5610,7 +5906,6 @@ var elm$core$Basics$always = F2(
 	function (a, _n0) {
 		return a;
 	});
-var elm$core$Debug$log = _Debug_log;
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$update = F2(
@@ -5619,11 +5914,10 @@ var author$project$Main$update = F2(
 			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		} else {
 			var state = model.a;
-			var _n1 = A2(elm$core$Debug$log, 'msg', msg);
-			switch (_n1.$) {
+			switch (msg.$) {
 				case 'SetCursor':
-					var mc = _n1.a;
-					var mdir = _n1.b;
+					var mc = msg.a;
+					var mdir = msg.b;
 					return _Utils_Tuple2(
 						author$project$Main$Playing(
 							function () {
@@ -5652,13 +5946,13 @@ var author$project$Main$update = F2(
 							author$project$Main$swapCursor(state)),
 						elm$core$Platform$Cmd$none);
 				case 'MoveCursor':
-					var dir = _n1.a;
+					var dir = msg.a;
 					return _Utils_Tuple2(
 						author$project$Main$Playing(
 							A2(author$project$Main$moveCursor, dir, state)),
 						elm$core$Platform$Cmd$none);
 				case 'SelectIndex':
-					var cursor = _n1.a;
+					var cursor = msg.a;
 					return _Utils_Tuple2(
 						author$project$Main$Playing(
 							A2(author$project$Main$withCursor, cursor, state)),
@@ -5826,14 +6120,9 @@ var author$project$Main$msgOfKey = A2(
 		A2(elm$json$Json$Decode$field, 'ctrlKey', elm$json$Json$Decode$bool),
 		A2(elm$json$Json$Decode$field, 'metaKey', elm$json$Json$Decode$bool),
 		A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string)));
-var author$project$Main$Black = {$: 'Black'};
 var author$project$Main$SelectIndex = function (a) {
 	return {$: 'SelectIndex', a: a};
 };
-var author$project$Main$White = F2(
-	function (a, b) {
-		return {$: 'White', a: a, b: b};
-	});
 var author$project$Util$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 var elm$core$String$foldr = _String_foldr;
 var elm$core$String$toList = function (string) {
@@ -6045,137 +6334,7 @@ var elm$core$List$partition = F2(
 			_Utils_Tuple2(_List_Nil, _List_Nil),
 			list);
 	});
-var elm$core$List$takeReverse = F3(
-	function (n, list, kept) {
-		takeReverse:
-		while (true) {
-			if (n <= 0) {
-				return kept;
-			} else {
-				if (!list.b) {
-					return kept;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs,
-						$temp$kept = A2(elm$core$List$cons, x, kept);
-					n = $temp$n;
-					list = $temp$list;
-					kept = $temp$kept;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var elm$core$List$takeTailRec = F2(
-	function (n, list) {
-		return elm$core$List$reverse(
-			A3(elm$core$List$takeReverse, n, list, _List_Nil));
-	});
-var elm$core$List$takeFast = F3(
-	function (ctr, n, list) {
-		if (n <= 0) {
-			return _List_Nil;
-		} else {
-			var _n0 = _Utils_Tuple2(n, list);
-			_n0$1:
-			while (true) {
-				_n0$5:
-				while (true) {
-					if (!_n0.b.b) {
-						return list;
-					} else {
-						if (_n0.b.b.b) {
-							switch (_n0.a) {
-								case 1:
-									break _n0$1;
-								case 2:
-									var _n2 = _n0.b;
-									var x = _n2.a;
-									var _n3 = _n2.b;
-									var y = _n3.a;
-									return _List_fromArray(
-										[x, y]);
-								case 3:
-									if (_n0.b.b.b.b) {
-										var _n4 = _n0.b;
-										var x = _n4.a;
-										var _n5 = _n4.b;
-										var y = _n5.a;
-										var _n6 = _n5.b;
-										var z = _n6.a;
-										return _List_fromArray(
-											[x, y, z]);
-									} else {
-										break _n0$5;
-									}
-								default:
-									if (_n0.b.b.b.b && _n0.b.b.b.b.b) {
-										var _n7 = _n0.b;
-										var x = _n7.a;
-										var _n8 = _n7.b;
-										var y = _n8.a;
-										var _n9 = _n8.b;
-										var z = _n9.a;
-										var _n10 = _n9.b;
-										var w = _n10.a;
-										var tl = _n10.b;
-										return (ctr > 1000) ? A2(
-											elm$core$List$cons,
-											x,
-											A2(
-												elm$core$List$cons,
-												y,
-												A2(
-													elm$core$List$cons,
-													z,
-													A2(
-														elm$core$List$cons,
-														w,
-														A2(elm$core$List$takeTailRec, n - 4, tl))))) : A2(
-											elm$core$List$cons,
-											x,
-											A2(
-												elm$core$List$cons,
-												y,
-												A2(
-													elm$core$List$cons,
-													z,
-													A2(
-														elm$core$List$cons,
-														w,
-														A3(elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
-									} else {
-										break _n0$5;
-									}
-							}
-						} else {
-							if (_n0.a === 1) {
-								break _n0$1;
-							} else {
-								break _n0$5;
-							}
-						}
-					}
-				}
-				return list;
-			}
-			var _n1 = _n0.b;
-			var x = _n1.a;
-			return _List_fromArray(
-				[x]);
-		}
-	});
-var elm$core$List$take = F2(
-	function (n, list) {
-		return A3(elm$core$List$takeFast, 0, n, list);
-	});
 var elm$core$String$fromFloat = _String_fromNumber;
-var elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6234,8 +6393,8 @@ var author$project$Main$boardView = function (state) {
 				state.puzzle.clues)));
 	var selection = {
 		fg: function () {
-			var _n6 = state.cursor;
-			if (_n6.$ === 'Board') {
+			var _n3 = state.cursor;
+			if (_n3.$ === 'Board') {
 				return true;
 			} else {
 				return false;
@@ -6243,64 +6402,7 @@ var author$project$Main$boardView = function (state) {
 		}(),
 		index: author$project$Main$selectedBoard(state)
 	};
-	var numCols = state.puzzle.boardColumns;
-	var indexedQuote = A2(elm$core$List$indexedMap, elm$core$Tuple$pair, state.puzzle.quote);
-	var squares = function () {
-		var collect = F2(
-			function (quote, lens) {
-				if (!lens.b) {
-					return _List_Nil;
-				} else {
-					var len = lens.a;
-					var rest = lens.b;
-					return _Utils_ap(
-						A2(
-							elm$core$List$map,
-							function (_n5) {
-								var idx = _n5.a;
-								var mc = _n5.b;
-								return A2(author$project$Main$White, idx, mc);
-							},
-							A2(elm$core$List$take, len, quote)),
-						A2(
-							elm$core$List$cons,
-							author$project$Main$Black,
-							A2(
-								collect,
-								A2(elm$core$List$drop, len, quote),
-								rest)));
-				}
-			});
-		return A2(collect, indexedQuote, state.puzzle.quoteWordLengths);
-	}();
-	var numSquares = elm$core$List$length(squares);
-	var numRows = ((numSquares / numCols) | 0) + ((!(numSquares % numCols)) ? 0 : 1);
-	var numberedSquares = function () {
-		var number = F3(
-			function (idx, count, l) {
-				var row = (count / numCols) | 0;
-				if (!l.b) {
-					return A2(
-						elm$core$List$map,
-						function (col) {
-							return {col: col, row: row, square: author$project$Main$Black};
-						},
-						A2(elm$core$List$range, count % numCols, numCols));
-				} else {
-					var sq = l.a;
-					var rest = l.b;
-					return A2(
-						elm$core$List$cons,
-						{col: count % numCols, row: row, square: sq},
-						A3(
-							number,
-							idx + (_Utils_eq(sq, author$project$Main$Black) ? 0 : 1),
-							count + 1,
-							rest));
-				}
-			});
-		return A3(number, 0, 0, squares);
-	}();
+	var numberedSquares = author$project$Main$boardSquares(state.puzzle);
 	var orderedSquares = function () {
 		var _n1 = A2(
 			elm$core$List$partition,
@@ -6318,6 +6420,9 @@ var author$project$Main$boardView = function (state) {
 		var unselected = _n1.b;
 		return _Utils_ap(unselected, selected);
 	}();
+	var numSquares = elm$core$List$length(numberedSquares);
+	var numCols = state.puzzle.boardColumns;
+	var numRows = ((numSquares / numCols) | 0) + ((!(numSquares % numCols)) ? 0 : 1);
 	var boxWidth = width / numCols;
 	var height = numRows * boxWidth;
 	return A2(
