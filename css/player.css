@@ -2,6 +2,42 @@
     outline: 0px;
 }
 
+#board-wrapper {
+    display: flex;
+    justify-content: space-around;
+}
+
+#board-wrapper svg#board {
+    width: 95vw;
+}
+
+#board-wrapper svg#board .board-square {
+    stroke: black;
+}
+
+#board-wrapper svg#board .board-black {
+    fill: black;
+}
+
+#board-wrapper svg#board .board-white {
+    fill: white;
+}
+
+#board-wrapper svg#board .number {
+    font-size: 2.5pt;
+}
+
+#board-wrapper svg#board .clue-letter {
+    font-size: 2.5pt;
+}
+
+#board-wrapper svg#board .letter {
+    font-size: 6.5pt;
+    font-family: monospace;
+    text-transform: uppercase;
+}
+
+
 #clue-list {
     display: flex;
     flex-direction: column;
