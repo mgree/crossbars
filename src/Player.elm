@@ -21,6 +21,14 @@ import Task
 import Puzzle
 import Util exposing (..)
 
+{- PICK UP HERE
+
+   fix up clue sizing
+
+   support for markdown
+
+ -}
+
 -- TYPES
 
 type alias Flags = Encode.Value
