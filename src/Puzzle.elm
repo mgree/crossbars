@@ -357,11 +357,7 @@ decodeAnswer =
     Decode.map2
         Tuple.pair
         (Decode.field "number" (Decode.nullable Decode.int))
-        (Decode.field "char" (Decode.string |> Decode.andThen
-                           (\s ->
-                                case String.uncons s of
-                                    Just (c, "") -> Decode.succeed c
-                                    _ -> Decode.fail ("expected single character in answer, found '" ++ s ++ "'"))))
+        (Decode.field "char" decodeChar)
 
 decodePhase : Decode.Decoder Phase
 decodePhase =
@@ -423,7 +419,9 @@ type alias Blank =
 encodeBlank : Blank -> Encode.Value
 encodeBlank b =
     Encode.object
-        [ ("quote", Encode.list (Maybe.map String.fromChar >> encodeNullable Encode.string) b.quote)
+        [ ("quote", if List.isEmpty b.quote
+                    then Encode.null
+                    else Encode.list (Maybe.map String.fromChar >> encodeNullable Encode.string) b.quote)
         , ("quoteWordLengths", Encode.list Encode.int b.quoteWordLengths)
         , ("boardColumns", Encode.int b.boardColumns)
         , ("clues", Encode.list encodeBlankClue b.clues)
@@ -435,6 +433,29 @@ encodeBlankClue c =
         [ ("hint", Encode.string c.hint)
         , ("answer", Encode.list Encode.int c.answer)
         ]
+
+decodeBlank : Decode.Decoder Blank
+decodeBlank =
+    Decode.map4
+        (\mQuote quoteWordLengths boardColumns clues ->
+             { quote = case mQuote of
+                           Nothing -> List.repeat (List.sum quoteWordLengths) Nothing
+                           Just quote -> quote
+             , quoteWordLengths = quoteWordLengths
+             , boardColumns = boardColumns
+             , clues = clues
+             })
+        (Decode.field "quote" (Decode.nullable (Decode.list (Decode.nullable decodeChar))))
+        (Decode.field "quoteWordLengths" (Decode.list Decode.int))
+        (Decode.field "boardColumns" Decode.int)
+        (Decode.field "clues" (Decode.list decodeBlankClue))
+
+decodeBlankClue : Decode.Decoder BlankClue
+decodeBlankClue =
+    Decode.map2
+        (\hint answer -> { hint = hint, answer = answer })
+        (Decode.field "hint" Decode.string)
+        (Decode.field "answer" (Decode.list Decode.int))
 
 toBlank : Puzzle -> Blank
 toBlank puzzle =

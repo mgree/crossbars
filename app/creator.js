@@ -3012,7 +3012,7 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 	return {
 		z: func(record.z),
 		aH: record.aH,
-		aC: record.aC
+		aD: record.aD
 	}
 });
 
@@ -3284,7 +3284,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.aH;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.aC) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.aD) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -4577,8 +4577,8 @@ function _Browser_getViewport()
 	return {
 		bn: _Browser_getScene(),
 		by: {
-			as: _Browser_window.pageXOffset,
-			at: _Browser_window.pageYOffset,
+			au: _Browser_window.pageXOffset,
+			av: _Browser_window.pageYOffset,
 			T: _Browser_doc.documentElement.clientWidth,
 			M: _Browser_doc.documentElement.clientHeight
 		}
@@ -4619,8 +4619,8 @@ function _Browser_getViewportOf(id)
 				M: node.scrollHeight
 			},
 			by: {
-				as: node.scrollLeft,
-				at: node.scrollTop,
+				au: node.scrollLeft,
+				av: node.scrollTop,
 				T: node.clientWidth,
 				M: node.clientHeight
 			}
@@ -4654,14 +4654,14 @@ function _Browser_getElement(id)
 		return {
 			bn: _Browser_getScene(),
 			by: {
-				as: x,
-				at: y,
+				au: x,
+				av: y,
 				T: _Browser_doc.documentElement.clientWidth,
 				M: _Browser_doc.documentElement.clientHeight
 			},
 			bJ: {
-				as: x + rect.left,
-				at: y + rect.top,
+				au: x + rect.left,
+				av: y + rect.top,
 				T: rect.width,
 				M: rect.height
 			}
@@ -4795,7 +4795,7 @@ var author$project$Puzzle$empty = {
 	aL: '',
 	W: _List_Nil,
 	w: 0,
-	aD: '',
+	aE: '',
 	C: elm$time$Time$millisToPosix(0),
 	bw: ''
 };
@@ -4811,7 +4811,7 @@ var elm$time$Time$Zone = F2(
 		return {$: 0, a: a, b: b};
 	});
 var elm$time$Time$utc = A2(elm$time$Time$Zone, 0, _List_Nil);
-var author$project$Main$emptyModel = {_: false, B: elm$core$Dict$empty, e: author$project$Puzzle$empty, s: _List_Nil, t: _List_Nil, H: elm$core$Maybe$Nothing, an: elm$core$Maybe$Nothing, ao: 0, aq: elm$time$Time$utc, ar: author$project$Wordlist$empty};
+var author$project$Main$emptyModel = {_: false, B: elm$core$Dict$empty, e: author$project$Puzzle$empty, s: _List_Nil, t: _List_Nil, H: elm$core$Maybe$Nothing, ap: elm$core$Maybe$Nothing, aq: 0, as: elm$time$Time$utc, at: author$project$Wordlist$empty};
 var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
@@ -4821,10 +4821,6 @@ var elm$core$Maybe$Just = function (a) {
 	return {$: 0, a: a};
 };
 var elm$core$String$uncons = _String_uncons;
-var elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
 	function (a, b, c, d) {
@@ -5211,6 +5207,29 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 	});
 var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$string = _Json_decodeString;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var author$project$Util$decodeChar = A2(
+	elm$json$Json$Decode$andThen,
+	function (s) {
+		var _n0 = elm$core$String$uncons(s);
+		if (!_n0.$) {
+			if (_n0.a.b === '') {
+				var _n1 = _n0.a;
+				var c = _n1.a;
+				return elm$json$Json$Decode$succeed(c);
+			} else {
+				return elm$json$Json$Decode$fail('expected single character, found \'' + (s + '\''));
+			}
+		} else {
+			return elm$json$Json$Decode$fail('expected single character, found empty string');
+		}
+	},
+	elm$json$Json$Decode$string);
+var elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var elm$json$Json$Decode$map2 = _Json_map2;
@@ -5225,8 +5244,6 @@ var elm$json$Json$Decode$nullable = function (decoder) {
 				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
 			]));
 };
-var elm$json$Json$Decode$string = _Json_decodeString;
-var elm$json$Json$Decode$succeed = _Json_succeed;
 var author$project$Puzzle$decodeAnswer = A3(
 	elm$json$Json$Decode$map2,
 	elm$core$Tuple$pair,
@@ -5234,22 +5251,7 @@ var author$project$Puzzle$decodeAnswer = A3(
 		elm$json$Json$Decode$field,
 		'number',
 		elm$json$Json$Decode$nullable(elm$json$Json$Decode$int)),
-	A2(
-		elm$json$Json$Decode$field,
-		'char',
-		A2(
-			elm$json$Json$Decode$andThen,
-			function (s) {
-				var _n0 = elm$core$String$uncons(s);
-				if ((!_n0.$) && (_n0.a.b === '')) {
-					var _n1 = _n0.a;
-					var c = _n1.a;
-					return elm$json$Json$Decode$succeed(c);
-				} else {
-					return elm$json$Json$Decode$fail('expected single character in answer, found \'' + (s + '\''));
-				}
-			},
-			elm$json$Json$Decode$string)));
+	A2(elm$json$Json$Decode$field, 'char', author$project$Util$decodeChar));
 var elm$json$Json$Decode$list = _Json_decodeList;
 var elm$json$Json$Decode$map3 = _Json_map3;
 var author$project$Puzzle$decodeClue = A4(
@@ -5286,7 +5288,7 @@ var author$project$Puzzle$decode = A7(
 	elm$json$Json$Decode$map6,
 	F6(
 		function (title, author, quote, clues, phase, timeModified) {
-			return {aL: author, W: clues, w: phase, aD: quote, C: timeModified, bw: title};
+			return {aL: author, W: clues, w: phase, aE: quote, C: timeModified, bw: title};
 		}),
 	A2(elm$json$Json$Decode$field, 'title', elm$json$Json$Decode$string),
 	A2(elm$json$Json$Decode$field, 'author', elm$json$Json$Decode$string),
@@ -5315,7 +5317,7 @@ var author$project$Main$decodeModel = A3(
 		elm$json$Json$Decode$list(author$project$Puzzle$decode)));
 var author$project$Main$wordlists = _List_fromArray(
 	[
-		{ap: 'FreeBSD words list', R: 'words/words.txt'}
+		{ar: 'FreeBSD words list', R: 'words/words.txt'}
 	]);
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
@@ -6324,7 +6326,7 @@ var author$project$Main$subscriptions = function (model) {
 						return A2(
 							elm$http$Http$track,
 							wl.R,
-							author$project$Main$UpdateRecvProgress(wl.ap));
+							author$project$Main$UpdateRecvProgress(wl.ar));
 					},
 					author$project$Main$wordlists))));
 };
@@ -6363,7 +6365,7 @@ var author$project$Main$asSolverStateIn = F2(
 	function (model, solverState) {
 		return _Utils_update(
 			model,
-			{ao: solverState});
+			{aq: solverState});
 	});
 var author$project$Main$clearProgress = F2(
 	function (src, model) {
@@ -6466,7 +6468,7 @@ var author$project$Main$withSolverResult = F2(
 	function (mResult, model) {
 		return _Utils_update(
 			model,
-			{an: mResult});
+			{ap: mResult});
 	});
 var author$project$Puzzle$equal = F2(
 	function (puz1, puz2) {
@@ -6573,9 +6575,9 @@ var author$project$Solver$applySMTNumbering = F2(
 			function (num, newPuz) {
 				return A4(
 					author$project$Puzzle$updateNumbering,
-					num.av,
-					num.ax,
-					elm$core$Maybe$Just(num.aA),
+					num.aw,
+					num.ay,
+					elm$core$Maybe$Just(num.aB),
 					newPuz);
 			});
 		return A3(elm$core$List$foldr, apply, puz, nums);
@@ -6724,7 +6726,7 @@ var author$project$Puzzle$encode = function (puzzle) {
 				elm$json$Json$Encode$string(puzzle.aL)),
 				_Utils_Tuple2(
 				'quote',
-				elm$json$Json$Encode$string(puzzle.aD)),
+				elm$json$Json$Encode$string(puzzle.aE)),
 				_Utils_Tuple2(
 				'clues',
 				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeClue, puzzle.W)),
@@ -6809,7 +6811,7 @@ var author$project$Puzzle$setQuote = F2(
 	function (quote, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{aD: quote});
+			{aE: quote});
 	});
 var author$project$Puzzle$setTimeModified = F2(
 	function (now, puzzle) {
@@ -6869,7 +6871,7 @@ var author$project$Puzzle$quoteIndex = F2(
 			A2(
 				elm$core$List$drop,
 				index,
-				author$project$Util$cleanChars(puzzle.aD)));
+				author$project$Util$cleanChars(puzzle.aE)));
 	});
 var elm$core$List$repeatHelp = F3(
 	function (result, n, value) {
@@ -7038,7 +7040,7 @@ var elm$core$String$slice = _String_slice;
 var elm$core$String$toFloat = _String_toFloat;
 var elm$parser$Parser$Advanced$bumpOffset = F2(
 	function (newOffset, s) {
-		return {ah: s.ah + (newOffset - s.b), c: s.c, d: s.d, b: newOffset, aa: s.aa, a: s.a};
+		return {ai: s.ai + (newOffset - s.b), c: s.c, d: s.d, b: newOffset, aa: s.aa, a: s.a};
 	});
 var elm$parser$Parser$Advanced$chompBase10 = _Parser_chompBase10;
 var elm$core$Basics$negate = function (n) {
@@ -7069,7 +7071,7 @@ var elm$parser$Parser$Advanced$AddRight = F2(
 	});
 var elm$parser$Parser$Advanced$DeadEnd = F4(
 	function (row, col, problem, contextStack) {
-		return {ah: col, bG: contextStack, bb: problem, aa: row};
+		return {ai: col, bG: contextStack, bb: problem, aa: row};
 	});
 var elm$parser$Parser$Advanced$Empty = {$: 0};
 var elm$parser$Parser$Advanced$fromState = F2(
@@ -7077,7 +7079,7 @@ var elm$parser$Parser$Advanced$fromState = F2(
 		return A2(
 			elm$parser$Parser$Advanced$AddRight,
 			elm$parser$Parser$Advanced$Empty,
-			A4(elm$parser$Parser$Advanced$DeadEnd, s.aa, s.ah, x, s.c));
+			A4(elm$parser$Parser$Advanced$DeadEnd, s.aa, s.ai, x, s.c));
 	});
 var elm$parser$Parser$Advanced$finalizeInt = F5(
 	function (invalid, handler, startOffset, _n0, s) {
@@ -7116,7 +7118,7 @@ var elm$parser$Parser$Advanced$finalizeFloat = F6(
 			return A2(
 				elm$parser$Parser$Advanced$Bad,
 				true,
-				A4(elm$parser$Parser$Advanced$fromInfo, s.aa, s.ah - (floatOffset + s.b), invalid, s.c));
+				A4(elm$parser$Parser$Advanced$fromInfo, s.aa, s.ai - (floatOffset + s.b), invalid, s.c));
 		} else {
 			if (_Utils_eq(s.b, floatOffset)) {
 				return A2(
@@ -7228,7 +7230,7 @@ var elm$parser$Parser$Advanced$chompWhileHelp = F5(
 					elm$parser$Parser$Advanced$Good,
 					_Utils_cmp(s0.b, offset) < 0,
 					0,
-					{ah: col, c: s0.c, d: s0.d, b: offset, aa: row, a: s0.a});
+					{ai: col, c: s0.c, d: s0.d, b: offset, aa: row, a: s0.a});
 			} else {
 				if (_Utils_eq(newOffset, -2)) {
 					var $temp$isGood = isGood,
@@ -7260,7 +7262,7 @@ var elm$parser$Parser$Advanced$chompWhileHelp = F5(
 	});
 var elm$parser$Parser$Advanced$chompWhile = function (isGood) {
 	return function (s) {
-		return A5(elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.b, s.aa, s.ah, s);
+		return A5(elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.b, s.aa, s.ai, s);
 	};
 };
 var elm$parser$Parser$Advanced$spaces = elm$parser$Parser$Advanced$chompWhile(
@@ -7287,7 +7289,7 @@ var elm$parser$Parser$Advanced$token = function (_n0) {
 	var expecting = _n0.b;
 	var progress = !elm$core$String$isEmpty(str);
 	return function (s) {
-		var _n1 = A5(elm$parser$Parser$Advanced$isSubString, str, s.b, s.aa, s.ah, s.a);
+		var _n1 = A5(elm$parser$Parser$Advanced$isSubString, str, s.b, s.aa, s.ai, s.a);
 		var newOffset = _n1.a;
 		var newRow = _n1.b;
 		var newCol = _n1.c;
@@ -7298,7 +7300,7 @@ var elm$parser$Parser$Advanced$token = function (_n0) {
 			elm$parser$Parser$Advanced$Good,
 			progress,
 			0,
-			{ah: newCol, c: s.c, d: s.d, b: newOffset, aa: newRow, a: s.a});
+			{ai: newCol, c: s.c, d: s.d, b: newOffset, aa: newRow, a: s.a});
 	};
 };
 var elm$parser$Parser$Advanced$symbol = elm$parser$Parser$Advanced$token;
@@ -7324,7 +7326,7 @@ var author$project$Solver$smtValueParser = A2(
 						elm$parser$Parser$succeed(
 							F3(
 								function (clue, letter, number) {
-									return {av: clue, ax: letter, aA: number};
+									return {aw: clue, ay: letter, aB: number};
 								})),
 						elm$parser$Parser$spaces),
 					elm$parser$Parser$symbol('(')),
@@ -7473,10 +7475,10 @@ var author$project$Solver$smtAnswerParser = elm$parser$Parser$oneOf(
 		]));
 var elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
-		return {ah: col, bb: problem, aa: row};
+		return {ai: col, bb: problem, aa: row};
 	});
 var elm$parser$Parser$problemToDeadEnd = function (p) {
-	return A3(elm$parser$Parser$DeadEnd, p.aa, p.ah, p.bb);
+	return A3(elm$parser$Parser$DeadEnd, p.aa, p.ai, p.bb);
 };
 var elm$parser$Parser$Advanced$bagToList = F2(
 	function (bag, list) {
@@ -7508,7 +7510,7 @@ var elm$parser$Parser$Advanced$run = F2(
 	function (_n0, src) {
 		var parse = _n0;
 		var _n1 = parse(
-			{ah: 1, c: _List_Nil, d: 1, b: 0, aa: 1, a: src});
+			{ai: 1, c: _List_Nil, d: 1, b: 0, aa: 1, a: src});
 		if (!_n1.$) {
 			var value = _n1.b;
 			return elm$core$Result$Ok(value);
@@ -7541,7 +7543,7 @@ var author$project$Solver$decodeSMTResult = A3(
 					elm$parser$Parser$run,
 					author$project$Solver$smtAnswerParser,
 					A2(elm$core$String$join, '\n', stdout)));
-			return {ag: answer, aj: elapsed};
+			return {ag: answer, ak: elapsed};
 		}),
 	A2(elm$json$Json$Decode$field, 'elapsed', elm$json$Json$Decode$int),
 	A2(
@@ -7600,7 +7602,7 @@ var author$project$Puzzle$quoteIndexWords = function (puzzle) {
 						A2(
 							elm$core$List$map,
 							author$project$Util$cleanChars,
-							elm$core$String$words(puzzle.aD)))))));
+							elm$core$String$words(puzzle.aE)))))));
 };
 var author$project$Util$updateCons = F3(
 	function (k, v, d) {
@@ -7636,7 +7638,7 @@ var author$project$Puzzle$quoteIndices = function (puzzle) {
 				function (i, c) {
 					return _Utils_Tuple2(c, i);
 				}),
-			author$project$Util$cleanChars(puzzle.aD)));
+			author$project$Util$cleanChars(puzzle.aE)));
 };
 var author$project$Solver$Distinct = function (a) {
 	return {$: 2, a: a};
@@ -7960,7 +7962,7 @@ var author$project$Solver$generateNumberingProblem = function (puzzle) {
 				author$project$Puzzle$quoteIndices(puzzle),
 				puzzle)));
 };
-var author$project$Solver$missingResult = {ag: author$project$Solver$SMTFailed, aj: 0};
+var author$project$Solver$missingResult = {ag: author$project$Solver$SMTFailed, ak: 0};
 var author$project$Trie$compareEntry = F2(
 	function (e1, e2) {
 		return A2(elm$core$Basics$compare, e1.U, e2.U);
@@ -8013,7 +8015,7 @@ var author$project$Wordlist$fromSourceStrings = F2(
 				function (word) {
 					return {
 						bI: '',
-						ap: source,
+						ar: source,
 						R: '',
 						U: elm$core$String$toUpper(word)
 					};
@@ -8276,7 +8278,7 @@ var author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{aq: here}),
+						{as: here}),
 					elm$core$Platform$Cmd$none);
 			case 20:
 				if (msg.b.$ === 1) {
@@ -8290,7 +8292,7 @@ var author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								ar: A2(author$project$Wordlist$load, wl.ap, words)
+								at: A2(author$project$Wordlist$load, wl.ar, words)
 							}),
 						elm$core$Platform$Cmd$none);
 				}
@@ -9276,7 +9278,7 @@ var author$project$Main$boardToSVG = F3(
 			A2(
 				elm$core$List$filter,
 				A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$String$isEmpty),
-				elm$core$String$words(puzzle.aD)));
+				elm$core$String$words(puzzle.aE)));
 		var quoteText = elm$core$String$toList(
 			A2(elm$core$String$join, ' ', quoteWords));
 		var numberedQuoteText = function () {
@@ -9287,7 +9289,7 @@ var author$project$Main$boardToSVG = F3(
 						return A2(
 							elm$core$List$map,
 							function (col) {
-								return {K: ' ', ah: col, O: -1, aa: row};
+								return {K: ' ', ai: col, O: -1, aa: row};
 							},
 							A2(elm$core$List$range, count % numCols, numCols - 1));
 					} else {
@@ -9295,7 +9297,7 @@ var author$project$Main$boardToSVG = F3(
 						var rest = l.b;
 						var square = {
 							K: c,
-							ah: count % numCols,
+							ai: count % numCols,
 							O: (c === ' ') ? (-1) : idx,
 							aa: row
 						};
@@ -9319,7 +9321,7 @@ var author$project$Main$boardToSVG = F3(
 			elm$core$List$map,
 			function (square) {
 				var y = square.aa * boxWidth;
-				var x = square.ah * boxWidth;
+				var x = square.ai * boxWidth;
 				var usedIn = elm$core$Set$toList(
 					elm$core$Set$fromList(
 						A2(
@@ -9978,7 +9980,7 @@ var author$project$Main$view = function (model) {
 	var qIndexWords = author$project$Puzzle$quoteIndexWords(puzzle);
 	var qIndices = author$project$Puzzle$quoteIndices(puzzle);
 	var quoteFixed = puzzle.w;
-	var quoteHist = author$project$Hist$fromString(puzzle.aD);
+	var quoteHist = author$project$Hist$fromString(puzzle.aE);
 	var initials = author$project$Puzzle$initialism(puzzle);
 	var initialismHist = author$project$Hist$fromString(initials);
 	var missingHist = A2(author$project$Hist$difference, quoteHist, initialismHist);
@@ -10243,7 +10245,7 @@ var author$project$Main$view = function (model) {
 																_List_fromArray(
 																	[
 																		elm$html$Html$text(
-																		A2(author$project$Puzzle$description, model.aq, savedPuzzle))
+																		A2(author$project$Puzzle$description, model.as, savedPuzzle))
 																	]));
 														}),
 													model.s))),
@@ -10315,7 +10317,7 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$Attributes$rows(6),
 								elm$html$Html$Attributes$cols(60),
 								A2(elm$html$Html$Attributes$attribute, 'autocapitalize', 'character'),
-								elm$html$Html$Attributes$value(puzzle.aD)
+								elm$html$Html$Attributes$value(puzzle.aE)
 							]),
 						_List_Nil),
 						A2(
@@ -10393,7 +10395,7 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text(
 								function () {
-									var _n2 = model.ao;
+									var _n2 = model.aq;
 									switch (_n2) {
 										case 0:
 											return 'Numbering solver not loaded';
@@ -10418,23 +10420,23 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text(
 								function () {
-									var _n3 = model.an;
+									var _n3 = model.ap;
 									if (_n3.$ === 1) {
 										return '';
 									} else {
 										var result = _n3.a;
 										var time = function () {
-											if (result.aj >= 1000) {
-												var ss = elm$core$String$fromInt((result.aj / 1000) | 0);
+											if (result.ak >= 1000) {
+												var ss = elm$core$String$fromInt((result.ak / 1000) | 0);
 												var ms = A3(
 													elm$core$String$padLeft,
 													3,
 													'0',
 													elm$core$String$fromInt(
-														A2(elm$core$Basics$modBy, 1000, result.aj)));
+														A2(elm$core$Basics$modBy, 1000, result.ak)));
 												return ss + ('.' + (ms + 's'));
 											} else {
-												return elm$core$String$fromInt(result.aj) + 'ms';
+												return elm$core$String$fromInt(result.ak) + 'ms';
 											}
 										}();
 										var _n4 = result.ag;
@@ -10605,7 +10607,7 @@ var author$project$Main$view = function (model) {
 												])),
 										A2(
 											elm$core$List$map,
-											A4(elm$html$Html$Lazy$lazy4, author$project$Main$anagramAssistance, puzzle, model.ar, remainingHist),
+											A4(elm$html$Html$Lazy$lazy4, author$project$Main$anagramAssistance, puzzle, model.at, remainingHist),
 											model.t)))
 								]);
 						default:

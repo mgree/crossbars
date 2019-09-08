@@ -2,8 +2,8 @@ module Util exposing (..)
 
 import Dict exposing (Dict)
 
-import Json.Encode
-import Json.Decode
+import Json.Encode as Encode
+import Json.Decode as Decode
 
 import Parser exposing (Parser, (|.), (|=), succeed, spaces)
 
@@ -24,11 +24,21 @@ cleanString s =
 cleanChars : String -> List Char
 cleanChars s = s |> cleanString |> String.toList
 
-encodeNullable : (a -> Json.Encode.Value) -> Maybe a -> Json.Encode.Value
+encodeNullable : (a -> Encode.Value) -> Maybe a -> Encode.Value
 encodeNullable encode ma =
     case ma of
-        Nothing -> Json.Encode.null
+        Nothing -> Encode.null
         Just a -> encode a
+
+decodeChar : Decode.Decoder Char
+decodeChar = 
+    Decode.string |> 
+    Decode.andThen
+        (\s ->
+             case String.uncons s of
+                 Just (c, "") -> Decode.succeed c
+                 Nothing -> Decode.fail "expected single character, found empty string"
+                 _ -> Decode.fail ("expected single character, found '" ++ s ++ "'"))
 
 addIndex : List a -> List (Int, a)
 addIndex l = List.indexedMap Tuple.pair l
