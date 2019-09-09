@@ -12,15 +12,17 @@ import Puzzle exposing (Puzzle)
 
 suite : Test
 suite =
-    describe "Puzzle JSON encoder"
-        [ test "empty puzzle round trips" <|
-              \_ ->
-                  roundTrip Puzzle.empty
-        , fuzz fuzzPuzzle "round trips" roundTrip
-        , test "empty puzzle blank round trips" <|
-              \_ ->
-                  blankRoundTrip (Puzzle.toBlank Puzzle.empty)
-        , fuzz fuzzPuzzle "blank round trips" (Puzzle.toBlank >> blankRoundTrip)
+    Test.concat
+        [ describe "Puzzle JSON encoder"
+            [ test "empty puzzle round trips" <|
+                  \_ ->
+                      roundTrip Puzzle.empty
+            , fuzz fuzzPuzzle "round trips" roundTrip
+            , test "empty puzzle blank round trips" <|
+                \_ ->
+                    blankRoundTrip (Puzzle.toBlank Puzzle.empty)
+            , fuzz fuzzPuzzle "blank round trips" (Puzzle.toBlank >> blankRoundTrip)
+            ]
         ]
 
 roundTrip : Puzzle -> Expectation

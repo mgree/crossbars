@@ -33,9 +33,6 @@ import Util exposing (..)
      JSON file (upload, URL?)
      uuencoded (from URL, copy/paste?)
 
-   NITS
-
-    spacebar behavior?
  -}
 
 -- TYPES
@@ -47,19 +44,29 @@ type Direction = Left
                | Right
                | Down
 
-type Msg = SetCursor (Maybe Char) (Maybe Direction)
-         | SwapCursor
-         | MoveCursor Direction
-         | SelectIndex Cursor
-         | Focused (Result Browser.Dom.Error ())
+type Msg = 
+  {- navigation and editing -}
+    SetCursor (Maybe Char) (Maybe Direction)
+  | SwapCursor
+  | MoveCursor Direction
+  | SelectIndex Cursor
+
+  {- saving and loading -}
+  | LoadPuzzle Encode.Value
+
+  {- UI business -}
+  | Focused (Result Browser.Dom.Error ())
 
 type Cursor = Board Int
             | Clues Int Int
 
+defaultCursor : Cursor
+defaultCursor = Clues 0 0
+
 type alias Clue = Puzzle.BlankClue
 type alias Puzzle = Puzzle.Blank
 
-type Model = NoPuzzle
+type Model = NoPuzzle (Maybe String)
            | Playing State
 
 type alias State = 
@@ -68,7 +75,7 @@ type alias State =
     }
 
 defaultModel : Model
-defaultModel = NoPuzzle
+defaultModel = NoPuzzle Nothing
 
 testModel : Model
 testModel = Playing { cursor = Clues 0 0 
@@ -211,7 +218,7 @@ main = Browser.element
 
 init : Flags -> (Model, Cmd Msg)
 init savedModel =
-    ( testModel
+    ( defaultModel
     , Task.attempt Focused (Browser.Dom.focus "crossbars-wrapper")
     )
 
@@ -222,7 +229,7 @@ msgOfKey =
              let keyDesc = (if ctrl then "C-" else "") ++ 
                            (if meta then "M-" else "") ++ 
                            (if alt  then "A-" else "") ++ 
-                           key
+                           (key |> Debug.log "key")
              in
                  case (alt || ctrl || meta, String.uncons key, key) of
                      (modified, Just (c, ""), _) ->
@@ -230,6 +237,8 @@ msgOfKey =
                          then Ok <| SetCursor Nothing Nothing
                          else if not modified && Char.isAlphaNum c
                          then Ok <| SetCursor (Just <| Char.toUpper c) (Just Right)
+                         else if not modified && c == ' '
+                         then Ok <| SetCursor Nothing Nothing
                          else Err keyDesc
                      (False, _, "Tab") -> Ok SwapCursor
                      (False, _, "Backspace") -> Ok <| SetCursor Nothing (Just Left)
@@ -258,42 +267,61 @@ subscriptions model = Sub.none
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case model of
-        NoPuzzle -> ( model
+    case (model, msg) of
+        (_, LoadPuzzle json) ->
+            case Decode.decodeValue Puzzle.blankDecoder json of
+                Err err ->
+                    ( NoPuzzle (Just ("Couldn't load puzzle: " ++ Decode.errorToString err))
                     , Cmd.none)
-        Playing state ->
-            case msg of
-                SetCursor mc mdir -> 
-                    ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
-                      Puzzle.asQuoteIn state.puzzle |>
-                      asPuzzleIn state |>
-                      (case mdir of
-                           Nothing -> identity
-                           Just dir -> moveCursor dir) |>
-                      Playing
-                    , Cmd.none)
-                                   
-                SwapCursor -> 
-                    ( state |>
-                      swapCursor |>
-                      Playing
-                    , Cmd.none)
-                              
-                MoveCursor dir -> 
-                    ( state |>
-                      moveCursor dir |>
-                      Playing
-                    , Cmd.none)
-     
-                SelectIndex cursor -> 
-                    ( state |>
-                      withCursor cursor |>
-                      Playing
-                    , Cmd.none)
+                    
+                Ok puzzle ->
+                    case Puzzle.isValidBlank puzzle of
+                        [] -> ( Playing { cursor = defaultCursor
+                                        , puzzle = puzzle 
+                                        }
+                              , Cmd.none)
+                        problems -> 
+                            ( NoPuzzle 
+                                  (Just ("Invalid puzzle: " ++ 
+                                         String.join ", " 
+                                             (List.map Puzzle.problemToString problems)))
+                            , Cmd.none)
 
-                Focused _ -> ( state |>
-                               Playing {- FIXME warning that keyboard controls won't work -}
-                             , Cmd.none)
+        (_, Focused _) -> 
+            ( model {- FIXME warning that keyboard controls won't work -}
+            , Cmd.none)
+
+        (NoPuzzle _, _) -> 
+            ( model
+            , Cmd.none)
+
+        (Playing state, SetCursor mc mdir) -> 
+            ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
+              Puzzle.asQuoteIn state.puzzle |>
+              asPuzzleIn state |>
+              (case mdir of
+                   Nothing -> identity
+                   Just dir -> moveCursor dir) |>
+              Playing
+            , Cmd.none)
+                               
+        (Playing state, SwapCursor) -> 
+            ( state |>
+              swapCursor |>
+              Playing
+            , Cmd.none)
+                          
+        (Playing state, MoveCursor dir) -> 
+            ( state |>
+              moveCursor dir |>
+              Playing
+            , Cmd.none)
+     
+        (Playing state, SelectIndex cursor) -> 
+            ( state |>
+              withCursor cursor |>
+              Playing
+            , Cmd.none)
 
 -- VIEW
 
@@ -307,7 +335,15 @@ view model =
            [ h3 [class "header"] [text "Crossbars — Acrostic Player"]
            ]
         :: case model of
-               NoPuzzle -> [ text "No puzzle loaded... 😦" ]
+               NoPuzzle msg -> [ input [ type_ "button"
+                                       , onClick (LoadPuzzle (Puzzle.encodeBlank wcw))
+                                       , value "Load testing puzzle" 
+                                       ]
+                                     [ ]
+                               , case msg of
+                                     Nothing -> span [] []
+                                     Just err -> span [class "warning"] [text err]
+                               ]
                Playing state -> playingView state
         )
 
@@ -329,7 +365,7 @@ playingView state =
             [ span [] [text "TAB - switch between board and clues"]
             , span [] [text "ARROW KEYS - navigate"]
             , span [] [text "BACKSPACE - delete current entry (and move back one)"]
-            , span [] [text "DELETE, Ctrl-D - delete currentry (and do not move)"]
+            , span [] [text "DELETE, Ctrl-D, SPACEBAR - delete currentry (and do not move)"]
             ]
         ]
     ]

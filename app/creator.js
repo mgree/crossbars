@@ -77,7 +77,7 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
   return fun.a === 9 ? fun.f(a, b, c, d, e, f, g, h, i) : fun(a)(b)(c)(d)(e)(f)(g)(h)(i);
 }
 
-
+console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.0/optimize for better performance and smaller assets.');
 
 
 var _JsArray_empty = [];
@@ -234,12 +234,12 @@ var _JsArray_appendN = F3(function(n, dest, source)
 
 // LOG
 
-var _Debug_log = F2(function(tag, value)
+var _Debug_log_UNUSED = F2(function(tag, value)
 {
 	return value;
 });
 
-var _Debug_log_UNUSED = F2(function(tag, value)
+var _Debug_log = F2(function(tag, value)
 {
 	console.log(tag + ': ' + _Debug_toString(value));
 	return value;
@@ -265,12 +265,12 @@ function _Debug_todoCase(moduleName, region, value)
 
 // TO STRING
 
-function _Debug_toString(value)
+function _Debug_toString_UNUSED(value)
 {
 	return '<internals>';
 }
 
-function _Debug_toString_UNUSED(value)
+function _Debug_toString(value)
 {
 	return _Debug_toAnsiString(false, value);
 }
@@ -455,13 +455,13 @@ function _Debug_toHexDigit(n)
 // CRASH
 
 
-function _Debug_crash(identifier)
+function _Debug_crash_UNUSED(identifier)
 {
 	throw new Error('https://github.com/elm/core/blob/1.0.0/hints/' + identifier + '.md');
 }
 
 
-function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
+function _Debug_crash(identifier, fact1, fact2, fact3, fact4)
 {
 	switch(identifier)
 	{
@@ -519,11 +519,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.aG.X === region.aR.X)
+	if (region.start.line === region.end.line)
 	{
-		return 'on line ' + region.aG.X;
+		return 'on line ' + region.start.line;
 	}
-	return 'on lines ' + region.aG.X + ' through ' + region.aR.X;
+	return 'on lines ' + region.start.line + ' through ' + region.end.line;
 }
 
 
@@ -561,7 +561,7 @@ function _Utils_eqHelp(x, y, depth, stack)
 		return false;
 	}
 
-	/**_UNUSED/
+	/**/
 	if (x.$ === 'Set_elm_builtin')
 	{
 		x = elm$core$Set$toList(x);
@@ -574,7 +574,7 @@ function _Utils_eqHelp(x, y, depth, stack)
 	}
 	//*/
 
-	/**/
+	/**_UNUSED/
 	if (x.$ < 0)
 	{
 		x = elm$core$Dict$toList(x);
@@ -609,7 +609,7 @@ function _Utils_cmp(x, y, ord)
 		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
 	}
 
-	/**_UNUSED/
+	/**/
 	if (x instanceof String)
 	{
 		var a = x.valueOf();
@@ -618,10 +618,10 @@ function _Utils_cmp(x, y, ord)
 	}
 	//*/
 
-	/**/
+	/**_UNUSED/
 	if (typeof x.$ === 'undefined')
 	//*/
-	/**_UNUSED/
+	/**/
 	if (x.$[0] === '#')
 	//*/
 	{
@@ -651,17 +651,17 @@ var _Utils_compare = F2(function(x, y)
 
 // COMMON VALUES
 
-var _Utils_Tuple0 = 0;
-var _Utils_Tuple0_UNUSED = { $: '#0' };
+var _Utils_Tuple0_UNUSED = 0;
+var _Utils_Tuple0 = { $: '#0' };
 
-function _Utils_Tuple2(a, b) { return { a: a, b: b }; }
-function _Utils_Tuple2_UNUSED(a, b) { return { $: '#2', a: a, b: b }; }
+function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
+function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
 
-function _Utils_Tuple3(a, b, c) { return { a: a, b: b, c: c }; }
-function _Utils_Tuple3_UNUSED(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
+function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
+function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
 
-function _Utils_chr(c) { return c; }
-function _Utils_chr_UNUSED(c) { return new String(c); }
+function _Utils_chr_UNUSED(c) { return c; }
+function _Utils_chr(c) { return new String(c); }
 
 
 // RECORDS
@@ -712,11 +712,11 @@ function _Utils_ap(xs, ys)
 
 
 
-var _List_Nil = { $: 0 };
-var _List_Nil_UNUSED = { $: '[]' };
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
 
-function _List_Cons(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons_UNUSED(hd, tl) { return { $: '::', a: hd, b: tl }; }
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
 
 
 var _List_cons = F2(_List_Cons);
@@ -1212,7 +1212,7 @@ function _Char_toLocaleLower(char)
 
 
 
-/**_UNUSED/
+/**/
 function _Json_errorToString(error)
 {
 	return elm$json$Json$Decode$errorToString(error);
@@ -1616,11 +1616,11 @@ var _Json_encode = F2(function(indentLevel, value)
 	return JSON.stringify(_Json_unwrap(value), null, indentLevel) + '';
 });
 
-function _Json_wrap_UNUSED(value) { return { $: 0, a: value }; }
-function _Json_unwrap_UNUSED(value) { return value.a; }
+function _Json_wrap(value) { return { $: 0, a: value }; }
+function _Json_unwrap(value) { return value.a; }
 
-function _Json_wrap(value) { return value; }
-function _Json_unwrap(value) { return value; }
+function _Json_wrap_UNUSED(value) { return value; }
+function _Json_unwrap_UNUSED(value) { return value; }
 
 function _Json_emptyArray() { return []; }
 function _Json_emptyObject() { return {}; }
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.bW,
-		impl.cp,
-		impl.ci,
+		impl.init,
+		impl.update,
+		impl.subscriptions,
 		function() { return function() {} }
 	);
 });
@@ -1872,7 +1872,7 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 function _Platform_initialize(flagDecoder, args, init, update, subscriptions, stepperBuilder)
 {
 	var result = A2(_Json_run, flagDecoder, _Json_wrap(args ? args['flags'] : undefined));
-	elm$core$Result$isOk(result) || _Debug_crash(2 /**_UNUSED/, _Json_errorToString(result.a) /**/);
+	elm$core$Result$isOk(result) || _Debug_crash(2 /**/, _Json_errorToString(result.a) /**/);
 	var managers = {};
 	result = init(result.a);
 	var model = result.a;
@@ -2271,7 +2271,7 @@ function _Platform_setupIncomingPort(name, sendToApp)
 //
 
 
-function _Platform_export(exports)
+function _Platform_export_UNUSED(exports)
 {
 	scope['Elm']
 		? _Platform_mergeExportsProd(scope['Elm'], exports)
@@ -2292,7 +2292,7 @@ function _Platform_mergeExportsProd(obj, exports)
 }
 
 
-function _Platform_export_UNUSED(exports)
+function _Platform_export(exports)
 {
 	scope['Elm']
 		? _Platform_mergeExportsDebug('Elm', scope['Elm'], exports)
@@ -2321,25 +2321,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.bL.a(response)));
+			callback(toTask(request.expect.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done(elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done(elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.bL.b, xhr)); });
-		elm$core$Maybe$isJust(request.co) && _Http_track(router, xhr, request.co.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.expect.b, xhr)); });
+		elm$core$Maybe$isJust(request.tracker) && _Http_track(router, xhr, request.tracker.a);
 
 		try {
-			xhr.open(request.bY, request.R, true);
+			xhr.open(request.method, request.url, true);
 		} catch (e) {
-			return done(elm$http$Http$BadUrl_(request.R));
+			return done(elm$http$Http$BadUrl_(request.url));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.bC.a && xhr.setRequestHeader('Content-Type', request.bC.a);
-		xhr.send(request.bC.b);
+		request.body.a && xhr.setRequestHeader('Content-Type', request.body.a);
+		xhr.send(request.body.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -2350,13 +2350,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.bT; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.headers; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.cn.a || 0;
-	xhr.responseType = request.bL.d;
-	xhr.withCredentials = request.J;
+	xhr.timeout = request.timeout.a || 0;
+	xhr.responseType = request.expect.d;
+	xhr.withCredentials = request.allowCookiesFromOtherDomains;
 }
 
 
@@ -2377,10 +2377,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		R: xhr.responseURL,
-		br: xhr.status,
-		ch: xhr.statusText,
-		bT: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		url: xhr.responseURL,
+		statusCode: xhr.status,
+		statusText: xhr.statusText,
+		headers: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -2475,15 +2475,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Sending({
-			ce: event.loaded,
-			aF: event.total
+			sent: event.loaded,
+			size: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Receiving({
-			cb: event.loaded,
-			aF: event.lengthComputable ? elm$core$Maybe$Just(event.total) : elm$core$Maybe$Nothing
+			received: event.loaded,
+			size: event.lengthComputable ? elm$core$Maybe$Just(event.total) : elm$core$Maybe$Nothing
 		}))));
 	});
 }
@@ -2683,10 +2683,10 @@ var _VirtualDom_init = F4(function(virtualNode, flagDecoder, debugMetadata, args
 {
 	// NOTE: this function needs _Platform_export available to work
 
-	/**/
+	/**_UNUSED/
 	var node = args['node'];
 	//*/
-	/**_UNUSED/
+	/**/
 	var node = args && args['node'] ? args['node'] : _Debug_crash(0);
 	//*/
 
@@ -2941,24 +2941,24 @@ function _VirtualDom_noInnerHtmlOrFormAction(key)
 	return key == 'innerHTML' || key == 'formAction' ? 'data-' + key : key;
 }
 
-function _VirtualDom_noJavaScriptUri(value)
+function _VirtualDom_noJavaScriptUri_UNUSED(value)
 {
 	return /^javascript:/i.test(value.replace(/\s/g,'')) ? '' : value;
 }
 
-function _VirtualDom_noJavaScriptUri_UNUSED(value)
+function _VirtualDom_noJavaScriptUri(value)
 {
 	return /^javascript:/i.test(value.replace(/\s/g,''))
 		? 'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'
 		: value;
 }
 
-function _VirtualDom_noJavaScriptOrHtmlUri(value)
+function _VirtualDom_noJavaScriptOrHtmlUri_UNUSED(value)
 {
 	return /^\s*(javascript:|data:text\/html)/i.test(value) ? '' : value;
 }
 
-function _VirtualDom_noJavaScriptOrHtmlUri_UNUSED(value)
+function _VirtualDom_noJavaScriptOrHtmlUri(value)
 {
 	return /^\s*(javascript:|data:text\/html)/i.test(value)
 		? 'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'
@@ -3010,9 +3010,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		z: func(record.z),
-		aH: record.aH,
-		aD: record.aD
+		message: func(record.message),
+		stopPropagation: record.stopPropagation,
+		preventDefault: record.preventDefault
 	}
 });
 
@@ -3280,11 +3280,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.z;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.aH;
+		var message = !tag ? value : tag < 3 ? value.a : value.message;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.stopPropagation;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.aD) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.preventDefault) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -4271,15 +4271,15 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.bW,
-		impl.cp,
-		impl.ci,
+		impl.init,
+		impl.update,
+		impl.subscriptions,
 		function(sendToApp, initialModel) {
-			var view = impl.cq;
-			/**/
+			var view = impl.view;
+			/**_UNUSED/
 			var domNode = args['node'];
 			//*/
-			/**_UNUSED/
+			/**/
 			var domNode = args && args['node'] ? args['node'] : _Debug_crash(0);
 			//*/
 			var currNode = _VirtualDom_virtualize(domNode);
@@ -4307,12 +4307,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.bW,
-		impl.cp,
-		impl.ci,
+		impl.init,
+		impl.update,
+		impl.subscriptions,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.ab && impl.ab(sendToApp)
-			var view = impl.cq;
+			var divertHrefToApp = impl.setup && impl.setup(sendToApp)
+			var view = impl.view;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4320,12 +4320,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.bC);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.body);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.bw) && (_VirtualDom_doc.title = title = doc.bw);
+				(title !== doc.title) && (_VirtualDom_doc.title = title = doc.title);
 			});
 		}
 	);
@@ -4381,12 +4381,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.b7;
-	var onUrlRequest = impl.b8;
+	var onUrlChange = impl.onUrlChange;
+	var onUrlRequest = impl.onUrlRequest;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		ab: function(sendToApp)
+		setup: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4402,9 +4402,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.be === next.be
-							&& curr.a_ === next.a_
-							&& curr.ba.a === next.ba.a
+							&& curr.protocol === next.protocol
+							&& curr.host === next.host
+							&& curr.port_.a === next.port_.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4412,13 +4412,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		bW: function(flags)
+		init: function(flags)
 		{
-			return A3(impl.bW, flags, _Browser_getUrl(), key);
+			return A3(impl.init, flags, _Browser_getUrl(), key);
 		},
-		cq: impl.cq,
-		cp: impl.cp,
-		ci: impl.ci
+		view: impl.view,
+		update: impl.update,
+		subscriptions: impl.subscriptions
 	});
 }
 
@@ -4484,17 +4484,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { bU: 'hidden', bE: 'visibilitychange' }
+		? { hidden: 'hidden', change: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { bU: 'mozHidden', bE: 'mozvisibilitychange' }
+		? { hidden: 'mozHidden', change: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { bU: 'msHidden', bE: 'msvisibilitychange' }
+		? { hidden: 'msHidden', change: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { bU: 'webkitHidden', bE: 'webkitvisibilitychange' }
-		: { bU: 'hidden', bE: 'visibilitychange' };
+		? { hidden: 'webkitHidden', change: 'webkitvisibilitychange' }
+		: { hidden: 'hidden', change: 'visibilitychange' };
 }
 
 
@@ -4575,12 +4575,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		bn: _Browser_getScene(),
-		by: {
-			au: _Browser_window.pageXOffset,
-			av: _Browser_window.pageYOffset,
-			T: _Browser_doc.documentElement.clientWidth,
-			M: _Browser_doc.documentElement.clientHeight
+		scene: _Browser_getScene(),
+		viewport: {
+			x: _Browser_window.pageXOffset,
+			y: _Browser_window.pageYOffset,
+			width: _Browser_doc.documentElement.clientWidth,
+			height: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4590,8 +4590,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		T: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		M: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		width: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		height: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4614,15 +4614,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			bn: {
-				T: node.scrollWidth,
-				M: node.scrollHeight
+			scene: {
+				width: node.scrollWidth,
+				height: node.scrollHeight
 			},
-			by: {
-				au: node.scrollLeft,
-				av: node.scrollTop,
-				T: node.clientWidth,
-				M: node.clientHeight
+			viewport: {
+				x: node.scrollLeft,
+				y: node.scrollTop,
+				width: node.clientWidth,
+				height: node.clientHeight
 			}
 		};
 	});
@@ -4652,18 +4652,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			bn: _Browser_getScene(),
-			by: {
-				au: x,
-				av: y,
-				T: _Browser_doc.documentElement.clientWidth,
-				M: _Browser_doc.documentElement.clientHeight
+			scene: _Browser_getScene(),
+			viewport: {
+				x: x,
+				y: y,
+				width: _Browser_doc.documentElement.clientWidth,
+				height: _Browser_doc.documentElement.clientHeight
 			},
-			bJ: {
-				au: x + rect.left,
-				av: y + rect.top,
-				T: rect.width,
-				M: rect.height
+			element: {
+				x: x + rect.left,
+				y: y + rect.top,
+				width: rect.width,
+				height: rect.height
 			}
 		};
 	});
@@ -4700,14 +4700,14 @@ function _Browser_load(url)
 }
 var author$project$Main$GotWordlist = F2(
 	function (a, b) {
-		return {$: 20, a: a, b: b};
+		return {$: 'GotWordlist', a: a, b: b};
 	});
 var author$project$Main$TimeZone = function (a) {
-	return {$: 19, a: a};
+	return {$: 'TimeZone', a: a};
 };
-var author$project$Puzzle$QuoteEntry = 0;
-var elm$core$Basics$EQ = 1;
-var elm$core$Basics$LT = 0;
+var author$project$Puzzle$QuoteEntry = {$: 'QuoteEntry'};
+var elm$core$Basics$EQ = {$: 'EQ'};
+var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
 var elm$core$Array$foldr = F3(
 	function (func, baseCase, _n0) {
@@ -4715,7 +4715,7 @@ var elm$core$Array$foldr = F3(
 		var tail = _n0.d;
 		var helper = F2(
 			function (node, acc) {
-				if (!node.$) {
+				if (node.$ === 'SubTree') {
 					var subTree = node.a;
 					return A3(elm$core$Elm$JsArray$foldr, helper, acc, subTree);
 				} else {
@@ -4733,12 +4733,12 @@ var elm$core$List$cons = _List_cons;
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
 };
-var elm$core$Basics$GT = 2;
+var elm$core$Basics$GT = {$: 'GT'};
 var elm$core$Dict$foldr = F3(
 	function (func, acc, t) {
 		foldr:
 		while (true) {
-			if (t.$ === -2) {
+			if (t.$ === 'RBEmpty_elm_builtin') {
 				return acc;
 			} else {
 				var key = t.b;
@@ -4783,48 +4783,50 @@ var elm$core$Dict$keys = function (dict) {
 		dict);
 };
 var elm$core$Set$toList = function (_n0) {
-	var dict = _n0;
+	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
 var elm$core$Basics$identity = function (x) {
 	return x;
 };
-var elm$time$Time$Posix = elm$core$Basics$identity;
-var elm$time$Time$millisToPosix = elm$core$Basics$identity;
-var author$project$Puzzle$empty = {
-	aL: '',
-	W: _List_Nil,
-	w: 0,
-	aE: '',
-	C: elm$time$Time$millisToPosix(0),
-	bw: ''
+var elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
 };
-var author$project$SMT$SolverUnloaded = 0;
-var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
+var elm$time$Time$millisToPosix = elm$time$Time$Posix;
+var author$project$Puzzle$empty = {
+	author: '',
+	clues: _List_Nil,
+	phase: author$project$Puzzle$QuoteEntry,
+	quote: '',
+	timeModified: elm$time$Time$millisToPosix(0),
+	title: ''
+};
+var author$project$SMT$SolverUnloaded = {$: 'SolverUnloaded'};
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
 var author$project$Trie$empty = elm$core$Dict$empty;
 var author$project$Wordlist$empty = author$project$Trie$empty;
-var elm$core$Basics$False = 1;
-var elm$core$Maybe$Nothing = {$: 1};
+var elm$core$Basics$False = {$: 'False'};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$time$Time$Zone = F2(
 	function (a, b) {
-		return {$: 0, a: a, b: b};
+		return {$: 'Zone', a: a, b: b};
 	});
 var elm$time$Time$utc = A2(elm$time$Time$Zone, 0, _List_Nil);
-var author$project$Main$emptyModel = {_: false, B: elm$core$Dict$empty, e: author$project$Puzzle$empty, s: _List_Nil, t: _List_Nil, H: elm$core$Maybe$Nothing, ap: elm$core$Maybe$Nothing, aq: 0, as: elm$time$Time$utc, at: author$project$Wordlist$empty};
+var author$project$Main$emptyModel = {pendingDelete: false, progressBars: elm$core$Dict$empty, puzzle: author$project$Puzzle$empty, savedPuzzles: _List_Nil, selectedClues: _List_Nil, selectedPuzzle: elm$core$Maybe$Nothing, solverResult: elm$core$Maybe$Nothing, solverState: author$project$SMT$SolverUnloaded, timeZone: elm$time$Time$utc, wordlist: author$project$Wordlist$empty};
 var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
 	});
 var elm$core$Basics$append = _Utils_append;
 var elm$core$Maybe$Just = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Just', a: a};
 };
 var elm$core$String$uncons = _String_uncons;
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
 	function (a, b, c, d) {
-		return {$: 0, a: a, b: b, c: c, d: d};
+		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
 	});
 var elm$core$Basics$ceiling = _Basics_ceiling;
 var elm$core$Basics$fdiv = _Basics_fdiv;
@@ -4838,10 +4840,10 @@ var elm$core$Array$shiftStep = elm$core$Basics$ceiling(
 var elm$core$Elm$JsArray$empty = _JsArray_empty;
 var elm$core$Array$empty = A4(elm$core$Array$Array_elm_builtin, 0, elm$core$Array$shiftStep, elm$core$Elm$JsArray$empty, elm$core$Elm$JsArray$empty);
 var elm$core$Array$Leaf = function (a) {
-	return {$: 1, a: a};
+	return {$: 'Leaf', a: a};
 };
 var elm$core$Array$SubTree = function (a) {
-	return {$: 0, a: a};
+	return {$: 'SubTree', a: a};
 };
 var elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
 var elm$core$List$foldl = F3(
@@ -4925,25 +4927,25 @@ var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Elm$JsArray$length = _JsArray_length;
 var elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
-		if (!builder.g) {
+		if (!builder.nodeListSize) {
 			return A4(
 				elm$core$Array$Array_elm_builtin,
-				elm$core$Elm$JsArray$length(builder.i),
+				elm$core$Elm$JsArray$length(builder.tail),
 				elm$core$Array$shiftStep,
 				elm$core$Elm$JsArray$empty,
-				builder.i);
+				builder.tail);
 		} else {
-			var treeLen = builder.g * elm$core$Array$branchFactor;
+			var treeLen = builder.nodeListSize * elm$core$Array$branchFactor;
 			var depth = elm$core$Basics$floor(
 				A2(elm$core$Basics$logBase, elm$core$Array$branchFactor, treeLen - 1));
-			var correctNodeList = reverseNodeList ? elm$core$List$reverse(builder.j) : builder.j;
-			var tree = A2(elm$core$Array$treeFromBuilder, correctNodeList, builder.g);
+			var correctNodeList = reverseNodeList ? elm$core$List$reverse(builder.nodeList) : builder.nodeList;
+			var tree = A2(elm$core$Array$treeFromBuilder, correctNodeList, builder.nodeListSize);
 			return A4(
 				elm$core$Array$Array_elm_builtin,
-				elm$core$Elm$JsArray$length(builder.i) + treeLen,
+				elm$core$Elm$JsArray$length(builder.tail) + treeLen,
 				A2(elm$core$Basics$max, 5, depth * elm$core$Array$shiftStep),
 				tree,
-				builder.i);
+				builder.tail);
 		}
 	});
 var elm$core$Basics$idiv = _Basics_idiv;
@@ -4957,7 +4959,7 @@ var elm$core$Array$initializeHelp = F5(
 				return A2(
 					elm$core$Array$builderToArray,
 					false,
-					{j: nodeList, g: (len / elm$core$Array$branchFactor) | 0, i: tail});
+					{nodeList: nodeList, nodeListSize: (len / elm$core$Array$branchFactor) | 0, tail: tail});
 			} else {
 				var leaf = elm$core$Array$Leaf(
 					A3(elm$core$Elm$JsArray$initialize, elm$core$Array$branchFactor, fromIndex, fn));
@@ -4989,14 +4991,14 @@ var elm$core$Array$initialize = F2(
 		}
 	});
 var elm$core$Result$Err = function (a) {
-	return {$: 1, a: a};
+	return {$: 'Err', a: a};
 };
 var elm$core$Result$Ok = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Ok', a: a};
 };
-var elm$core$Basics$True = 0;
+var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
-	if (!result.$) {
+	if (result.$ === 'Ok') {
 		return true;
 	} else {
 		return false;
@@ -5004,18 +5006,18 @@ var elm$core$Result$isOk = function (result) {
 };
 var elm$json$Json$Decode$Failure = F2(
 	function (a, b) {
-		return {$: 3, a: a, b: b};
+		return {$: 'Failure', a: a, b: b};
 	});
 var elm$json$Json$Decode$Field = F2(
 	function (a, b) {
-		return {$: 0, a: a, b: b};
+		return {$: 'Field', a: a, b: b};
 	});
 var elm$json$Json$Decode$Index = F2(
 	function (a, b) {
-		return {$: 1, a: a, b: b};
+		return {$: 'Index', a: a, b: b};
 	});
 var elm$json$Json$Decode$OneOf = function (a) {
-	return {$: 2, a: a};
+	return {$: 'OneOf', a: a};
 };
 var elm$core$Basics$and = _Basics_and;
 var elm$core$Basics$or = _Basics_or;
@@ -5115,12 +5117,12 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 		errorToStringHelp:
 		while (true) {
 			switch (error.$) {
-				case 0:
+				case 'Field':
 					var f = error.a;
 					var err = error.b;
 					var isSimple = function () {
 						var _n1 = elm$core$String$uncons(f);
-						if (_n1.$ === 1) {
+						if (_n1.$ === 'Nothing') {
 							return false;
 						} else {
 							var _n2 = _n1.a;
@@ -5135,7 +5137,7 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 					error = $temp$error;
 					context = $temp$context;
 					continue errorToStringHelp;
-				case 1:
+				case 'Index':
 					var i = error.a;
 					var err = error.b;
 					var indexName = '[' + (elm$core$String$fromInt(i) + ']');
@@ -5144,7 +5146,7 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 					error = $temp$error;
 					context = $temp$context;
 					continue errorToStringHelp;
-				case 2:
+				case 'OneOf':
 					var errors = error.a;
 					if (!errors.b) {
 						return 'Ran into a Json.Decode.oneOf with no possibilities' + function () {
@@ -5213,7 +5215,7 @@ var author$project$Util$decodeChar = A2(
 	elm$json$Json$Decode$andThen,
 	function (s) {
 		var _n0 = elm$core$String$uncons(s);
-		if (!_n0.$) {
+		if (_n0.$ === 'Just') {
 			if (_n0.a.b === '') {
 				var _n1 = _n0.a;
 				var c = _n1.a;
@@ -5258,7 +5260,7 @@ var author$project$Puzzle$clueDecoder = A4(
 	elm$json$Json$Decode$map3,
 	F3(
 		function (hint, text, answer) {
-			return {ag: answer, aZ: hint, cl: text};
+			return {answer: answer, hint: hint, text: text};
 		}),
 	A2(elm$json$Json$Decode$field, 'hint', elm$json$Json$Decode$string),
 	A2(elm$json$Json$Decode$field, 'text', elm$json$Json$Decode$string),
@@ -5266,18 +5268,18 @@ var author$project$Puzzle$clueDecoder = A4(
 		elm$json$Json$Decode$field,
 		'answer',
 		elm$json$Json$Decode$list(author$project$Puzzle$answerDecoder)));
-var author$project$Puzzle$Anagramming = 1;
-var author$project$Puzzle$CluingLettering = 2;
+var author$project$Puzzle$Anagramming = {$: 'Anagramming'};
+var author$project$Puzzle$CluingLettering = {$: 'CluingLettering'};
 var author$project$Puzzle$phaseDecoder = A2(
 	elm$json$Json$Decode$andThen,
 	function (s) {
 		switch (s) {
 			case 'QuoteEntry':
-				return elm$json$Json$Decode$succeed(0);
+				return elm$json$Json$Decode$succeed(author$project$Puzzle$QuoteEntry);
 			case 'Anagramming':
-				return elm$json$Json$Decode$succeed(1);
+				return elm$json$Json$Decode$succeed(author$project$Puzzle$Anagramming);
 			case 'CluingLettering':
-				return elm$json$Json$Decode$succeed(2);
+				return elm$json$Json$Decode$succeed(author$project$Puzzle$CluingLettering);
 			default:
 				return elm$json$Json$Decode$fail('invalid phase \'' + (s + '\''));
 		}
@@ -5288,7 +5290,7 @@ var author$project$Puzzle$decoder = A7(
 	elm$json$Json$Decode$map6,
 	F6(
 		function (title, author, quote, clues, phase, timeModified) {
-			return {aL: author, W: clues, w: phase, aE: quote, C: timeModified, bw: title};
+			return {author: author, clues: clues, phase: phase, quote: quote, timeModified: timeModified, title: title};
 		}),
 	A2(elm$json$Json$Decode$field, 'title', elm$json$Json$Decode$string),
 	A2(elm$json$Json$Decode$field, 'author', elm$json$Json$Decode$string),
@@ -5308,7 +5310,7 @@ var author$project$Main$modelDecoder = A3(
 		function (puzzle, savedPuzzles) {
 			return _Utils_update(
 				author$project$Main$emptyModel,
-				{e: puzzle, s: savedPuzzles});
+				{puzzle: puzzle, savedPuzzles: savedPuzzles});
 		}),
 	A2(elm$json$Json$Decode$field, 'currentPuzzle', author$project$Puzzle$decoder),
 	A2(
@@ -5317,7 +5319,7 @@ var author$project$Main$modelDecoder = A3(
 		elm$json$Json$Decode$list(author$project$Puzzle$decoder)));
 var author$project$Main$wordlists = _List_fromArray(
 	[
-		{ar: 'FreeBSD words list', R: 'words/words.txt'}
+		{source: 'FreeBSD words list', url: 'words/words.txt'}
 	]);
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
@@ -5391,16 +5393,18 @@ var elm$core$List$map = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Result$withDefault = F2(
 	function (def, result) {
-		if (!result.$) {
+		if (result.$ === 'Ok') {
 			var a = result.a;
 			return a;
 		} else {
 			return def;
 		}
 	});
-var elm$core$Task$Perform = elm$core$Basics$identity;
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
 var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$core$Task$init = elm$core$Task$succeed(0);
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
 var elm$core$Task$andThen = _Scheduler_andThen;
 var elm$core$Task$map = F2(
 	function (func, taskA) {
@@ -5437,7 +5441,7 @@ var elm$core$Task$sequence = function (tasks) {
 var elm$core$Platform$sendToApp = _Platform_sendToApp;
 var elm$core$Task$spawnCmd = F2(
 	function (router, _n0) {
-		var task = _n0;
+		var task = _n0.a;
 		return _Scheduler_spawn(
 			A2(
 				elm$core$Task$andThen,
@@ -5449,7 +5453,7 @@ var elm$core$Task$onEffects = F3(
 		return A2(
 			elm$core$Task$map,
 			function (_n0) {
-				return 0;
+				return _Utils_Tuple0;
 			},
 			elm$core$Task$sequence(
 				A2(
@@ -5459,26 +5463,28 @@ var elm$core$Task$onEffects = F3(
 	});
 var elm$core$Task$onSelfMsg = F3(
 	function (_n0, _n1, _n2) {
-		return elm$core$Task$succeed(0);
+		return elm$core$Task$succeed(_Utils_Tuple0);
 	});
 var elm$core$Task$cmdMap = F2(
 	function (tagger, _n0) {
-		var task = _n0;
-		return A2(elm$core$Task$map, tagger, task);
+		var task = _n0.a;
+		return elm$core$Task$Perform(
+			A2(elm$core$Task$map, tagger, task));
 	});
 _Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
 var elm$core$Task$command = _Platform_leaf('Task');
 var elm$core$Task$perform = F2(
 	function (toMessage, task) {
 		return elm$core$Task$command(
-			A2(elm$core$Task$map, toMessage, task));
+			elm$core$Task$Perform(
+				A2(elm$core$Task$map, toMessage, task)));
 	});
 var elm$core$Basics$compare = _Utils_compare;
 var elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
 		while (true) {
-			if (dict.$ === -2) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
 				return elm$core$Maybe$Nothing;
 			} else {
 				var key = dict.b;
@@ -5486,14 +5492,14 @@ var elm$core$Dict$get = F2(
 				var left = dict.d;
 				var right = dict.e;
 				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1) {
-					case 0:
+				switch (_n1.$) {
+					case 'LT':
 						var $temp$targetKey = targetKey,
 							$temp$dict = left;
 						targetKey = $temp$targetKey;
 						dict = $temp$dict;
 						continue get;
-					case 1:
+					case 'EQ':
 						return elm$core$Maybe$Just(value);
 					default:
 						var $temp$targetKey = targetKey,
@@ -5505,21 +5511,21 @@ var elm$core$Dict$get = F2(
 			}
 		}
 	});
-var elm$core$Dict$Black = 1;
+var elm$core$Dict$Black = {$: 'Black'};
 var elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
-		return {$: -1, a: a, b: b, c: c, d: d, e: e};
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
 	});
-var elm$core$Dict$Red = 0;
+var elm$core$Dict$Red = {$: 'Red'};
 var elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
-		if ((right.$ === -1) && (!right.a)) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
 			var _n1 = right.a;
 			var rK = right.b;
 			var rV = right.c;
 			var rLeft = right.d;
 			var rRight = right.e;
-			if ((left.$ === -1) && (!left.a)) {
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
 				var _n3 = left.a;
 				var lK = left.b;
 				var lV = left.c;
@@ -5527,22 +5533,22 @@ var elm$core$Dict$balance = F5(
 				var lRight = left.e;
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					0,
+					elm$core$Dict$Red,
 					key,
 					value,
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rLeft, rRight));
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
 			} else {
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
 					color,
 					rK,
 					rV,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, left, rLeft),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
 					rRight);
 			}
 		} else {
-			if ((((left.$ === -1) && (!left.a)) && (left.d.$ === -1)) && (!left.d.a)) {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
 				var _n5 = left.a;
 				var lK = left.b;
 				var lV = left.c;
@@ -5555,11 +5561,11 @@ var elm$core$Dict$balance = F5(
 				var lRight = left.e;
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					0,
+					elm$core$Dict$Red,
 					lK,
 					lV,
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, key, value, lRight, right));
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
 			} else {
 				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
 			}
@@ -5567,8 +5573,8 @@ var elm$core$Dict$balance = F5(
 	});
 var elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
-		if (dict.$ === -2) {
-			return A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
 		} else {
 			var nColor = dict.a;
 			var nKey = dict.b;
@@ -5576,8 +5582,8 @@ var elm$core$Dict$insertHelp = F3(
 			var nLeft = dict.d;
 			var nRight = dict.e;
 			var _n1 = A2(elm$core$Basics$compare, key, nKey);
-			switch (_n1) {
-				case 0:
+			switch (_n1.$) {
+				case 'LT':
 					return A5(
 						elm$core$Dict$balance,
 						nColor,
@@ -5585,7 +5591,7 @@ var elm$core$Dict$insertHelp = F3(
 						nValue,
 						A3(elm$core$Dict$insertHelp, key, value, nLeft),
 						nRight);
-				case 1:
+				case 'EQ':
 					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
 				default:
 					return A5(
@@ -5601,13 +5607,13 @@ var elm$core$Dict$insertHelp = F3(
 var elm$core$Dict$insert = F3(
 	function (key, value, dict) {
 		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
-		if ((_n0.$ === -1) && (!_n0.a)) {
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
 			var _n1 = _n0.a;
 			var k = _n0.b;
 			var v = _n0.c;
 			var l = _n0.d;
 			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
 		} else {
 			var x = _n0;
 			return x;
@@ -5616,7 +5622,7 @@ var elm$core$Dict$insert = F3(
 var elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
-		if ((dict.$ === -1) && (dict.d.$ === -1)) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
 			var left = dict.d;
 			var $temp$dict = left;
 			dict = $temp$dict;
@@ -5627,8 +5633,8 @@ var elm$core$Dict$getMin = function (dict) {
 	}
 };
 var elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === -1) && (dict.d.$ === -1)) && (dict.e.$ === -1)) {
-		if ((dict.e.d.$ === -1) && (!dict.e.d.a)) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
 			var clr = dict.a;
 			var k = dict.b;
 			var v = dict.c;
@@ -5651,17 +5657,17 @@ var elm$core$Dict$moveRedLeft = function (dict) {
 			var rRight = _n2.e;
 			return A5(
 				elm$core$Dict$RBNode_elm_builtin,
-				0,
+				elm$core$Dict$Red,
 				rlK,
 				rlV,
 				A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					1,
+					elm$core$Dict$Black,
 					k,
 					v,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
 					rlL),
-				A5(elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rlR, rRight));
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rlR, rRight));
 		} else {
 			var clr = dict.a;
 			var k = dict.b;
@@ -5678,22 +5684,22 @@ var elm$core$Dict$moveRedLeft = function (dict) {
 			var rV = _n5.c;
 			var rLeft = _n5.d;
 			var rRight = _n5.e;
-			if (clr === 1) {
+			if (clr.$ === 'Black') {
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					1,
+					elm$core$Dict$Black,
 					k,
 					v,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
 			} else {
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					1,
+					elm$core$Dict$Black,
 					k,
 					v,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
 			}
 		}
 	} else {
@@ -5701,8 +5707,8 @@ var elm$core$Dict$moveRedLeft = function (dict) {
 	}
 };
 var elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === -1) && (dict.d.$ === -1)) && (dict.e.$ === -1)) {
-		if ((dict.d.d.$ === -1) && (!dict.d.d.a)) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
 			var clr = dict.a;
 			var k = dict.b;
 			var v = dict.c;
@@ -5725,17 +5731,17 @@ var elm$core$Dict$moveRedRight = function (dict) {
 			var rRight = _n4.e;
 			return A5(
 				elm$core$Dict$RBNode_elm_builtin,
-				0,
+				elm$core$Dict$Red,
 				lK,
 				lV,
-				A5(elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
 				A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					1,
+					elm$core$Dict$Black,
 					k,
 					v,
 					lRight,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight)));
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight)));
 		} else {
 			var clr = dict.a;
 			var k = dict.b;
@@ -5752,22 +5758,22 @@ var elm$core$Dict$moveRedRight = function (dict) {
 			var rV = _n6.c;
 			var rLeft = _n6.d;
 			var rRight = _n6.e;
-			if (clr === 1) {
+			if (clr.$ === 'Black') {
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					1,
+					elm$core$Dict$Black,
 					k,
 					v,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
 			} else {
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
-					1,
+					elm$core$Dict$Black,
 					k,
 					v,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
 			}
 		}
 	} else {
@@ -5776,7 +5782,7 @@ var elm$core$Dict$moveRedRight = function (dict) {
 };
 var elm$core$Dict$removeHelpPrepEQGT = F7(
 	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === -1) && (!left.a)) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
 			var _n1 = left.a;
 			var lK = left.b;
 			var lV = left.c;
@@ -5788,13 +5794,13 @@ var elm$core$Dict$removeHelpPrepEQGT = F7(
 				lK,
 				lV,
 				lLeft,
-				A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, lRight, right));
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, lRight, right));
 		} else {
 			_n2$2:
 			while (true) {
-				if ((right.$ === -1) && (right.a === 1)) {
-					if (right.d.$ === -1) {
-						if (right.d.a === 1) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
 							var _n3 = right.a;
 							var _n4 = right.d;
 							var _n5 = _n4.a;
@@ -5815,7 +5821,7 @@ var elm$core$Dict$removeHelpPrepEQGT = F7(
 		}
 	});
 var elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === -1) && (dict.d.$ === -1)) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
 		var color = dict.a;
 		var key = dict.b;
 		var value = dict.c;
@@ -5823,8 +5829,8 @@ var elm$core$Dict$removeMin = function (dict) {
 		var lColor = left.a;
 		var lLeft = left.d;
 		var right = dict.e;
-		if (lColor === 1) {
-			if ((lLeft.$ === -1) && (!lLeft.a)) {
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
 				var _n3 = lLeft.a;
 				return A5(
 					elm$core$Dict$RBNode_elm_builtin,
@@ -5835,7 +5841,7 @@ var elm$core$Dict$removeMin = function (dict) {
 					right);
 			} else {
 				var _n4 = elm$core$Dict$moveRedLeft(dict);
-				if (_n4.$ === -1) {
+				if (_n4.$ === 'RBNode_elm_builtin') {
 					var nColor = _n4.a;
 					var nKey = _n4.b;
 					var nValue = _n4.c;
@@ -5867,7 +5873,7 @@ var elm$core$Dict$removeMin = function (dict) {
 };
 var elm$core$Dict$removeHelp = F2(
 	function (targetKey, dict) {
-		if (dict.$ === -2) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
 			return elm$core$Dict$RBEmpty_elm_builtin;
 		} else {
 			var color = dict.a;
@@ -5876,10 +5882,10 @@ var elm$core$Dict$removeHelp = F2(
 			var left = dict.d;
 			var right = dict.e;
 			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === -1) && (left.a === 1)) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
 					var _n4 = left.a;
 					var lLeft = left.d;
-					if ((lLeft.$ === -1) && (!lLeft.a)) {
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
 						var _n6 = lLeft.a;
 						return A5(
 							elm$core$Dict$RBNode_elm_builtin,
@@ -5890,7 +5896,7 @@ var elm$core$Dict$removeHelp = F2(
 							right);
 					} else {
 						var _n7 = elm$core$Dict$moveRedLeft(dict);
-						if (_n7.$ === -1) {
+						if (_n7.$ === 'RBNode_elm_builtin') {
 							var nColor = _n7.a;
 							var nKey = _n7.b;
 							var nValue = _n7.c;
@@ -5926,7 +5932,7 @@ var elm$core$Dict$removeHelp = F2(
 	});
 var elm$core$Dict$removeHelpEQGT = F2(
 	function (targetKey, dict) {
-		if (dict.$ === -1) {
+		if (dict.$ === 'RBNode_elm_builtin') {
 			var color = dict.a;
 			var key = dict.b;
 			var value = dict.c;
@@ -5934,7 +5940,7 @@ var elm$core$Dict$removeHelpEQGT = F2(
 			var right = dict.e;
 			if (_Utils_eq(targetKey, key)) {
 				var _n1 = elm$core$Dict$getMin(right);
-				if (_n1.$ === -1) {
+				if (_n1.$ === 'RBNode_elm_builtin') {
 					var minKey = _n1.b;
 					var minValue = _n1.c;
 					return A5(
@@ -5963,13 +5969,13 @@ var elm$core$Dict$removeHelpEQGT = F2(
 var elm$core$Dict$remove = F2(
 	function (key, dict) {
 		var _n0 = A2(elm$core$Dict$removeHelp, key, dict);
-		if ((_n0.$ === -1) && (!_n0.a)) {
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
 			var _n1 = _n0.a;
 			var k = _n0.b;
 			var v = _n0.c;
 			var l = _n0.d;
 			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
 		} else {
 			var x = _n0;
 			return x;
@@ -5979,7 +5985,7 @@ var elm$core$Dict$update = F3(
 	function (targetKey, alter, dictionary) {
 		var _n0 = alter(
 			A2(elm$core$Dict$get, targetKey, dictionary));
-		if (!_n0.$) {
+		if (_n0.$ === 'Just') {
 			var value = _n0.a;
 			return A3(elm$core$Dict$insert, targetKey, value, dictionary);
 		} else {
@@ -5987,7 +5993,7 @@ var elm$core$Dict$update = F3(
 		}
 	});
 var elm$core$Maybe$isJust = function (maybe) {
-	if (!maybe.$) {
+	if (maybe.$ === 'Just') {
 		return true;
 	} else {
 		return false;
@@ -5996,7 +6002,7 @@ var elm$core$Maybe$isJust = function (maybe) {
 var elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var elm$core$Result$map = F2(
 	function (func, ra) {
-		if (!ra.$) {
+		if (ra.$ === 'Ok') {
 			var a = ra.a;
 			return elm$core$Result$Ok(
 				func(a));
@@ -6007,23 +6013,23 @@ var elm$core$Result$map = F2(
 	});
 var elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
-		return {$: 3, a: a, b: b};
+		return {$: 'BadStatus_', a: a, b: b};
 	});
 var elm$http$Http$BadUrl_ = function (a) {
-	return {$: 0, a: a};
+	return {$: 'BadUrl_', a: a};
 };
 var elm$http$Http$GoodStatus_ = F2(
 	function (a, b) {
-		return {$: 4, a: a, b: b};
+		return {$: 'GoodStatus_', a: a, b: b};
 	});
-var elm$http$Http$NetworkError_ = {$: 2};
+var elm$http$Http$NetworkError_ = {$: 'NetworkError_'};
 var elm$http$Http$Receiving = function (a) {
-	return {$: 1, a: a};
+	return {$: 'Receiving', a: a};
 };
 var elm$http$Http$Sending = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Sending', a: a};
 };
-var elm$http$Http$Timeout_ = {$: 1};
+var elm$http$Http$Timeout_ = {$: 'Timeout_'};
 var elm$http$Http$emptyBody = _Http_emptyBody;
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -6040,7 +6046,7 @@ var elm$http$Http$expectStringResponse = F2(
 	});
 var elm$core$Result$mapError = F2(
 	function (f, result) {
-		if (!result.$) {
+		if (result.$ === 'Ok') {
 			var v = result.a;
 			return elm$core$Result$Ok(v);
 		} else {
@@ -6050,31 +6056,31 @@ var elm$core$Result$mapError = F2(
 		}
 	});
 var elm$http$Http$BadBody = function (a) {
-	return {$: 4, a: a};
+	return {$: 'BadBody', a: a};
 };
 var elm$http$Http$BadStatus = function (a) {
-	return {$: 3, a: a};
+	return {$: 'BadStatus', a: a};
 };
 var elm$http$Http$BadUrl = function (a) {
-	return {$: 0, a: a};
+	return {$: 'BadUrl', a: a};
 };
-var elm$http$Http$NetworkError = {$: 2};
-var elm$http$Http$Timeout = {$: 1};
+var elm$http$Http$NetworkError = {$: 'NetworkError'};
+var elm$http$Http$Timeout = {$: 'Timeout'};
 var elm$http$Http$resolve = F2(
 	function (toResult, response) {
 		switch (response.$) {
-			case 0:
+			case 'BadUrl_':
 				var url = response.a;
 				return elm$core$Result$Err(
 					elm$http$Http$BadUrl(url));
-			case 1:
+			case 'Timeout_':
 				return elm$core$Result$Err(elm$http$Http$Timeout);
-			case 2:
+			case 'NetworkError_':
 				return elm$core$Result$Err(elm$http$Http$NetworkError);
-			case 3:
+			case 'BadStatus_':
 				var metadata = response.a;
 				return elm$core$Result$Err(
-					elm$http$Http$BadStatus(metadata.br));
+					elm$http$Http$BadStatus(metadata.statusCode));
 			default:
 				var body = response.b;
 				return A2(
@@ -6090,11 +6096,11 @@ var elm$http$Http$expectString = function (toMsg) {
 		elm$http$Http$resolve(elm$core$Result$Ok));
 };
 var elm$http$Http$Request = function (a) {
-	return {$: 1, a: a};
+	return {$: 'Request', a: a};
 };
 var elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {bh: reqs, bu: subs};
+		return {reqs: reqs, subs: subs};
 	});
 var elm$http$Http$init = elm$core$Task$succeed(
 	A2(elm$http$Http$State, elm$core$Dict$empty, _List_Nil));
@@ -6109,10 +6115,10 @@ var elm$http$Http$updateReqs = F3(
 			} else {
 				var cmd = cmds.a;
 				var otherCmds = cmds.b;
-				if (!cmd.$) {
+				if (cmd.$ === 'Cancel') {
 					var tracker = cmd.a;
 					var _n2 = A2(elm$core$Dict$get, tracker, reqs);
-					if (_n2.$ === 1) {
+					if (_n2.$ === 'Nothing') {
 						var $temp$router = router,
 							$temp$cmds = otherCmds,
 							$temp$reqs = reqs;
@@ -6138,8 +6144,8 @@ var elm$http$Http$updateReqs = F3(
 					return A2(
 						elm$core$Task$andThen,
 						function (pid) {
-							var _n4 = req.co;
-							if (_n4.$ === 1) {
+							var _n4 = req.tracker;
+							if (_n4.$ === 'Nothing') {
 								return A3(elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
 								var tracker = _n4.a;
@@ -6168,12 +6174,12 @@ var elm$http$Http$onEffects = F4(
 				return elm$core$Task$succeed(
 					A2(elm$http$Http$State, reqs, subs));
 			},
-			A3(elm$http$Http$updateReqs, router, cmds, state.bh));
+			A3(elm$http$Http$updateReqs, router, cmds, state.reqs));
 	});
 var elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _n0 = f(mx);
-		if (!_n0.$) {
+		if (_n0.$ === 'Just') {
 			var x = _n0.a;
 			return A2(elm$core$List$cons, x, xs);
 		} else {
@@ -6211,34 +6217,34 @@ var elm$http$Http$onSelfMsg = F3(
 				A2(
 					elm$core$List$filterMap,
 					A3(elm$http$Http$maybeSend, router, tracker, progress),
-					state.bu)));
+					state.subs)));
 	});
 var elm$http$Http$Cancel = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Cancel', a: a};
 };
 var elm$http$Http$cmdMap = F2(
 	function (func, cmd) {
-		if (!cmd.$) {
+		if (cmd.$ === 'Cancel') {
 			var tracker = cmd.a;
 			return elm$http$Http$Cancel(tracker);
 		} else {
 			var r = cmd.a;
 			return elm$http$Http$Request(
 				{
-					J: r.J,
-					bC: r.bC,
-					bL: A2(_Http_mapExpect, func, r.bL),
-					bT: r.bT,
-					bY: r.bY,
-					cn: r.cn,
-					co: r.co,
-					R: r.R
+					allowCookiesFromOtherDomains: r.allowCookiesFromOtherDomains,
+					body: r.body,
+					expect: A2(_Http_mapExpect, func, r.expect),
+					headers: r.headers,
+					method: r.method,
+					timeout: r.timeout,
+					tracker: r.tracker,
+					url: r.url
 				});
 		}
 	});
 var elm$http$Http$MySub = F2(
 	function (a, b) {
-		return {$: 0, a: a, b: b};
+		return {$: 'MySub', a: a, b: b};
 	});
 var elm$http$Http$subMap = F2(
 	function (func, _n0) {
@@ -6255,17 +6261,17 @@ var elm$http$Http$subscription = _Platform_leaf('Http');
 var elm$http$Http$request = function (r) {
 	return elm$http$Http$command(
 		elm$http$Http$Request(
-			{J: false, bC: r.bC, bL: r.bL, bT: r.bT, bY: r.bY, cn: r.cn, co: r.co, R: r.R}));
+			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
 var elm$json$Json$Decode$decodeValue = _Json_run;
 var elm$time$Time$Name = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Name', a: a};
 };
 var elm$time$Time$Offset = function (a) {
-	return {$: 1, a: a};
+	return {$: 'Offset', a: a};
 };
 var elm$time$Time$customZone = elm$time$Time$Zone;
-var elm$time$Time$here = _Time_here(0);
+var elm$time$Time$here = _Time_here(_Utils_Tuple0);
 var author$project$Main$init = function (savedModel) {
 	return _Utils_Tuple2(
 		A2(
@@ -6281,27 +6287,27 @@ var author$project$Main$init = function (savedModel) {
 					function (wl) {
 						return elm$http$Http$request(
 							{
-								bC: elm$http$Http$emptyBody,
-								bL: elm$http$Http$expectString(
+								body: elm$http$Http$emptyBody,
+								expect: elm$http$Http$expectString(
 									author$project$Main$GotWordlist(wl)),
-								bT: _List_Nil,
-								bY: 'GET',
-								cn: elm$core$Maybe$Nothing,
-								co: elm$core$Maybe$Just(wl.R),
-								R: wl.R
+								headers: _List_Nil,
+								method: 'GET',
+								timeout: elm$core$Maybe$Nothing,
+								tracker: elm$core$Maybe$Just(wl.url),
+								url: wl.url
 							});
 					},
 					author$project$Main$wordlists))));
 };
 var author$project$Main$SolverResults = function (a) {
-	return {$: 17, a: a};
+	return {$: 'SolverResults', a: a};
 };
 var author$project$Main$SolverStateChanged = function (a) {
-	return {$: 18, a: a};
+	return {$: 'SolverStateChanged', a: a};
 };
 var author$project$Main$UpdateRecvProgress = F2(
 	function (a, b) {
-		return {$: 21, a: a, b: b};
+		return {$: 'UpdateRecvProgress', a: a, b: b};
 	});
 var elm$json$Json$Decode$value = _Json_decodeValue;
 var author$project$Main$solverResults = _Platform_incomingPort('solverResults', elm$json$Json$Decode$value);
@@ -6325,19 +6331,19 @@ var author$project$Main$subscriptions = function (model) {
 					function (wl) {
 						return A2(
 							elm$http$Http$track,
-							wl.R,
-							author$project$Main$UpdateRecvProgress(wl.ar));
+							wl.url,
+							author$project$Main$UpdateRecvProgress(wl.source));
 					},
 					author$project$Main$wordlists))));
 };
-var author$project$Main$All = 1;
+var author$project$Main$All = {$: 'All'};
 var author$project$Main$ClearProgress = function (a) {
-	return {$: 22, a: a};
+	return {$: 'ClearProgress', a: a};
 };
-var author$project$Main$CurrentPuzzle = 0;
+var author$project$Main$CurrentPuzzle = {$: 'CurrentPuzzle'};
 var author$project$Main$Save = F2(
 	function (a, b) {
-		return {$: 9, a: a, b: b};
+		return {$: 'Save', a: a, b: b};
 	});
 var elm$time$Time$now = _Time_now(elm$time$Time$millisToPosix);
 var author$project$Main$andSave = F2(
@@ -6353,43 +6359,43 @@ var author$project$Main$asCurrentPuzzleIn = F2(
 	function (model, puzzle) {
 		return _Utils_update(
 			model,
-			{e: puzzle});
+			{puzzle: puzzle});
 	});
 var author$project$Main$asSelectedPuzzleIn = F2(
 	function (model, puzzle) {
 		return _Utils_update(
 			model,
-			{H: puzzle});
+			{selectedPuzzle: puzzle});
 	});
 var author$project$Main$asSolverStateIn = F2(
 	function (model, solverState) {
 		return _Utils_update(
 			model,
-			{aq: solverState});
+			{solverState: solverState});
 	});
 var author$project$Main$clearProgress = F2(
 	function (src, model) {
 		return _Utils_update(
 			model,
 			{
-				B: A2(elm$core$Dict$remove, src, model.B)
+				progressBars: A2(elm$core$Dict$remove, src, model.progressBars)
 			});
 	});
 var author$project$Main$clearSelectedPuzzle = function (model) {
 	return _Utils_update(
 		model,
-		{H: elm$core$Maybe$Nothing});
+		{selectedPuzzle: elm$core$Maybe$Nothing});
 };
 var elm$time$Time$posixToMillis = function (_n0) {
-	var millis = _n0;
+	var millis = _n0.a;
 	return millis;
 };
 var author$project$Puzzle$compare = F2(
 	function (puz1, puz2) {
 		return A2(
 			elm$core$Basics$compare,
-			elm$time$Time$posixToMillis(puz1.C),
-			elm$time$Time$posixToMillis(puz2.C));
+			elm$time$Time$posixToMillis(puz1.timeModified),
+			elm$time$Time$posixToMillis(puz2.timeModified));
 	});
 var author$project$Util$insertWith = F3(
 	function (cmp, x, l) {
@@ -6400,13 +6406,13 @@ var author$project$Util$insertWith = F3(
 			var y = l.a;
 			var rest = l.b;
 			var _n1 = A2(cmp, x, y);
-			switch (_n1) {
-				case 0:
+			switch (_n1.$) {
+				case 'LT':
 					return A2(
 						elm$core$List$cons,
 						x,
 						A2(elm$core$List$cons, y, rest));
-				case 1:
+				case 'EQ':
 					return A2(
 						elm$core$List$cons,
 						x,
@@ -6462,17 +6468,19 @@ var author$project$Main$trySave = F2(
 			elm$core$List$all,
 			elm$core$String$isEmpty,
 			_List_fromArray(
-				[puzzle.bw, puzzle.aL])) ? savedPuzzles : A3(author$project$Util$insertWith, author$project$Puzzle$compare, puzzle, savedPuzzles);
+				[puzzle.title, puzzle.author])) ? savedPuzzles : A3(author$project$Util$insertWith, author$project$Puzzle$compare, puzzle, savedPuzzles);
 	});
 var author$project$Main$withSolverResult = F2(
 	function (mResult, model) {
 		return _Utils_update(
 			model,
-			{ap: mResult});
+			{solverResult: mResult});
 	});
 var author$project$Puzzle$equal = F2(
 	function (puz1, puz2) {
-		return A2(author$project$Puzzle$compare, puz1, puz2) === 1;
+		return _Utils_eq(
+			A2(author$project$Puzzle$compare, puz1, puz2),
+			elm$core$Basics$EQ);
 	});
 var elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -6493,25 +6501,25 @@ var author$project$Main$loadPuzzle = F2(
 			_Utils_update(
 				model,
 				{
-					e: puzzle,
-					s: A2(
+					puzzle: puzzle,
+					savedPuzzles: A2(
 						author$project$Main$trySave,
-						model.e,
+						model.puzzle,
 						A2(
 							elm$core$List$filter,
 							A2(
 								elm$core$Basics$composeL,
 								elm$core$Basics$not,
 								author$project$Puzzle$equal(puzzle)),
-							model.s)),
-					t: _List_Nil
+							model.savedPuzzles)),
+					selectedClues: _List_Nil
 				}));
 	});
 var author$project$Main$pendingDeletion = F2(
 	function (pending, model) {
 		return _Utils_update(
 			model,
-			{_: pending});
+			{pendingDelete: pending});
 	});
 var author$project$Main$popCurrentPuzzle = F2(
 	function (newPuzzle, model) {
@@ -6521,8 +6529,8 @@ var author$project$Main$popCurrentPuzzle = F2(
 			_Utils_update(
 				model,
 				{
-					e: newPuzzle,
-					s: A2(author$project$Main$trySave, model.e, model.s)
+					puzzle: newPuzzle,
+					savedPuzzles: A2(author$project$Main$trySave, model.puzzle, model.savedPuzzles)
 				}));
 	});
 var author$project$Main$saveCurrentPuzzle = _Platform_outgoingPort('saveCurrentPuzzle', elm$core$Basics$identity);
@@ -6549,24 +6557,24 @@ var author$project$Puzzle$updateNumbering = F4(
 		return _Utils_update(
 			puzzle,
 			{
-				W: A3(
+				clues: A3(
 					author$project$Util$updateIndex,
 					index,
 					function (clue) {
 						return _Utils_update(
 							clue,
 							{
-								ag: A3(
+								answer: A3(
 									author$project$Util$updateIndex,
 									numIndex,
 									function (_n0) {
 										var c = _n0.b;
 										return _Utils_Tuple2(mQuoteNum, c);
 									},
-									clue.ag)
+									clue.answer)
 							});
 					},
-					puzzle.W)
+					puzzle.clues)
 			});
 	});
 var author$project$Solver$applySMTNumbering = F2(
@@ -6575,9 +6583,9 @@ var author$project$Solver$applySMTNumbering = F2(
 			function (num, newPuz) {
 				return A4(
 					author$project$Puzzle$updateNumbering,
-					num.aw,
-					num.ay,
-					elm$core$Maybe$Just(num.aB),
+					num.clue,
+					num.letter,
+					elm$core$Maybe$Just(num.number),
 					newPuz);
 			});
 		return A3(elm$core$List$foldr, apply, puz, nums);
@@ -6588,18 +6596,18 @@ var author$project$Main$tryApplySMTNumberingTo = F2(
 			author$project$Main$withSolverResult,
 			elm$core$Maybe$Just(result),
 			function () {
-				var _n0 = result.ag;
+				var _n0 = result.answer;
 				switch (_n0.$) {
-					case 2:
+					case 'SMTFailed':
 						return model;
-					case 1:
+					case 'SMTTimeout':
 						return model;
 					default:
 						var nums = _n0.a;
 						return A2(
 							author$project$Main$asCurrentPuzzleIn,
 							model,
-							A2(author$project$Solver$applySMTNumbering, nums, model.e));
+							A2(author$project$Solver$applySMTNumbering, nums, model.puzzle));
 				}
 			}());
 	});
@@ -6608,35 +6616,35 @@ var author$project$Main$updateProgress = F3(
 		return _Utils_update(
 			model,
 			{
-				B: A3(elm$core$Dict$insert, src, progress, model.B)
+				progressBars: A3(elm$core$Dict$insert, src, progress, model.progressBars)
 			});
 	});
 var author$project$Puzzle$clearNumbering = function (puzzle) {
 	return _Utils_update(
 		puzzle,
 		{
-			W: A2(
+			clues: A2(
 				elm$core$List$map,
 				function (clue) {
 					return _Utils_update(
 						clue,
 						{
-							ag: A2(
+							answer: A2(
 								elm$core$List$map,
 								function (_n0) {
 									var c = _n0.b;
 									return _Utils_Tuple2(elm$core$Maybe$Nothing, c);
 								},
-								clue.ag)
+								clue.answer)
 						});
 				},
-				puzzle.W)
+				puzzle.clues)
 		});
 };
 var elm$json$Json$Encode$null = _Json_encodeNull;
 var author$project$Util$encodeNullable = F2(
 	function (encode, ma) {
-		if (ma.$ === 1) {
+		if (ma.$ === 'Nothing') {
 			return elm$json$Json$Encode$null;
 		} else {
 			var a = ma.a;
@@ -6658,7 +6666,7 @@ var elm$json$Json$Encode$object = function (pairs) {
 					var v = _n0.b;
 					return A3(_Json_addField, k, v, obj);
 				}),
-			_Json_emptyObject(0),
+			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
 var elm$json$Json$Encode$string = _Json_wrap;
@@ -6683,7 +6691,7 @@ var elm$json$Json$Encode$list = F2(
 			A3(
 				elm$core$List$foldl,
 				_Json_addEntry(func),
-				_Json_emptyArray(0),
+				_Json_emptyArray(_Utils_Tuple0),
 				entries));
 	});
 var author$project$Puzzle$encodeClue = function (clue) {
@@ -6692,22 +6700,22 @@ var author$project$Puzzle$encodeClue = function (clue) {
 			[
 				_Utils_Tuple2(
 				'hint',
-				elm$json$Json$Encode$string(clue.aZ)),
+				elm$json$Json$Encode$string(clue.hint)),
 				_Utils_Tuple2(
 				'text',
-				elm$json$Json$Encode$string(clue.cl)),
+				elm$json$Json$Encode$string(clue.text)),
 				_Utils_Tuple2(
 				'answer',
-				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeAnswer, clue.ag))
+				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeAnswer, clue.answer))
 			]));
 };
 var author$project$Puzzle$encodePhase = function (phase) {
 	return elm$json$Json$Encode$string(
 		function () {
-			switch (phase) {
-				case 0:
+			switch (phase.$) {
+				case 'QuoteEntry':
 					return 'QuoteEntry';
-				case 1:
+				case 'Anagramming':
 					return 'Anagramming';
 				default:
 					return 'CluingLettering';
@@ -6720,23 +6728,23 @@ var author$project$Puzzle$encode = function (puzzle) {
 			[
 				_Utils_Tuple2(
 				'title',
-				elm$json$Json$Encode$string(puzzle.bw)),
+				elm$json$Json$Encode$string(puzzle.title)),
 				_Utils_Tuple2(
 				'author',
-				elm$json$Json$Encode$string(puzzle.aL)),
+				elm$json$Json$Encode$string(puzzle.author)),
 				_Utils_Tuple2(
 				'quote',
-				elm$json$Json$Encode$string(puzzle.aE)),
+				elm$json$Json$Encode$string(puzzle.quote)),
 				_Utils_Tuple2(
 				'clues',
-				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeClue, puzzle.W)),
+				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeClue, puzzle.clues)),
 				_Utils_Tuple2(
 				'phase',
-				author$project$Puzzle$encodePhase(puzzle.w)),
+				author$project$Puzzle$encodePhase(puzzle.phase)),
 				_Utils_Tuple2(
 				'timeModified',
 				elm$json$Json$Encode$int(
-					elm$time$Time$posixToMillis(puzzle.C)))
+					elm$time$Time$posixToMillis(puzzle.timeModified)))
 			]));
 };
 var elm$core$String$fromList = _String_fromList;
@@ -6746,7 +6754,7 @@ var elm$core$Tuple$second = function (_n0) {
 };
 var author$project$Puzzle$clueAnswer = function (c) {
 	return elm$core$String$fromList(
-		A2(elm$core$List$map, elm$core$Tuple$second, c.ag));
+		A2(elm$core$List$map, elm$core$Tuple$second, c.answer));
 };
 var elm$core$String$foldr = _String_foldr;
 var elm$core$String$toList = function (string) {
@@ -6755,12 +6763,12 @@ var elm$core$String$toList = function (string) {
 var elm$core$String$toUpper = _String_toUpper;
 var author$project$Puzzle$defaultClue = function (s) {
 	return {
-		ag: A2(
+		answer: A2(
 			elm$core$List$map,
 			elm$core$Tuple$pair(elm$core$Maybe$Nothing),
 			elm$core$String$toList(s)),
-		aZ: '',
-		cl: elm$core$String$toUpper(s)
+		hint: '',
+		text: elm$core$String$toUpper(s)
 	};
 };
 var elm$core$String$filter = _String_filter;
@@ -6768,7 +6776,7 @@ var author$project$Puzzle$initialism = function (puzzle) {
 	return A2(
 		elm$core$String$filter,
 		elm$core$Char$isAlphaNum,
-		_Utils_ap(puzzle.aL, puzzle.bw));
+		_Utils_ap(puzzle.author, puzzle.title));
 };
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$String$startsWith = _String_startsWith;
@@ -6779,7 +6787,7 @@ var author$project$Puzzle$fixupAnswerInitials = function (puzzle) {
 		elm$core$String$toList(
 			author$project$Puzzle$initialism(puzzle)));
 	var clues = (!_Utils_eq(
-		elm$core$List$length(puzzle.W),
+		elm$core$List$length(puzzle.clues),
 		elm$core$List$length(initials))) ? A2(elm$core$List$map, author$project$Puzzle$defaultClue, initials) : A3(
 		elm$core$List$map2,
 		F2(
@@ -6790,40 +6798,40 @@ var author$project$Puzzle$fixupAnswerInitials = function (puzzle) {
 					author$project$Puzzle$clueAnswer(c)) ? c : author$project$Puzzle$defaultClue(i);
 			}),
 		initials,
-		puzzle.W);
+		puzzle.clues);
 	return _Utils_update(
 		puzzle,
-		{W: clues});
+		{clues: clues});
 };
 var author$project$Puzzle$setAuthor = F2(
 	function (author, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{aL: author});
+			{author: author});
 	});
 var author$project$Puzzle$setPhase = F2(
 	function (phase, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{w: phase});
+			{phase: phase});
 	});
 var author$project$Puzzle$setQuote = F2(
 	function (quote, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{aE: quote});
+			{quote: quote});
 	});
 var author$project$Puzzle$setTimeModified = F2(
 	function (now, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{C: now});
+			{timeModified: now});
 	});
 var author$project$Puzzle$setTitle = F2(
 	function (title, puzzle) {
 		return _Utils_update(
 			puzzle,
-			{bw: title});
+			{title: title});
 	});
 var author$project$Util$cleanString = function (s) {
 	return A2(
@@ -6871,7 +6879,7 @@ var author$project$Puzzle$quoteIndex = F2(
 			A2(
 				elm$core$List$drop,
 				index,
-				author$project$Util$cleanChars(puzzle.aE)));
+				author$project$Util$cleanChars(puzzle.quote)));
 	});
 var elm$core$List$repeatHelp = F3(
 	function (result, n, value) {
@@ -6900,11 +6908,11 @@ var author$project$Puzzle$updateAnswer = F3(
 		return _Utils_update(
 			puzzle,
 			{
-				W: A3(
+				clues: A3(
 					author$project$Util$updateIndex,
 					index,
 					function (clue) {
-						var numbering = A2(elm$core$List$map, elm$core$Tuple$first, clue.ag);
+						var numbering = A2(elm$core$List$map, elm$core$Tuple$first, clue.answer);
 						var extendedNumbering = _Utils_ap(
 							numbering,
 							A2(
@@ -6915,7 +6923,7 @@ var author$project$Puzzle$updateAnswer = F3(
 							elm$core$List$map2,
 							F2(
 								function (mnum, c) {
-									if (mnum.$ === 1) {
+									if (mnum.$ === 'Nothing') {
 										return _Utils_Tuple2(elm$core$Maybe$Nothing, c);
 									} else {
 										var num = mnum.a;
@@ -6934,9 +6942,9 @@ var author$project$Puzzle$updateAnswer = F3(
 									elm$core$String$toUpper(answer))));
 						return _Utils_update(
 							clue,
-							{ag: numberedAnswer, cl: answer});
+							{answer: numberedAnswer, text: answer});
 					},
-					puzzle.W)
+					puzzle.clues)
 			});
 	});
 var author$project$Puzzle$updateHint = F3(
@@ -6944,35 +6952,35 @@ var author$project$Puzzle$updateHint = F3(
 		return _Utils_update(
 			puzzle,
 			{
-				W: A3(
+				clues: A3(
 					author$project$Util$updateIndex,
 					index,
 					function (clue) {
 						return _Utils_update(
 							clue,
-							{aZ: hint});
+							{hint: hint});
 					},
-					puzzle.W)
+					puzzle.clues)
 			});
 	});
-var author$project$SMT$SolverDownloading = 1;
-var author$project$SMT$SolverInitializing = 2;
-var author$project$SMT$SolverReady = 3;
-var author$project$SMT$SolverRunning = 4;
+var author$project$SMT$SolverDownloading = {$: 'SolverDownloading'};
+var author$project$SMT$SolverInitializing = {$: 'SolverInitializing'};
+var author$project$SMT$SolverReady = {$: 'SolverReady'};
+var author$project$SMT$SolverRunning = {$: 'SolverRunning'};
 var author$project$SMT$solverStateDecoder = A2(
 	elm$json$Json$Decode$andThen,
 	function (s) {
 		switch (s) {
 			case 'SolverUnloaded':
-				return elm$json$Json$Decode$succeed(0);
+				return elm$json$Json$Decode$succeed(author$project$SMT$SolverUnloaded);
 			case 'SolverDownloading':
-				return elm$json$Json$Decode$succeed(1);
+				return elm$json$Json$Decode$succeed(author$project$SMT$SolverDownloading);
 			case 'SolverInitializing':
-				return elm$json$Json$Decode$succeed(2);
+				return elm$json$Json$Decode$succeed(author$project$SMT$SolverInitializing);
 			case 'SolverReady':
-				return elm$json$Json$Decode$succeed(3);
+				return elm$json$Json$Decode$succeed(author$project$SMT$SolverReady);
 			case 'SolverRunning':
-				return elm$json$Json$Decode$succeed(4);
+				return elm$json$Json$Decode$succeed(author$project$SMT$SolverRunning);
 			default:
 				return elm$json$Json$Decode$fail('expected solver state, found \'' + (s + '\''));
 		}
@@ -7030,7 +7038,7 @@ var author$project$Puzzle$quoteIndexWords = function (puzzle) {
 						A2(
 							elm$core$List$map,
 							author$project$Util$cleanChars,
-							elm$core$String$words(puzzle.aE)))))));
+							elm$core$String$words(puzzle.quote)))))));
 };
 var author$project$Util$updateCons = F3(
 	function (k, v, d) {
@@ -7038,7 +7046,7 @@ var author$project$Util$updateCons = F3(
 			elm$core$Dict$update,
 			k,
 			function (mvs) {
-				if (mvs.$ === 1) {
+				if (mvs.$ === 'Nothing') {
 					return elm$core$Maybe$Just(
 						_List_fromArray(
 							[v]));
@@ -7066,23 +7074,23 @@ var author$project$Puzzle$quoteIndices = function (puzzle) {
 				function (i, c) {
 					return _Utils_Tuple2(c, i);
 				}),
-			author$project$Util$cleanChars(puzzle.aE)));
+			author$project$Util$cleanChars(puzzle.quote)));
 };
 var author$project$Solver$Distinct = function (a) {
-	return {$: 2, a: a};
+	return {$: 'Distinct', a: a};
 };
 var author$project$Solver$IsInt = function (a) {
-	return {$: 0, a: a};
+	return {$: 'IsInt', a: a};
 };
 var author$project$Solver$NotAscending = function (a) {
-	return {$: 3, a: a};
+	return {$: 'NotAscending', a: a};
 };
 var author$project$Solver$NotSameWord = function (a) {
-	return {$: 4, a: a};
+	return {$: 'NotSameWord', a: a};
 };
 var author$project$Solver$OneOf = F2(
 	function (a, b) {
-		return {$: 1, a: a, b: b};
+		return {$: 'OneOf', a: a, b: b};
 	});
 var elm$core$Char$toUpper = _Char_toUpper;
 var elm$core$Dict$values = function (dict) {
@@ -7102,7 +7110,7 @@ var elm$core$List$concatMap = F2(
 	});
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
-		if (!maybe.$) {
+		if (maybe.$ === 'Just') {
 			var value = maybe.a;
 			return value;
 		} else {
@@ -7129,9 +7137,9 @@ var author$project$Solver$constraintsOfPuzzle = F2(
 								A2(varName, clueIndex, numIndex),
 								c);
 						},
-						A2(elm$core$List$indexedMap, elm$core$Tuple$pair, clue.ag));
+						A2(elm$core$List$indexedMap, elm$core$Tuple$pair, clue.answer));
 				}),
-			puzzle.W);
+			puzzle.clues);
 		var numberingConstraints = A2(
 			elm$core$List$concatMap,
 			function (vs) {
@@ -7203,7 +7211,7 @@ var author$project$SMT$wordOf = function (x) {
 	return '(' + (author$project$SMT$wordFun + (' ' + (x + ')')));
 };
 var author$project$Solver$isDefn = function (c) {
-	if (!c.$) {
+	if (c.$ === 'IsInt') {
 		return true;
 	} else {
 		return false;
@@ -7254,10 +7262,10 @@ var author$project$SMT$or = function (props) {
 };
 var author$project$Solver$smt2OfConstraint = function (c) {
 	switch (c.$) {
-		case 0:
+		case 'IsInt':
 			var _var = c.a;
 			return '(declare-const ' + (_var + ' Int)');
-		case 1:
+		case 'OneOf':
 			var _var = c.a;
 			var ns = c.b;
 			return author$project$SMT$assert(
@@ -7271,7 +7279,7 @@ var author$project$Solver$smt2OfConstraint = function (c) {
 								elm$core$String$fromInt(n));
 						},
 						ns)));
-		case 2:
+		case 'Distinct':
 			if (!c.a.b) {
 				return author$project$SMT$assert('true');
 			} else {
@@ -7279,7 +7287,7 @@ var author$project$Solver$smt2OfConstraint = function (c) {
 				return author$project$SMT$assert(
 					author$project$SMT$distinct(vars));
 			}
-		case 3:
+		case 'NotAscending':
 			var vars = c.a;
 			return author$project$SMT$assert(
 				author$project$SMT$not(
@@ -7356,7 +7364,7 @@ var author$project$Solver$smt2OfConstraints = F2(
 		var vars = A2(
 			elm$core$List$filterMap,
 			function (c) {
-				if (!c.$) {
+				if (c.$ === 'IsInt') {
 					var v = c.a;
 					return elm$core$Maybe$Just(v);
 				} else {
@@ -7390,70 +7398,73 @@ var author$project$Solver$generateNumberingProblem = function (puzzle) {
 				author$project$Puzzle$quoteIndices(puzzle),
 				puzzle)));
 };
-var author$project$Solver$SMTFailed = {$: 2};
-var author$project$Solver$missingResult = {ag: author$project$Solver$SMTFailed, ak: 0};
+var author$project$Solver$SMTFailed = {$: 'SMTFailed'};
+var author$project$Solver$missingResult = {answer: author$project$Solver$SMTFailed, elapsed: 0};
 var author$project$Solver$SMTOk = function (a) {
-	return {$: 0, a: a};
+	return {$: 'SMTOk', a: a};
 };
-var author$project$Solver$SMTTimeout = {$: 1};
+var author$project$Solver$SMTTimeout = {$: 'SMTTimeout'};
 var elm$core$Basics$always = F2(
 	function (a, _n0) {
 		return a;
 	});
 var elm$parser$Parser$Advanced$Bad = F2(
 	function (a, b) {
-		return {$: 1, a: a, b: b};
+		return {$: 'Bad', a: a, b: b};
 	});
 var elm$parser$Parser$Advanced$Good = F3(
 	function (a, b, c) {
-		return {$: 0, a: a, b: b, c: c};
+		return {$: 'Good', a: a, b: b, c: c};
 	});
-var elm$parser$Parser$Advanced$Parser = elm$core$Basics$identity;
+var elm$parser$Parser$Advanced$Parser = function (a) {
+	return {$: 'Parser', a: a};
+};
 var elm$parser$Parser$Advanced$map2 = F3(
 	function (func, _n0, _n1) {
-		var parseA = _n0;
-		var parseB = _n1;
-		return function (s0) {
-			var _n2 = parseA(s0);
-			if (_n2.$ === 1) {
-				var p = _n2.a;
-				var x = _n2.b;
-				return A2(elm$parser$Parser$Advanced$Bad, p, x);
-			} else {
-				var p1 = _n2.a;
-				var a = _n2.b;
-				var s1 = _n2.c;
-				var _n3 = parseB(s1);
-				if (_n3.$ === 1) {
-					var p2 = _n3.a;
-					var x = _n3.b;
-					return A2(elm$parser$Parser$Advanced$Bad, p1 || p2, x);
+		var parseA = _n0.a;
+		var parseB = _n1.a;
+		return elm$parser$Parser$Advanced$Parser(
+			function (s0) {
+				var _n2 = parseA(s0);
+				if (_n2.$ === 'Bad') {
+					var p = _n2.a;
+					var x = _n2.b;
+					return A2(elm$parser$Parser$Advanced$Bad, p, x);
 				} else {
-					var p2 = _n3.a;
-					var b = _n3.b;
-					var s2 = _n3.c;
-					return A3(
-						elm$parser$Parser$Advanced$Good,
-						p1 || p2,
-						A2(func, a, b),
-						s2);
+					var p1 = _n2.a;
+					var a = _n2.b;
+					var s1 = _n2.c;
+					var _n3 = parseB(s1);
+					if (_n3.$ === 'Bad') {
+						var p2 = _n3.a;
+						var x = _n3.b;
+						return A2(elm$parser$Parser$Advanced$Bad, p1 || p2, x);
+					} else {
+						var p2 = _n3.a;
+						var b = _n3.b;
+						var s2 = _n3.c;
+						return A3(
+							elm$parser$Parser$Advanced$Good,
+							p1 || p2,
+							A2(func, a, b),
+							s2);
+					}
 				}
-			}
-		};
+			});
 	});
 var elm$parser$Parser$Advanced$ignorer = F2(
 	function (keepParser, ignoreParser) {
 		return A3(elm$parser$Parser$Advanced$map2, elm$core$Basics$always, keepParser, ignoreParser);
 	});
 var elm$parser$Parser$ignorer = elm$parser$Parser$Advanced$ignorer;
-var elm$parser$Parser$ExpectingInt = {$: 1};
+var elm$parser$Parser$ExpectingInt = {$: 'ExpectingInt'};
 var elm$parser$Parser$Advanced$consumeBase = _Parser_consumeBase;
 var elm$parser$Parser$Advanced$consumeBase16 = _Parser_consumeBase16;
 var elm$core$String$slice = _String_slice;
 var elm$core$String$toFloat = _String_toFloat;
 var elm$parser$Parser$Advanced$bumpOffset = F2(
 	function (newOffset, s) {
-		return {ai: s.ai + (newOffset - s.b), c: s.c, d: s.d, b: newOffset, aa: s.aa, a: s.a};
+		return {col: s.col + (newOffset - s.offset), context: s.context, indent: s.indent, offset: newOffset, row: s.row, src: s.src};
 	});
 var elm$parser$Parser$Advanced$chompBase10 = _Parser_chompBase10;
 var elm$core$Basics$negate = function (n) {
@@ -7480,25 +7491,25 @@ var elm$parser$Parser$Advanced$consumeDotAndExp = F2(
 	});
 var elm$parser$Parser$Advanced$AddRight = F2(
 	function (a, b) {
-		return {$: 1, a: a, b: b};
+		return {$: 'AddRight', a: a, b: b};
 	});
 var elm$parser$Parser$Advanced$DeadEnd = F4(
 	function (row, col, problem, contextStack) {
-		return {ai: col, bG: contextStack, bb: problem, aa: row};
+		return {col: col, contextStack: contextStack, problem: problem, row: row};
 	});
-var elm$parser$Parser$Advanced$Empty = {$: 0};
+var elm$parser$Parser$Advanced$Empty = {$: 'Empty'};
 var elm$parser$Parser$Advanced$fromState = F2(
 	function (s, x) {
 		return A2(
 			elm$parser$Parser$Advanced$AddRight,
 			elm$parser$Parser$Advanced$Empty,
-			A4(elm$parser$Parser$Advanced$DeadEnd, s.aa, s.ai, x, s.c));
+			A4(elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
 	});
 var elm$parser$Parser$Advanced$finalizeInt = F5(
 	function (invalid, handler, startOffset, _n0, s) {
 		var endOffset = _n0.a;
 		var n = _n0.b;
-		if (handler.$ === 1) {
+		if (handler.$ === 'Err') {
 			var x = handler.a;
 			return A2(
 				elm$parser$Parser$Advanced$Bad,
@@ -7508,7 +7519,7 @@ var elm$parser$Parser$Advanced$finalizeInt = F5(
 			var toValue = handler.a;
 			return _Utils_eq(startOffset, endOffset) ? A2(
 				elm$parser$Parser$Advanced$Bad,
-				_Utils_cmp(s.b, startOffset) < 0,
+				_Utils_cmp(s.offset, startOffset) < 0,
 				A2(elm$parser$Parser$Advanced$fromState, s, invalid)) : A3(
 				elm$parser$Parser$Advanced$Good,
 				true,
@@ -7526,23 +7537,23 @@ var elm$parser$Parser$Advanced$fromInfo = F4(
 var elm$parser$Parser$Advanced$finalizeFloat = F6(
 	function (invalid, expecting, intSettings, floatSettings, intPair, s) {
 		var intOffset = intPair.a;
-		var floatOffset = A2(elm$parser$Parser$Advanced$consumeDotAndExp, intOffset, s.a);
+		var floatOffset = A2(elm$parser$Parser$Advanced$consumeDotAndExp, intOffset, s.src);
 		if (floatOffset < 0) {
 			return A2(
 				elm$parser$Parser$Advanced$Bad,
 				true,
-				A4(elm$parser$Parser$Advanced$fromInfo, s.aa, s.ai - (floatOffset + s.b), invalid, s.c));
+				A4(elm$parser$Parser$Advanced$fromInfo, s.row, s.col - (floatOffset + s.offset), invalid, s.context));
 		} else {
-			if (_Utils_eq(s.b, floatOffset)) {
+			if (_Utils_eq(s.offset, floatOffset)) {
 				return A2(
 					elm$parser$Parser$Advanced$Bad,
 					false,
 					A2(elm$parser$Parser$Advanced$fromState, s, expecting));
 			} else {
 				if (_Utils_eq(intOffset, floatOffset)) {
-					return A5(elm$parser$Parser$Advanced$finalizeInt, invalid, intSettings, s.b, intPair, s);
+					return A5(elm$parser$Parser$Advanced$finalizeInt, invalid, intSettings, s.offset, intPair, s);
 				} else {
-					if (floatSettings.$ === 1) {
+					if (floatSettings.$ === 'Err') {
 						var x = floatSettings.a;
 						return A2(
 							elm$parser$Parser$Advanced$Bad,
@@ -7551,8 +7562,8 @@ var elm$parser$Parser$Advanced$finalizeFloat = F6(
 					} else {
 						var toValue = floatSettings.a;
 						var _n1 = elm$core$String$toFloat(
-							A3(elm$core$String$slice, s.b, floatOffset, s.a));
-						if (_n1.$ === 1) {
+							A3(elm$core$String$slice, s.offset, floatOffset, s.src));
+						if (_n1.$ === 'Nothing') {
 							return A2(
 								elm$parser$Parser$Advanced$Bad,
 								true,
@@ -7571,59 +7582,60 @@ var elm$parser$Parser$Advanced$finalizeFloat = F6(
 		}
 	});
 var elm$parser$Parser$Advanced$number = function (c) {
-	return function (s) {
-		if (A3(elm$parser$Parser$Advanced$isAsciiCode, 48, s.b, s.a)) {
-			var zeroOffset = s.b + 1;
-			var baseOffset = zeroOffset + 1;
-			return A3(elm$parser$Parser$Advanced$isAsciiCode, 120, zeroOffset, s.a) ? A5(
-				elm$parser$Parser$Advanced$finalizeInt,
-				c.bX,
-				c.aY,
-				baseOffset,
-				A2(elm$parser$Parser$Advanced$consumeBase16, baseOffset, s.a),
-				s) : (A3(elm$parser$Parser$Advanced$isAsciiCode, 111, zeroOffset, s.a) ? A5(
-				elm$parser$Parser$Advanced$finalizeInt,
-				c.bX,
-				c.a7,
-				baseOffset,
-				A3(elm$parser$Parser$Advanced$consumeBase, 8, baseOffset, s.a),
-				s) : (A3(elm$parser$Parser$Advanced$isAsciiCode, 98, zeroOffset, s.a) ? A5(
-				elm$parser$Parser$Advanced$finalizeInt,
-				c.bX,
-				c.aM,
-				baseOffset,
-				A3(elm$parser$Parser$Advanced$consumeBase, 2, baseOffset, s.a),
-				s) : A6(
-				elm$parser$Parser$Advanced$finalizeFloat,
-				c.bX,
-				c.aT,
-				c.a0,
-				c.aU,
-				_Utils_Tuple2(zeroOffset, 0),
-				s)));
-		} else {
-			return A6(
-				elm$parser$Parser$Advanced$finalizeFloat,
-				c.bX,
-				c.aT,
-				c.a0,
-				c.aU,
-				A3(elm$parser$Parser$Advanced$consumeBase, 10, s.b, s.a),
-				s);
-		}
-	};
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			if (A3(elm$parser$Parser$Advanced$isAsciiCode, 48, s.offset, s.src)) {
+				var zeroOffset = s.offset + 1;
+				var baseOffset = zeroOffset + 1;
+				return A3(elm$parser$Parser$Advanced$isAsciiCode, 120, zeroOffset, s.src) ? A5(
+					elm$parser$Parser$Advanced$finalizeInt,
+					c.invalid,
+					c.hex,
+					baseOffset,
+					A2(elm$parser$Parser$Advanced$consumeBase16, baseOffset, s.src),
+					s) : (A3(elm$parser$Parser$Advanced$isAsciiCode, 111, zeroOffset, s.src) ? A5(
+					elm$parser$Parser$Advanced$finalizeInt,
+					c.invalid,
+					c.octal,
+					baseOffset,
+					A3(elm$parser$Parser$Advanced$consumeBase, 8, baseOffset, s.src),
+					s) : (A3(elm$parser$Parser$Advanced$isAsciiCode, 98, zeroOffset, s.src) ? A5(
+					elm$parser$Parser$Advanced$finalizeInt,
+					c.invalid,
+					c.binary,
+					baseOffset,
+					A3(elm$parser$Parser$Advanced$consumeBase, 2, baseOffset, s.src),
+					s) : A6(
+					elm$parser$Parser$Advanced$finalizeFloat,
+					c.invalid,
+					c.expecting,
+					c._int,
+					c._float,
+					_Utils_Tuple2(zeroOffset, 0),
+					s)));
+			} else {
+				return A6(
+					elm$parser$Parser$Advanced$finalizeFloat,
+					c.invalid,
+					c.expecting,
+					c._int,
+					c._float,
+					A3(elm$parser$Parser$Advanced$consumeBase, 10, s.offset, s.src),
+					s);
+			}
+		});
 };
 var elm$parser$Parser$Advanced$int = F2(
 	function (expecting, invalid) {
 		return elm$parser$Parser$Advanced$number(
 			{
-				aM: elm$core$Result$Err(invalid),
-				aT: expecting,
-				aU: elm$core$Result$Err(invalid),
-				aY: elm$core$Result$Err(invalid),
-				a0: elm$core$Result$Ok(elm$core$Basics$identity),
-				bX: invalid,
-				a7: elm$core$Result$Err(invalid)
+				binary: elm$core$Result$Err(invalid),
+				expecting: expecting,
+				_float: elm$core$Result$Err(invalid),
+				hex: elm$core$Result$Err(invalid),
+				_int: elm$core$Result$Ok(elm$core$Basics$identity),
+				invalid: invalid,
+				octal: elm$core$Result$Err(invalid)
 			});
 	});
 var elm$parser$Parser$int = A2(elm$parser$Parser$Advanced$int, elm$parser$Parser$ExpectingInt, elm$parser$Parser$ExpectingInt);
@@ -7637,13 +7649,13 @@ var elm$parser$Parser$Advanced$chompWhileHelp = F5(
 	function (isGood, offset, row, col, s0) {
 		chompWhileHelp:
 		while (true) {
-			var newOffset = A3(elm$parser$Parser$Advanced$isSubChar, isGood, offset, s0.a);
+			var newOffset = A3(elm$parser$Parser$Advanced$isSubChar, isGood, offset, s0.src);
 			if (_Utils_eq(newOffset, -1)) {
 				return A3(
 					elm$parser$Parser$Advanced$Good,
-					_Utils_cmp(s0.b, offset) < 0,
-					0,
-					{ai: col, c: s0.c, d: s0.d, b: offset, aa: row, a: s0.a});
+					_Utils_cmp(s0.offset, offset) < 0,
+					_Utils_Tuple0,
+					{col: col, context: s0.context, indent: s0.indent, offset: offset, row: row, src: s0.src});
 			} else {
 				if (_Utils_eq(newOffset, -2)) {
 					var $temp$isGood = isGood,
@@ -7674,47 +7686,56 @@ var elm$parser$Parser$Advanced$chompWhileHelp = F5(
 		}
 	});
 var elm$parser$Parser$Advanced$chompWhile = function (isGood) {
-	return function (s) {
-		return A5(elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.b, s.aa, s.ai, s);
-	};
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return A5(elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.offset, s.row, s.col, s);
+		});
 };
 var elm$parser$Parser$Advanced$spaces = elm$parser$Parser$Advanced$chompWhile(
 	function (c) {
-		return (c === ' ') || ((c === '\n') || (c === '\r'));
+		return _Utils_eq(
+			c,
+			_Utils_chr(' ')) || (_Utils_eq(
+			c,
+			_Utils_chr('\n')) || _Utils_eq(
+			c,
+			_Utils_chr('\r')));
 	});
 var elm$parser$Parser$spaces = elm$parser$Parser$Advanced$spaces;
 var elm$parser$Parser$Advanced$succeed = function (a) {
-	return function (s) {
-		return A3(elm$parser$Parser$Advanced$Good, false, a, s);
-	};
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return A3(elm$parser$Parser$Advanced$Good, false, a, s);
+		});
 };
 var elm$parser$Parser$succeed = elm$parser$Parser$Advanced$succeed;
 var elm$parser$Parser$ExpectingSymbol = function (a) {
-	return {$: 8, a: a};
+	return {$: 'ExpectingSymbol', a: a};
 };
 var elm$parser$Parser$Advanced$Token = F2(
 	function (a, b) {
-		return {$: 0, a: a, b: b};
+		return {$: 'Token', a: a, b: b};
 	});
 var elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
 var elm$parser$Parser$Advanced$token = function (_n0) {
 	var str = _n0.a;
 	var expecting = _n0.b;
 	var progress = !elm$core$String$isEmpty(str);
-	return function (s) {
-		var _n1 = A5(elm$parser$Parser$Advanced$isSubString, str, s.b, s.aa, s.ai, s.a);
-		var newOffset = _n1.a;
-		var newRow = _n1.b;
-		var newCol = _n1.c;
-		return _Utils_eq(newOffset, -1) ? A2(
-			elm$parser$Parser$Advanced$Bad,
-			false,
-			A2(elm$parser$Parser$Advanced$fromState, s, expecting)) : A3(
-			elm$parser$Parser$Advanced$Good,
-			progress,
-			0,
-			{ai: newCol, c: s.c, d: s.d, b: newOffset, aa: newRow, a: s.a});
-	};
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			var _n1 = A5(elm$parser$Parser$Advanced$isSubString, str, s.offset, s.row, s.col, s.src);
+			var newOffset = _n1.a;
+			var newRow = _n1.b;
+			var newCol = _n1.c;
+			return _Utils_eq(newOffset, -1) ? A2(
+				elm$parser$Parser$Advanced$Bad,
+				false,
+				A2(elm$parser$Parser$Advanced$fromState, s, expecting)) : A3(
+				elm$parser$Parser$Advanced$Good,
+				progress,
+				_Utils_Tuple0,
+				{col: newCol, context: s.context, indent: s.indent, offset: newOffset, row: newRow, src: s.src});
+		});
 };
 var elm$parser$Parser$Advanced$symbol = elm$parser$Parser$Advanced$token;
 var elm$parser$Parser$symbol = function (str) {
@@ -7739,7 +7760,7 @@ var author$project$Solver$smtValueParser = A2(
 						elm$parser$Parser$succeed(
 							F3(
 								function (clue, letter, number) {
-									return {aw: clue, ay: letter, aB: number};
+									return {clue: clue, letter: letter, number: number};
 								})),
 						elm$parser$Parser$spaces),
 					elm$parser$Parser$symbol('(')),
@@ -7754,16 +7775,17 @@ var author$project$Solver$smtValueParser = A2(
 		elm$parser$Parser$int,
 		elm$parser$Parser$symbol(')')));
 var elm$parser$Parser$Advanced$lazy = function (thunk) {
-	return function (s) {
-		var _n0 = thunk(0);
-		var parse = _n0;
-		return parse(s);
-	};
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			var _n0 = thunk(_Utils_Tuple0);
+			var parse = _n0.a;
+			return parse(s);
+		});
 };
 var elm$parser$Parser$lazy = elm$parser$Parser$Advanced$lazy;
 var elm$parser$Parser$Advanced$Append = F2(
 	function (a, b) {
-		return {$: 2, a: a, b: b};
+		return {$: 'Append', a: a, b: b};
 	});
 var elm$parser$Parser$Advanced$oneOfHelp = F3(
 	function (s0, bag, parsers) {
@@ -7772,10 +7794,10 @@ var elm$parser$Parser$Advanced$oneOfHelp = F3(
 			if (!parsers.b) {
 				return A2(elm$parser$Parser$Advanced$Bad, false, bag);
 			} else {
-				var parse = parsers.a;
+				var parse = parsers.a.a;
 				var remainingParsers = parsers.b;
 				var _n1 = parse(s0);
-				if (!_n1.$) {
+				if (_n1.$ === 'Good') {
 					var step = _n1;
 					return step;
 				} else {
@@ -7798,9 +7820,10 @@ var elm$parser$Parser$Advanced$oneOfHelp = F3(
 		}
 	});
 var elm$parser$Parser$Advanced$oneOf = function (parsers) {
-	return function (s) {
-		return A3(elm$parser$Parser$Advanced$oneOfHelp, s, elm$parser$Parser$Advanced$Empty, parsers);
-	};
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return A3(elm$parser$Parser$Advanced$oneOfHelp, s, elm$parser$Parser$Advanced$Empty, parsers);
+		});
 };
 var elm$parser$Parser$oneOf = elm$parser$Parser$Advanced$oneOf;
 var author$project$Util$listOf = function (item) {
@@ -7827,16 +7850,17 @@ var author$project$Util$listOf = function (item) {
 				elm$parser$Parser$succeed(_List_Nil)
 			]));
 };
-var elm$parser$Parser$ExpectingEnd = {$: 10};
+var elm$parser$Parser$ExpectingEnd = {$: 'ExpectingEnd'};
 var elm$parser$Parser$Advanced$end = function (x) {
-	return function (s) {
-		return _Utils_eq(
-			elm$core$String$length(s.a),
-			s.b) ? A3(elm$parser$Parser$Advanced$Good, false, 0, s) : A2(
-			elm$parser$Parser$Advanced$Bad,
-			false,
-			A2(elm$parser$Parser$Advanced$fromState, s, x));
-	};
+	return elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return _Utils_eq(
+				elm$core$String$length(s.src),
+				s.offset) ? A3(elm$parser$Parser$Advanced$Good, false, _Utils_Tuple0, s) : A2(
+				elm$parser$Parser$Advanced$Bad,
+				false,
+				A2(elm$parser$Parser$Advanced$fromState, s, x));
+		});
 };
 var elm$parser$Parser$end = elm$parser$Parser$Advanced$end(elm$parser$Parser$ExpectingEnd);
 var author$project$Solver$smtModelParser = A2(
@@ -7888,19 +7912,19 @@ var author$project$Solver$smtAnswerParser = elm$parser$Parser$oneOf(
 		]));
 var elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
-		return {ai: col, bb: problem, aa: row};
+		return {col: col, problem: problem, row: row};
 	});
 var elm$parser$Parser$problemToDeadEnd = function (p) {
-	return A3(elm$parser$Parser$DeadEnd, p.aa, p.ai, p.bb);
+	return A3(elm$parser$Parser$DeadEnd, p.row, p.col, p.problem);
 };
 var elm$parser$Parser$Advanced$bagToList = F2(
 	function (bag, list) {
 		bagToList:
 		while (true) {
 			switch (bag.$) {
-				case 0:
+				case 'Empty':
 					return list;
-				case 1:
+				case 'AddRight':
 					var bag1 = bag.a;
 					var x = bag.b;
 					var $temp$bag = bag1,
@@ -7921,10 +7945,10 @@ var elm$parser$Parser$Advanced$bagToList = F2(
 	});
 var elm$parser$Parser$Advanced$run = F2(
 	function (_n0, src) {
-		var parse = _n0;
+		var parse = _n0.a;
 		var _n1 = parse(
-			{ai: 1, c: _List_Nil, d: 1, b: 0, aa: 1, a: src});
-		if (!_n1.$) {
+			{col: 1, context: _List_Nil, indent: 1, offset: 0, row: 1, src: src});
+		if (_n1.$ === 'Good') {
 			var value = _n1.b;
 			return elm$core$Result$Ok(value);
 		} else {
@@ -7936,7 +7960,7 @@ var elm$parser$Parser$Advanced$run = F2(
 var elm$parser$Parser$run = F2(
 	function (parser, source) {
 		var _n0 = A2(elm$parser$Parser$Advanced$run, parser, source);
-		if (!_n0.$) {
+		if (_n0.$ === 'Ok') {
 			var a = _n0.a;
 			return elm$core$Result$Ok(a);
 		} else {
@@ -7956,7 +7980,7 @@ var author$project$Solver$smtResultDecoder = A3(
 					elm$parser$Parser$run,
 					author$project$Solver$smtAnswerParser,
 					A2(elm$core$String$join, '\n', stdout)));
-			return {ag: answer, ak: elapsed};
+			return {answer: answer, elapsed: elapsed};
 		}),
 	A2(elm$json$Json$Decode$field, 'elapsed', elm$json$Json$Decode$int),
 	A2(
@@ -7965,11 +7989,11 @@ var author$project$Solver$smtResultDecoder = A3(
 		elm$json$Json$Decode$list(elm$json$Json$Decode$string)));
 var author$project$Trie$compareEntry = F2(
 	function (e1, e2) {
-		return A2(elm$core$Basics$compare, e1.U, e2.U);
+		return A2(elm$core$Basics$compare, e1.word, e2.word);
 	});
 var author$project$Trie$insert = F2(
 	function (entry, t1) {
-		var _n0 = elm$core$String$toList(entry.U);
+		var _n0 = elm$core$String$toList(entry.word);
 		if ((_n0.b && _n0.b.b) && _n0.b.b.b) {
 			var c1 = _n0.a;
 			var _n1 = _n0.b;
@@ -8014,10 +8038,10 @@ var author$project$Wordlist$fromSourceStrings = F2(
 				elm$core$List$map,
 				function (word) {
 					return {
-						bI: '',
-						ar: source,
-						R: '',
-						U: elm$core$String$toUpper(word)
+						desc: '',
+						source: source,
+						url: '',
+						word: elm$core$String$toUpper(word)
 					};
 				},
 				words));
@@ -8046,104 +8070,104 @@ var elm$core$Basics$clamp = F3(
 		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var elm$http$Http$fractionReceived = function (p) {
-	var _n0 = p.aF;
-	if (_n0.$ === 1) {
+	var _n0 = p.size;
+	if (_n0.$ === 'Nothing') {
 		return 0;
 	} else {
 		var n = _n0.a;
-		return (!n) ? 1 : A3(elm$core$Basics$clamp, 0, 1, p.cb / n);
+		return (!n) ? 1 : A3(elm$core$Basics$clamp, 0, 1, p.received / n);
 	}
 };
 var author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 0:
+			case 'Title':
 				var title = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
 						author$project$Puzzle$fixupAnswerInitials(
-							A2(author$project$Puzzle$setTitle, title, model.e))));
-			case 1:
+							A2(author$project$Puzzle$setTitle, title, model.puzzle))));
+			case 'Author':
 				var author = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
 						author$project$Puzzle$fixupAnswerInitials(
-							A2(author$project$Puzzle$setAuthor, author, model.e))));
-			case 2:
+							A2(author$project$Puzzle$setAuthor, author, model.puzzle))));
+			case 'Quote':
 				var quote = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
 						author$project$Puzzle$fixupAnswerInitials(
-							A2(author$project$Puzzle$setQuote, quote, model.e))));
-			case 3:
+							A2(author$project$Puzzle$setQuote, quote, model.puzzle))));
+			case 'Answer':
 				var idx = msg.a;
 				var answer = msg.b;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
-						A3(author$project$Puzzle$updateAnswer, idx, answer, model.e)));
-			case 4:
+						A3(author$project$Puzzle$updateAnswer, idx, answer, model.puzzle)));
+			case 'SelectClue':
 				var idx = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					_Utils_update(
 						model,
 						{
-							t: ((0 <= idx) && ((_Utils_cmp(
+							selectedClues: ((0 <= idx) && ((_Utils_cmp(
 								idx,
-								elm$core$List$length(model.e.W)) < 0) && (!A2(elm$core$List$member, idx, model.t)))) ? _List_fromArray(
-								[idx]) : model.t
+								elm$core$List$length(model.puzzle.clues)) < 0) && (!A2(elm$core$List$member, idx, model.selectedClues)))) ? _List_fromArray(
+								[idx]) : model.selectedClues
 						}));
-			case 5:
+			case 'SelectClues':
 				var idxs = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					_Utils_update(
 						model,
 						{
-							t: A2(
+							selectedClues: A2(
 								elm$core$List$filter,
 								function (idx) {
 									return (0 <= idx) && (_Utils_cmp(
 										idx,
-										elm$core$List$length(model.e.W)) < 0);
+										elm$core$List$length(model.puzzle.clues)) < 0);
 								},
 								idxs)
 						}));
-			case 6:
+			case 'Hint':
 				var idx = msg.a;
 				var hint = msg.b;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
-						A3(author$project$Puzzle$updateHint, idx, hint, model.e)));
-			case 7:
+						A3(author$project$Puzzle$updateHint, idx, hint, model.puzzle)));
+			case 'Number':
 				var idx = msg.a;
 				var numIdx = msg.b;
 				var newNum = msg.c;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
@@ -8152,28 +8176,28 @@ var author$project$Main$update = F2(
 							idx,
 							numIdx,
 							elm$core$String$toInt(newNum),
-							model.e)));
-			case 8:
+							model.puzzle)));
+			case 'Phase':
 				var phase = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
-						A2(author$project$Puzzle$setPhase, phase, model.e)));
-			case 9:
-				if (!msg.a) {
+						A2(author$project$Puzzle$setPhase, phase, model.puzzle)));
+			case 'Save':
+				if (msg.a.$ === 'CurrentPuzzle') {
 					var _n1 = msg.a;
 					var now = msg.b;
 					var newModel = A2(
 						author$project$Main$asCurrentPuzzleIn,
 						model,
-						A2(author$project$Puzzle$setTimeModified, now, model.e));
+						A2(author$project$Puzzle$setTimeModified, now, model.puzzle));
 					return _Utils_Tuple2(
 						newModel,
 						author$project$Main$saveCurrentPuzzle(
-							author$project$Puzzle$encode(newModel.e)));
+							author$project$Puzzle$encode(newModel.puzzle)));
 				} else {
 					var _n2 = msg.a;
 					return _Utils_Tuple2(
@@ -8182,21 +8206,21 @@ var author$project$Main$update = F2(
 							_List_fromArray(
 								[
 									author$project$Main$saveCurrentPuzzle(
-									author$project$Puzzle$encode(model.e)),
+									author$project$Puzzle$encode(model.puzzle)),
 									author$project$Main$savePuzzles(
-									A2(elm$json$Json$Encode$list, author$project$Puzzle$encode, model.s))
+									A2(elm$json$Json$Encode$list, author$project$Puzzle$encode, model.savedPuzzles))
 								])));
 				}
-			case 10:
+			case 'NewPuzzle':
 				return A2(
 					author$project$Main$andSave,
-					1,
+					author$project$Main$All,
 					A2(author$project$Main$popCurrentPuzzle, author$project$Puzzle$empty, model));
-			case 11:
+			case 'DeletePuzzle':
 				return _Utils_Tuple2(
 					A2(author$project$Main$pendingDeletion, true, model),
 					elm$core$Platform$Cmd$none);
-			case 12:
+			case 'ReallyDeletePuzzle':
 				if (!msg.a) {
 					return _Utils_Tuple2(
 						A2(author$project$Main$pendingDeletion, false, model),
@@ -8204,13 +8228,13 @@ var author$project$Main$update = F2(
 				} else {
 					return A2(
 						author$project$Main$andSave,
-						0,
+						author$project$Main$CurrentPuzzle,
 						A2(
 							author$project$Main$pendingDeletion,
 							false,
 							A2(author$project$Main$asCurrentPuzzleIn, model, author$project$Puzzle$empty)));
 				}
-			case 13:
+			case 'SelectPuzzle':
 				var sIndex = msg.a;
 				return _Utils_Tuple2(
 					A2(
@@ -8218,43 +8242,43 @@ var author$project$Main$update = F2(
 						model,
 						elm$core$List$head(
 							function (index) {
-								return A2(elm$core$List$drop, index, model.s);
+								return A2(elm$core$List$drop, index, model.savedPuzzles);
 							}(
 								A2(
 									elm$core$Maybe$withDefault,
-									elm$core$List$length(model.s),
+									elm$core$List$length(model.savedPuzzles),
 									elm$core$String$toInt(sIndex))))),
 					elm$core$Platform$Cmd$none);
-			case 14:
+			case 'LoadPuzzle':
 				var savedPuzzle = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					1,
+					author$project$Main$All,
 					A2(
 						author$project$Main$loadPuzzle,
 						savedPuzzle,
 						author$project$Main$clearSelectedPuzzle(model)));
-			case 15:
+			case 'ClearNumbering':
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$withSolverResult,
 						elm$core$Maybe$Nothing,
 						A2(
 							author$project$Main$asCurrentPuzzleIn,
 							model,
-							author$project$Puzzle$clearNumbering(model.e))));
-			case 16:
+							author$project$Puzzle$clearNumbering(model.puzzle))));
+			case 'SolveNumbering':
 				return _Utils_Tuple2(
 					model,
 					author$project$Main$solveNumbering(
-						author$project$Solver$generateNumberingProblem(model.e)));
-			case 17:
+						author$project$Solver$generateNumberingProblem(model.puzzle)));
+			case 'SolverResults':
 				var json = msg.a;
 				return A2(
 					author$project$Main$andSave,
-					0,
+					author$project$Main$CurrentPuzzle,
 					A2(
 						author$project$Main$tryApplySMTNumberingTo,
 						model,
@@ -8262,7 +8286,7 @@ var author$project$Main$update = F2(
 							elm$core$Result$withDefault,
 							author$project$Solver$missingResult,
 							A2(elm$json$Json$Decode$decodeValue, author$project$Solver$smtResultDecoder, json))));
-			case 18:
+			case 'SolverStateChanged':
 				var json = msg.a;
 				return _Utils_Tuple2(
 					A2(
@@ -8270,18 +8294,18 @@ var author$project$Main$update = F2(
 						model,
 						A2(
 							elm$core$Result$withDefault,
-							0,
+							author$project$SMT$SolverUnloaded,
 							A2(elm$json$Json$Decode$decodeValue, author$project$SMT$solverStateDecoder, json))),
 					elm$core$Platform$Cmd$none);
-			case 19:
+			case 'TimeZone':
 				var here = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{as: here}),
+						{timeZone: here}),
 					elm$core$Platform$Cmd$none);
-			case 20:
-				if (msg.b.$ === 1) {
+			case 'GotWordlist':
+				if (msg.b.$ === 'Err') {
 					var wl = msg.a;
 					var err = msg.b.a;
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
@@ -8292,12 +8316,12 @@ var author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								at: A2(author$project$Wordlist$load, wl.ar, words)
+								wordlist: A2(author$project$Wordlist$load, wl.source, words)
 							}),
 						elm$core$Platform$Cmd$none);
 				}
-			case 21:
-				if (!msg.b.$) {
+			case 'UpdateRecvProgress':
+				if (msg.b.$ === 'Sending') {
 					var wl = msg.a;
 					var progress = msg.b.a;
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
@@ -8332,7 +8356,7 @@ var elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
 		while (true) {
-			if (dict.$ === -2) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
 				return acc;
 			} else {
 				var key = dict.b;
@@ -8437,7 +8461,7 @@ var author$project$Hist$difference = F2(
 var author$project$Hist$empty = elm$core$Dict$empty;
 var author$project$Hist$fromString = function (s) {
 	var incrementCount = function (mcnt) {
-		if (mcnt.$ === 1) {
+		if (mcnt.$ === 'Nothing') {
 			return elm$core$Maybe$Just(1);
 		} else {
 			var cnt = mcnt.a;
@@ -8473,7 +8497,7 @@ var elm$core$Dict$filter = F2(
 			dict);
 	});
 var elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === -2) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
 		return true;
 	} else {
 		return false;
@@ -8523,11 +8547,11 @@ var elm$core$List$maximum = function (list) {
 var elm$core$String$fromFloat = _String_fromNumber;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
-		case 0:
+		case 'Normal':
 			return 0;
-		case 1:
+		case 'MayStopPropagation':
 			return 1;
-		case 2:
+		case 'MayPreventDefault':
 			return 2;
 		default:
 			return 3;
@@ -8740,46 +8764,46 @@ var author$project$Hist$toShortString = function (h) {
 };
 var author$project$Main$Answer = F2(
 	function (a, b) {
-		return {$: 3, a: a, b: b};
+		return {$: 'Answer', a: a, b: b};
 	});
 var author$project$Main$Author = function (a) {
-	return {$: 1, a: a};
+	return {$: 'Author', a: a};
 };
-var author$project$Main$ClearNumbering = {$: 15};
-var author$project$Main$DeletePuzzle = {$: 11};
+var author$project$Main$ClearNumbering = {$: 'ClearNumbering'};
+var author$project$Main$DeletePuzzle = {$: 'DeletePuzzle'};
 var author$project$Main$Hint = F2(
 	function (a, b) {
-		return {$: 6, a: a, b: b};
+		return {$: 'Hint', a: a, b: b};
 	});
 var author$project$Main$LoadPuzzle = function (a) {
-	return {$: 14, a: a};
+	return {$: 'LoadPuzzle', a: a};
 };
-var author$project$Main$NewPuzzle = {$: 10};
+var author$project$Main$NewPuzzle = {$: 'NewPuzzle'};
 var author$project$Main$Number = F3(
 	function (a, b, c) {
-		return {$: 7, a: a, b: b, c: c};
+		return {$: 'Number', a: a, b: b, c: c};
 	});
 var author$project$Main$Phase = function (a) {
-	return {$: 8, a: a};
+	return {$: 'Phase', a: a};
 };
 var author$project$Main$Quote = function (a) {
-	return {$: 2, a: a};
+	return {$: 'Quote', a: a};
 };
 var author$project$Main$ReallyDeletePuzzle = function (a) {
-	return {$: 12, a: a};
+	return {$: 'ReallyDeletePuzzle', a: a};
 };
 var author$project$Main$SelectClue = function (a) {
-	return {$: 4, a: a};
+	return {$: 'SelectClue', a: a};
 };
 var author$project$Main$SelectClues = function (a) {
-	return {$: 5, a: a};
+	return {$: 'SelectClues', a: a};
 };
 var author$project$Main$SelectPuzzle = function (a) {
-	return {$: 13, a: a};
+	return {$: 'SelectPuzzle', a: a};
 };
-var author$project$Main$SolveNumbering = {$: 16};
+var author$project$Main$SolveNumbering = {$: 'SolveNumbering'};
 var author$project$Main$Title = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Title', a: a};
 };
 var author$project$Main$anagramDatalistId = function (letter) {
 	return 'clue-anagrams-' + letter;
@@ -8790,7 +8814,7 @@ var author$project$Puzzle$clueFor = F2(
 			elm$core$Maybe$withDefault,
 			author$project$Puzzle$defaultClue(''),
 			elm$core$List$head(
-				A2(elm$core$List$drop, index, puzzle.W)));
+				A2(elm$core$List$drop, index, puzzle.clues)));
 	});
 var author$project$Puzzle$lettering = function () {
 	var aToZ = A2(elm$core$List$map, elm$core$String$fromChar, author$project$Util$alphabetList);
@@ -8807,7 +8831,7 @@ var author$project$Puzzle$letterFor = function (index) {
 		elm$core$List$head(
 			A2(elm$core$List$drop, index, author$project$Puzzle$lettering)));
 };
-var author$project$Util$emptySplitList = {bQ: _List_Nil, bS: _List_Nil, cf: _List_Nil, cg: _List_Nil, cm: _List_Nil};
+var author$project$Util$emptySplitList = {five: _List_Nil, four: _List_Nil, sevenPlus: _List_Nil, six: _List_Nil, three: _List_Nil};
 var author$project$Util$splitList = function (list) {
 	var loop = F2(
 		function (l, sl) {
@@ -8843,7 +8867,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									cm: A2(elm$core$List$cons, s, sl.cm)
+									three: A2(elm$core$List$cons, s, sl.three)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8853,7 +8877,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									bS: A2(elm$core$List$cons, s, sl.bS)
+									four: A2(elm$core$List$cons, s, sl.four)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8863,7 +8887,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									bQ: A2(elm$core$List$cons, s, sl.bQ)
+									five: A2(elm$core$List$cons, s, sl.five)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8873,7 +8897,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									cg: A2(elm$core$List$cons, s, sl.cg)
+									six: A2(elm$core$List$cons, s, sl.six)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8883,7 +8907,7 @@ var author$project$Util$splitList = function (list) {
 								$temp$sl = _Utils_update(
 								sl,
 								{
-									cf: A2(elm$core$List$cons, s, sl.cf)
+									sevenPlus: A2(elm$core$List$cons, s, sl.sevenPlus)
 								});
 							l = $temp$l;
 							sl = $temp$sl;
@@ -8907,7 +8931,7 @@ var author$project$Hist$foundIn = F2(
 	});
 var elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
-		if (!maybeValue.$) {
+		if (maybeValue.$ === 'Just') {
 			var value = maybeValue.a;
 			return callback(value);
 		} else {
@@ -8929,7 +8953,7 @@ var author$project$Trie$suffixes = F3(
 						A2(
 							elm$core$Basics$composeR,
 							function ($) {
-								return $.U;
+								return $.word;
 							},
 							elm$core$String$startsWith(s)),
 						A2(
@@ -8989,7 +9013,7 @@ var author$project$Wordlist$anagramsFor = F3(
 				A2(
 					elm$core$List$map,
 					function ($) {
-						return $.U;
+						return $.word;
 					},
 					A3(author$project$Trie$suffixes, prefix, s, wl)));
 		}
@@ -9144,7 +9168,7 @@ var author$project$Main$anagramAssistance = F4(
 		var letter = author$project$Puzzle$letterFor(index);
 		var clue = A2(author$project$Puzzle$clueFor, index, puzzle);
 		var prefix = function () {
-			var _n0 = A2(elm$core$List$map, elm$core$Tuple$second, clue.ag);
+			var _n0 = A2(elm$core$List$map, elm$core$Tuple$second, clue.answer);
 			if (!_n0.b) {
 				return A2(
 					elm$core$List$map,
@@ -9234,26 +9258,29 @@ var author$project$Main$anagramAssistance = F4(
 									_List_Nil));
 						},
 						anagrams)),
-					A3(anagramEntry, 3, '3 letters', split.cm),
-					A3(anagramEntry, 4, '4 letters', split.bS),
-					A3(anagramEntry, 5, '5 letters', split.bQ),
-					A3(anagramEntry, 6, '6 letters', split.cg),
-					A3(anagramEntry, 7, '7+ letters', split.cf)
+					A3(anagramEntry, 3, '3 letters', split.three),
+					A3(anagramEntry, 4, '4 letters', split.four),
+					A3(anagramEntry, 5, '5 letters', split.five),
+					A3(anagramEntry, 6, '6 letters', split.six),
+					A3(anagramEntry, 7, '7+ letters', split.sevenPlus)
 				]));
 	});
 var author$project$Main$baseTabs = 3;
-var elm$core$Set$Set_elm_builtin = elm$core$Basics$identity;
-var elm$core$Set$empty = elm$core$Dict$empty;
+var elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var elm$core$Set$empty = elm$core$Set$Set_elm_builtin(elm$core$Dict$empty);
 var elm$core$Set$insert = F2(
 	function (key, _n0) {
-		var dict = _n0;
-		return A3(elm$core$Dict$insert, key, 0, dict);
+		var dict = _n0.a;
+		return elm$core$Set$Set_elm_builtin(
+			A3(elm$core$Dict$insert, key, _Utils_Tuple0, dict));
 	});
 var elm$core$Set$fromList = function (list) {
 	return A3(elm$core$List$foldl, elm$core$Set$insert, elm$core$Set$empty, list);
 };
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Normal', a: a};
 };
 var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var elm$html$Html$Events$on = F2(
@@ -9278,7 +9305,7 @@ var author$project$Main$boardToSVG = F3(
 			A2(
 				elm$core$List$filter,
 				A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$String$isEmpty),
-				elm$core$String$words(puzzle.aE)));
+				elm$core$String$words(puzzle.quote)));
 		var quoteText = elm$core$String$toList(
 			A2(elm$core$String$join, ' ', quoteWords));
 		var numberedQuoteText = function () {
@@ -9289,24 +9316,33 @@ var author$project$Main$boardToSVG = F3(
 						return A2(
 							elm$core$List$map,
 							function (col) {
-								return {K: ' ', ai: col, O: -1, aa: row};
+								return {
+									_char: _Utils_chr(' '),
+									col: col,
+									qIndex: -1,
+									row: row
+								};
 							},
 							A2(elm$core$List$range, count % numCols, numCols - 1));
 					} else {
 						var c = l.a;
 						var rest = l.b;
 						var square = {
-							K: c,
-							ai: count % numCols,
-							O: (c === ' ') ? (-1) : idx,
-							aa: row
+							_char: c,
+							col: count % numCols,
+							qIndex: _Utils_eq(
+								c,
+								_Utils_chr(' ')) ? (-1) : idx,
+							row: row
 						};
 						return A2(
 							elm$core$List$cons,
 							square,
 							A3(
 								number,
-								idx + ((c === ' ') ? 0 : 1),
+								idx + (_Utils_eq(
+									c,
+									_Utils_chr(' ')) ? 0 : 1),
 								count + 1,
 								rest));
 					}
@@ -9320,8 +9356,8 @@ var author$project$Main$boardToSVG = F3(
 		var quoteRows = A2(
 			elm$core$List$map,
 			function (square) {
-				var y = square.aa * boxWidth;
-				var x = square.ai * boxWidth;
+				var y = square.row * boxWidth;
+				var x = square.col * boxWidth;
 				var usedIn = elm$core$Set$toList(
 					elm$core$Set$fromList(
 						A2(
@@ -9330,7 +9366,7 @@ var author$project$Main$boardToSVG = F3(
 							A2(
 								elm$core$Maybe$withDefault,
 								_List_Nil,
-								A2(elm$core$Dict$get, square.O, qIndexUses)))));
+								A2(elm$core$Dict$get, square.qIndex, qIndexUses)))));
 				var thirdBox = boxWidth / 3;
 				var textLength = elm$core$String$fromFloat(thirdBox);
 				return A2(
@@ -9338,9 +9374,9 @@ var author$project$Main$boardToSVG = F3(
 					_List_fromArray(
 						[
 							elm$svg$Svg$Attributes$class(
-							'row-' + elm$core$String$fromInt(square.aa)),
+							'row-' + elm$core$String$fromInt(square.row)),
 							elm$svg$Svg$Attributes$class(
-							'qIndex-' + elm$core$String$fromInt(square.O)),
+							'qIndex-' + elm$core$String$fromInt(square.qIndex)),
 							elm$html$Html$Events$onClick(
 							author$project$Main$SelectClues(usedIn))
 						]),
@@ -9361,13 +9397,17 @@ var author$project$Main$boardToSVG = F3(
 										elm$core$String$fromFloat(boxWidth)),
 										elm$svg$Svg$Attributes$class('board-square'),
 										elm$svg$Svg$Attributes$class(
-										(square.K === ' ') ? 'board-space' : 'board-letter'),
+										_Utils_eq(
+											square._char,
+											_Utils_chr(' ')) ? 'board-space' : 'board-letter'),
 										elm$svg$Svg$Attributes$class(
 										(elm$core$List$length(usedIn) > 1) ? 'board-number-conflict' : '')
 									]),
 								_List_Nil)
 							]),
-						(square.K === ' ') ? _List_Nil : _List_fromArray(
+						_Utils_eq(
+							square._char,
+							_Utils_chr(' ')) ? _List_Nil : _List_fromArray(
 							[
 								A2(
 								elm$svg$Svg$text_,
@@ -9383,7 +9423,7 @@ var author$project$Main$boardToSVG = F3(
 								_List_fromArray(
 									[
 										elm$svg$Svg$text(
-										elm$core$String$fromInt(square.O + 1))
+										elm$core$String$fromInt(square.qIndex + 1))
 									])),
 								A2(
 								elm$svg$Svg$text_,
@@ -9416,7 +9456,7 @@ var author$project$Main$boardToSVG = F3(
 								_List_fromArray(
 									[
 										elm$svg$Svg$text(
-										elm$core$String$fromChar(square.K))
+										elm$core$String$fromChar(square._char))
 									]))
 							])));
 			},
@@ -9438,7 +9478,7 @@ var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
 var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 1, a: a};
+	return {$: 'MayStopPropagation', a: a};
 };
 var elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
@@ -9481,7 +9521,7 @@ var author$project$Main$textInput = F4(
 			_List_Nil);
 	});
 var author$project$Puzzle$shortDescription = function (puzzle) {
-	return elm$core$String$toUpper(puzzle.aL) + (' — ' + elm$core$String$toUpper(puzzle.bw));
+	return elm$core$String$toUpper(puzzle.author) + (' — ' + elm$core$String$toUpper(puzzle.title));
 };
 var elm$core$String$padLeft = F3(
 	function (n, _char, string) {
@@ -9496,7 +9536,7 @@ var author$project$Util$twoDigits = function (i) {
 	return A3(
 		elm$core$String$padLeft,
 		2,
-		'0',
+		_Utils_chr('0'),
 		elm$core$String$fromInt(i));
 };
 var elm$time$Time$flooredDiv = F2(
@@ -9512,8 +9552,8 @@ var elm$time$Time$toAdjustedMinutesHelp = F3(
 			} else {
 				var era = eras.a;
 				var olderEras = eras.b;
-				if (_Utils_cmp(era.aG, posixMinutes) < 0) {
-					return posixMinutes + era.b;
+				if (_Utils_cmp(era.start, posixMinutes) < 0) {
+					return posixMinutes + era.offset;
 				} else {
 					var $temp$defaultOffset = defaultOffset,
 						$temp$posixMinutes = posixMinutes,
@@ -9549,63 +9589,63 @@ var elm$time$Time$toCivil = function (minutes) {
 	var month = mp + ((mp < 10) ? 3 : (-9));
 	var year = yearOfEra + (era * 400);
 	return {
-		aP: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
-		a5: month,
-		bz: year + ((month <= 2) ? 1 : 0)
+		day: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		month: month,
+		year: year + ((month <= 2) ? 1 : 0)
 	};
 };
 var elm$time$Time$toDay = F2(
 	function (zone, time) {
 		return elm$time$Time$toCivil(
-			A2(elm$time$Time$toAdjustedMinutes, zone, time)).aP;
+			A2(elm$time$Time$toAdjustedMinutes, zone, time)).day;
 	});
-var elm$time$Time$Apr = 3;
-var elm$time$Time$Aug = 7;
-var elm$time$Time$Dec = 11;
-var elm$time$Time$Feb = 1;
-var elm$time$Time$Jan = 0;
-var elm$time$Time$Jul = 6;
-var elm$time$Time$Jun = 5;
-var elm$time$Time$Mar = 2;
-var elm$time$Time$May = 4;
-var elm$time$Time$Nov = 10;
-var elm$time$Time$Oct = 9;
-var elm$time$Time$Sep = 8;
+var elm$time$Time$Apr = {$: 'Apr'};
+var elm$time$Time$Aug = {$: 'Aug'};
+var elm$time$Time$Dec = {$: 'Dec'};
+var elm$time$Time$Feb = {$: 'Feb'};
+var elm$time$Time$Jan = {$: 'Jan'};
+var elm$time$Time$Jul = {$: 'Jul'};
+var elm$time$Time$Jun = {$: 'Jun'};
+var elm$time$Time$Mar = {$: 'Mar'};
+var elm$time$Time$May = {$: 'May'};
+var elm$time$Time$Nov = {$: 'Nov'};
+var elm$time$Time$Oct = {$: 'Oct'};
+var elm$time$Time$Sep = {$: 'Sep'};
 var elm$time$Time$toMonth = F2(
 	function (zone, time) {
 		var _n0 = elm$time$Time$toCivil(
-			A2(elm$time$Time$toAdjustedMinutes, zone, time)).a5;
+			A2(elm$time$Time$toAdjustedMinutes, zone, time)).month;
 		switch (_n0) {
 			case 1:
-				return 0;
+				return elm$time$Time$Jan;
 			case 2:
-				return 1;
+				return elm$time$Time$Feb;
 			case 3:
-				return 2;
+				return elm$time$Time$Mar;
 			case 4:
-				return 3;
+				return elm$time$Time$Apr;
 			case 5:
-				return 4;
+				return elm$time$Time$May;
 			case 6:
-				return 5;
+				return elm$time$Time$Jun;
 			case 7:
-				return 6;
+				return elm$time$Time$Jul;
 			case 8:
-				return 7;
+				return elm$time$Time$Aug;
 			case 9:
-				return 8;
+				return elm$time$Time$Sep;
 			case 10:
-				return 9;
+				return elm$time$Time$Oct;
 			case 11:
-				return 10;
+				return elm$time$Time$Nov;
 			default:
-				return 11;
+				return elm$time$Time$Dec;
 		}
 	});
 var elm$time$Time$toYear = F2(
 	function (zone, time) {
 		return elm$time$Time$toCivil(
-			A2(elm$time$Time$toAdjustedMinutes, zone, time)).bz;
+			A2(elm$time$Time$toAdjustedMinutes, zone, time)).year;
 	});
 var author$project$Util$iso8601Date = F2(
 	function (here, now) {
@@ -9613,28 +9653,28 @@ var author$project$Util$iso8601Date = F2(
 			A2(elm$time$Time$toYear, here, now));
 		var mm = function () {
 			var _n0 = A2(elm$time$Time$toMonth, here, now);
-			switch (_n0) {
-				case 0:
+			switch (_n0.$) {
+				case 'Jan':
 					return '01';
-				case 1:
+				case 'Feb':
 					return '02';
-				case 2:
+				case 'Mar':
 					return '03';
-				case 3:
+				case 'Apr':
 					return '04';
-				case 4:
+				case 'May':
 					return '05';
-				case 5:
+				case 'Jun':
 					return '06';
-				case 6:
+				case 'Jul':
 					return '07';
-				case 7:
+				case 'Aug':
 					return '08';
-				case 8:
+				case 'Sep':
 					return '09';
-				case 9:
+				case 'Oct':
 					return '10';
-				case 10:
+				case 'Nov':
 					return '11';
 				default:
 					return '12';
@@ -9696,7 +9736,7 @@ var author$project$Util$iso8601DateTime = F2(
 	});
 var author$project$Puzzle$description = F2(
 	function (here, puzzle) {
-		return author$project$Puzzle$shortDescription(puzzle) + (' (' + (A2(author$project$Util$iso8601DateTime, here, puzzle.C) + ')'));
+		return author$project$Puzzle$shortDescription(puzzle) + (' (' + (A2(author$project$Util$iso8601DateTime, here, puzzle.timeModified) + ')'));
 	});
 var author$project$Puzzle$duplicateNumberings = function (puz) {
 	return elm$core$Dict$toList(
@@ -9732,7 +9772,7 @@ var author$project$Puzzle$duplicateNumberings = function (puz) {
 										F2(
 											function (ansIndex, _n0) {
 												var mNum = _n0.a;
-												if (mNum.$ === 1) {
+												if (mNum.$ === 'Nothing') {
 													return _List_Nil;
 												} else {
 													var num = mNum.a;
@@ -9744,19 +9784,19 @@ var author$project$Puzzle$duplicateNumberings = function (puz) {
 														]);
 												}
 											}),
-										clue.ag));
+										clue.answer));
 							}),
-						puz.W)))));
+						puz.clues)))));
 };
 var author$project$Puzzle$phases = _List_fromArray(
-	[0, 1, 2]);
+	[author$project$Puzzle$QuoteEntry, author$project$Puzzle$Anagramming, author$project$Puzzle$CluingLettering]);
 var author$project$Util$updateAppend = F3(
 	function (k, v, d) {
 		return A3(
 			elm$core$Dict$update,
 			k,
 			function (mvs) {
-				if (mvs.$ === 1) {
+				if (mvs.$ === 'Nothing') {
 					return elm$core$Maybe$Just(v);
 				} else {
 					var vs = mvs.a;
@@ -9807,7 +9847,7 @@ var author$project$Puzzle$quoteIndexUses = function (puzzle) {
 								var numIndex = _n0.a;
 								var _n1 = _n0.b;
 								var mNum = _n1.a;
-								if (mNum.$ === 1) {
+								if (mNum.$ === 'Nothing') {
 									return d;
 								} else {
 									var num = mNum.a;
@@ -9819,15 +9859,15 @@ var author$project$Puzzle$quoteIndexUses = function (puzzle) {
 								}
 							}),
 						elm$core$Dict$empty,
-						A2(elm$core$List$indexedMap, elm$core$Tuple$pair, clue.ag));
+						A2(elm$core$List$indexedMap, elm$core$Tuple$pair, clue.answer));
 				}),
-			puzzle.W));
+			puzzle.clues));
 };
 var author$project$Puzzle$stringOfPhase = function (p) {
-	switch (p) {
-		case 0:
+	switch (p.$) {
+		case 'QuoteEntry':
 			return 'Quote entry';
-		case 1:
+		case 'Anagramming':
 			return 'Anagramming';
 		default:
 			return 'Cluing and lettering';
@@ -9841,9 +9881,9 @@ var author$project$Puzzle$unclued = function (puz) {
 			elm$core$List$indexedMap,
 			F2(
 				function (cIndex, clue) {
-					return elm$core$String$isEmpty(clue.aZ) ? elm$core$Maybe$Just(cIndex) : elm$core$Maybe$Nothing;
+					return elm$core$String$isEmpty(clue.hint) ? elm$core$Maybe$Just(cIndex) : elm$core$Maybe$Nothing;
 				}),
-			puz.W));
+			puz.clues));
 };
 var author$project$Puzzle$unnumbered = function (puz) {
 	return elm$core$List$concat(
@@ -9859,16 +9899,16 @@ var author$project$Puzzle$unnumbered = function (puz) {
 							F2(
 								function (ansIndex, _n0) {
 									var mNum = _n0.a;
-									if (mNum.$ === 1) {
+									if (mNum.$ === 'Nothing') {
 										return elm$core$Maybe$Just(
 											_Utils_Tuple2(cIndex, ansIndex));
 									} else {
 										return elm$core$Maybe$Nothing;
 									}
 								}),
-							clue.ag));
+							clue.answer));
 				}),
-			puz.W));
+			puz.clues));
 };
 var author$project$Util$addIndex = function (l) {
 	return A2(elm$core$List$indexedMap, elm$core$Tuple$pair, l);
@@ -9897,7 +9937,7 @@ var elm$core$List$sort = function (xs) {
 };
 var elm$core$Maybe$map = F2(
 	function (f, maybe) {
-		if (!maybe.$) {
+		if (maybe.$ === 'Just') {
 			var value = maybe.a;
 			return elm$core$Maybe$Just(
 				f(value));
@@ -9975,12 +10015,12 @@ var elm$html$Html$Events$onFocus = function (msg) {
 var elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var elm$html$Html$Lazy$lazy4 = elm$virtual_dom$VirtualDom$lazy4;
 var author$project$Main$view = function (model) {
-	var puzzle = model.e;
+	var puzzle = model.puzzle;
 	var qIndexUses = author$project$Puzzle$quoteIndexUses(puzzle);
 	var qIndexWords = author$project$Puzzle$quoteIndexWords(puzzle);
 	var qIndices = author$project$Puzzle$quoteIndices(puzzle);
-	var quoteFixed = puzzle.w;
-	var quoteHist = author$project$Hist$fromString(puzzle.aE);
+	var quoteFixed = !_Utils_eq(puzzle.phase, author$project$Puzzle$QuoteEntry);
+	var quoteHist = author$project$Hist$fromString(puzzle.quote);
 	var initials = author$project$Puzzle$initialism(puzzle);
 	var initialismHist = author$project$Hist$fromString(initials);
 	var missingHist = A2(author$project$Hist$difference, quoteHist, initialismHist);
@@ -9988,24 +10028,24 @@ var author$project$Main$view = function (model) {
 	var dupNumberings = author$project$Puzzle$duplicateNumberings(puzzle);
 	var clueHist = author$project$Hist$fromString(
 		elm$core$String$concat(
-			A2(elm$core$List$map, author$project$Puzzle$clueAnswer, puzzle.W)));
+			A2(elm$core$List$map, author$project$Puzzle$clueAnswer, puzzle.clues)));
 	var remainingHist = A2(author$project$Hist$difference, clueHist, quoteHist);
 	var completed = author$project$Hist$isEmpty(remainingHist) && (elm$core$List$isEmpty(
 		author$project$Puzzle$unnumbered(puzzle)) && (elm$core$List$isEmpty(dupNumberings) && elm$core$List$isEmpty(
 		author$project$Puzzle$unclued(puzzle))));
 	var readyForPhase = function (phase) {
-		return _Utils_eq(puzzle.w, phase) || function () {
-			switch (phase) {
-				case 0:
+		return _Utils_eq(puzzle.phase, phase) || function () {
+			switch (phase.$) {
+				case 'QuoteEntry':
 					return true;
-				case 1:
+				case 'Anagramming':
 					return viable && (!author$project$Hist$isEmpty(quoteHist));
 				default:
 					return viable && ((!author$project$Hist$isEmpty(quoteHist)) && author$project$Hist$isEmpty(remainingHist));
 			}
 		}();
 	};
-	var answersFixed = puzzle.w !== 1;
+	var answersFixed = !_Utils_eq(puzzle.phase, author$project$Puzzle$Anagramming);
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -10054,7 +10094,7 @@ var author$project$Main$view = function (model) {
 												elm$html$Html$Attributes$type_('button'),
 												elm$html$Html$Attributes$class('phase'),
 												elm$html$Html$Attributes$class(
-												_Utils_eq(p, puzzle.w) ? 'active' : 'inactive'),
+												_Utils_eq(p, puzzle.phase) ? 'active' : 'inactive'),
 												elm$html$Html$Attributes$disabled(
 												!readyForPhase(p)),
 												elm$html$Html$Attributes$value(
@@ -10078,11 +10118,11 @@ var author$project$Main$view = function (model) {
 									if (completed) {
 										return 'Your puzzle is filled in! 🎉';
 									} else {
-										var _n0 = puzzle.w;
-										switch (_n0) {
-											case 0:
+										var _n0 = puzzle.phase;
+										switch (_n0.$) {
+											case 'QuoteEntry':
 												return 'Make sure your author and title are included in your quote to move on to anagramming.';
-											case 1:
+											case 'Anagramming':
 												return 'Finish anagramming to move on to numbering and cluing.';
 											default:
 												return 'Assign non-duplicate numbers to each letter and come up with clues.';
@@ -10126,10 +10166,10 @@ var author$project$Main$view = function (model) {
 											[
 												elm$html$Html$text('Current puzzle: '),
 												elm$html$Html$text(
-												author$project$Puzzle$shortDescription(model.e))
+												author$project$Puzzle$shortDescription(model.puzzle))
 											]))
 									]),
-								model._ ? _List_Nil : _List_fromArray(
+								model.pendingDelete ? _List_Nil : _List_fromArray(
 									[
 										A2(
 										elm$html$Html$input,
@@ -10143,7 +10183,7 @@ var author$project$Main$view = function (model) {
 									])))
 						]),
 					_Utils_ap(
-						model._ ? _List_fromArray(
+						model.pendingDelete ? _List_fromArray(
 							[
 								A2(
 								elm$html$Html$div,
@@ -10221,7 +10261,7 @@ var author$project$Main$view = function (model) {
 														[
 															elm$html$Html$Attributes$value(''),
 															elm$html$Html$Attributes$selected(
-															_Utils_eq(model.H, elm$core$Maybe$Nothing))
+															_Utils_eq(model.selectedPuzzle, elm$core$Maybe$Nothing))
 														]),
 													_List_fromArray(
 														[
@@ -10239,16 +10279,16 @@ var author$project$Main$view = function (model) {
 																		elm$core$String$fromInt(index)),
 																		elm$html$Html$Attributes$selected(
 																		_Utils_eq(
-																			model.H,
+																			model.selectedPuzzle,
 																			elm$core$Maybe$Just(savedPuzzle)))
 																	]),
 																_List_fromArray(
 																	[
 																		elm$html$Html$text(
-																		A2(author$project$Puzzle$description, model.as, savedPuzzle))
+																		A2(author$project$Puzzle$description, model.timeZone, savedPuzzle))
 																	]));
 														}),
-													model.s))),
+													model.savedPuzzles))),
 											A2(
 											elm$html$Html$input,
 											_Utils_ap(
@@ -10258,8 +10298,8 @@ var author$project$Main$view = function (model) {
 														elm$html$Html$Attributes$value('Load puzzle')
 													]),
 												function () {
-													var _n1 = model.H;
-													if (_n1.$ === 1) {
+													var _n1 = model.selectedPuzzle;
+													if (_n1.$ === 'Nothing') {
 														return _List_Nil;
 													} else {
 														var sPuz = _n1.a;
@@ -10281,7 +10321,7 @@ var author$project$Main$view = function (model) {
 					]),
 				quoteFixed ? _List_fromArray(
 					[
-						A3(author$project$Main$boardToSVG, 24, qIndexUses, model.e)
+						A3(author$project$Main$boardToSVG, 24, qIndexUses, model.puzzle)
 					]) : _List_fromArray(
 					[
 						A4(
@@ -10293,7 +10333,7 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$Attributes$readonly(quoteFixed)
 							]),
 						'Title',
-						puzzle.bw,
+						puzzle.title,
 						author$project$Main$Title),
 						A4(
 						author$project$Main$textInput,
@@ -10304,7 +10344,7 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$Attributes$readonly(quoteFixed)
 							]),
 						'Author',
-						puzzle.aL,
+						puzzle.author,
 						author$project$Main$Author),
 						A2(
 						elm$html$Html$textarea,
@@ -10317,7 +10357,7 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$Attributes$rows(6),
 								elm$html$Html$Attributes$cols(60),
 								A2(elm$html$Html$Attributes$attribute, 'autocapitalize', 'character'),
-								elm$html$Html$Attributes$value(puzzle.aE)
+								elm$html$Html$Attributes$value(puzzle.quote)
 							]),
 						_List_Nil),
 						A2(
@@ -10373,7 +10413,7 @@ var author$project$Main$view = function (model) {
 					[
 						elm$html$Html$Attributes$id('detail')
 					]),
-				(puzzle.w === 2) ? _List_fromArray(
+				_Utils_eq(puzzle.phase, author$project$Puzzle$CluingLettering) ? _List_fromArray(
 					[
 						A2(
 						elm$html$Html$h3,
@@ -10395,15 +10435,15 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text(
 								function () {
-									var _n2 = model.aq;
-									switch (_n2) {
-										case 0:
+									var _n2 = model.solverState;
+									switch (_n2.$) {
+										case 'SolverUnloaded':
 											return 'Numbering solver not loaded';
-										case 1:
+										case 'SolverDownloading':
 											return 'Downloading numbering solver code...';
-										case 2:
+										case 'SolverInitializing':
 											return 'Initializing numbering solver...';
-										case 3:
+										case 'SolverReady':
 											return 'Numbering solver ready';
 										default:
 											return 'Numbering solver running...';
@@ -10420,30 +10460,30 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text(
 								function () {
-									var _n3 = model.ap;
-									if (_n3.$ === 1) {
+									var _n3 = model.solverResult;
+									if (_n3.$ === 'Nothing') {
 										return '';
 									} else {
 										var result = _n3.a;
 										var time = function () {
-											if (result.ak >= 1000) {
-												var ss = elm$core$String$fromInt((result.ak / 1000) | 0);
+											if (result.elapsed >= 1000) {
+												var ss = elm$core$String$fromInt((result.elapsed / 1000) | 0);
 												var ms = A3(
 													elm$core$String$padLeft,
 													3,
-													'0',
+													_Utils_chr('0'),
 													elm$core$String$fromInt(
-														A2(elm$core$Basics$modBy, 1000, result.ak)));
+														A2(elm$core$Basics$modBy, 1000, result.elapsed)));
 												return ss + ('.' + (ms + 's'));
 											} else {
-												return elm$core$String$fromInt(result.ak) + 'ms';
+												return elm$core$String$fromInt(result.elapsed) + 'ms';
 											}
 										}();
-										var _n4 = result.ag;
+										var _n4 = result.answer;
 										switch (_n4.$) {
-											case 2:
+											case 'SMTFailed':
 												return 'Could not find a numbering (' + (time + '). 😦');
-											case 1:
+											case 'SMTTimeout':
 												return 'Timed out (' + (time + '). ⏲');
 											default:
 												return 'Success! 🎊 The puzzle has been automatically numbered in ' + (time + '.');
@@ -10496,7 +10536,7 @@ var author$project$Main$view = function (model) {
 						var _n6 = _n5.b;
 						var initial = _n6.a;
 						var clue = _n6.b;
-						var selectedCls = (quoteFixed && A2(elm$core$List$member, index, model.t)) ? _List_fromArray(
+						var selectedCls = (quoteFixed && A2(elm$core$List$member, index, model.selectedClues)) ? _List_fromArray(
 							[
 								elm$html$Html$Attributes$class('selected')
 							]) : _List_Nil;
@@ -10547,7 +10587,7 @@ var author$project$Main$view = function (model) {
 											author$project$Main$anagramDatalistId(letter))
 										]),
 									initialStr + '...',
-									clue.cl,
+									clue.text,
 									author$project$Main$Answer(index))
 								]));
 					},
@@ -10556,7 +10596,7 @@ var author$project$Main$view = function (model) {
 							elm$core$List$map2,
 							elm$core$Tuple$pair,
 							elm$core$String$toList(initials),
-							puzzle.W)))),
+							puzzle.clues)))),
 				A2(
 				elm$html$Html$section,
 				_List_fromArray(
@@ -10564,11 +10604,11 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$Attributes$id('clue-info')
 					]),
 				function () {
-					var _n7 = puzzle.w;
-					switch (_n7) {
-						case 0:
+					var _n7 = puzzle.phase;
+					switch (_n7.$) {
+						case 'QuoteEntry':
 							return _List_Nil;
-						case 1:
+						case 'Anagramming':
 							return _List_fromArray(
 								[
 									A2(
@@ -10581,7 +10621,7 @@ var author$project$Main$view = function (model) {
 										[
 											elm$html$Html$text('Anagrams')
 										])),
-									elm$core$List$isEmpty(model.t) ? A2(
+									elm$core$List$isEmpty(model.selectedClues) ? A2(
 									elm$html$Html$div,
 									_List_fromArray(
 										[
@@ -10607,8 +10647,8 @@ var author$project$Main$view = function (model) {
 												])),
 										A2(
 											elm$core$List$map,
-											A4(elm$html$Html$Lazy$lazy4, author$project$Main$anagramAssistance, puzzle, model.at, remainingHist),
-											model.t)))
+											A4(elm$html$Html$Lazy$lazy4, author$project$Main$anagramAssistance, puzzle, model.wordlist, remainingHist),
+											model.selectedClues)))
 								]);
 						default:
 							return A2(
@@ -10690,7 +10730,7 @@ var author$project$Main$view = function (model) {
 										});
 									var clueLetter = author$project$Puzzle$letterFor(index);
 									var clue = A2(author$project$Puzzle$clueFor, index, puzzle);
-									var answer = clue.ag;
+									var answer = clue.answer;
 									var clueNumbers = A2(
 										elm$core$List$filterMap,
 										function (_n15) {
@@ -10757,12 +10797,12 @@ var author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														elm$html$Html$Attributes$tabindex(
-														(author$project$Main$baseTabs + elm$core$List$length(puzzle.W)) + 1),
+														(author$project$Main$baseTabs + elm$core$List$length(puzzle.clues)) + 1),
 														elm$html$Html$Attributes$class('clue-hint'),
-														elm$html$Html$Attributes$value(clue.aZ)
+														elm$html$Html$Attributes$value(clue.hint)
 													]),
 												'Clue hint text',
-												clue.aZ,
+												clue.hint,
 												author$project$Main$Hint(index)),
 												A2(
 												elm$html$Html$table,
@@ -10827,7 +10867,7 @@ var author$project$Main$view = function (model) {
 																	var rawC = _n10.b;
 																	var c = elm$core$Char$toUpper(rawC);
 																	var validCls = function () {
-																		if (mNum.$ === 1) {
+																		if (mNum.$ === 'Nothing') {
 																			return 'unentered';
 																		} else {
 																			var num = mNum.a;
@@ -10859,7 +10899,7 @@ var author$project$Main$view = function (model) {
 															answer))
 													])),
 												function () {
-												var editableWarning = (puzzle.w !== 2) ? elm$core$Maybe$Just(
+												var editableWarning = (!_Utils_eq(puzzle.phase, author$project$Puzzle$CluingLettering)) ? elm$core$Maybe$Just(
 													A2(
 														elm$html$Html$span,
 														_List_Nil,
@@ -10907,7 +10947,7 @@ var author$project$Main$view = function (model) {
 											}()
 											]));
 								},
-								model.t);
+								model.selectedClues);
 					}
 				}()),
 				A2(
@@ -11009,7 +11049,7 @@ var author$project$Main$view = function (model) {
 									elm$core$List$map,
 									clueRef,
 									author$project$Puzzle$unnumbered(puzzle)));
-							return (puzzle.w === 2) ? _Utils_ap(
+							return _Utils_eq(puzzle.phase, author$project$Puzzle$CluingLettering) ? _Utils_ap(
 								unnumbered,
 								_Utils_ap(dups, unclued)) : _List_Nil;
 						}()),
@@ -11020,7 +11060,7 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$Attributes$id('progress')
 							]),
 						_Utils_ap(
-							(!elm$core$Dict$isEmpty(model.B)) ? _List_fromArray(
+							(!elm$core$Dict$isEmpty(model.progressBars)) ? _List_fromArray(
 								[
 									A2(
 									elm$html$Html$h3,
@@ -11064,7 +11104,7 @@ var author$project$Main$view = function (model) {
 													]))
 											]));
 								},
-								elm$core$Dict$toList(model.B))))
+								elm$core$Dict$toList(model.progressBars))))
 					])),
 				A2(
 				elm$html$Html$section,
@@ -11077,23 +11117,25 @@ var author$project$Main$view = function (model) {
 			]));
 };
 var elm$browser$Browser$External = function (a) {
-	return {$: 1, a: a};
+	return {$: 'External', a: a};
 };
 var elm$browser$Browser$Internal = function (a) {
-	return {$: 0, a: a};
+	return {$: 'Internal', a: a};
 };
-var elm$browser$Browser$Dom$NotFound = elm$core$Basics$identity;
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
 var elm$core$Basics$never = function (_n0) {
 	never:
 	while (true) {
-		var nvr = _n0;
+		var nvr = _n0.a;
 		var $temp$_n0 = nvr;
 		_n0 = $temp$_n0;
 		continue never;
 	}
 };
-var elm$url$Url$Http = 0;
-var elm$url$Url$Https = 1;
+var elm$url$Url$Http = {$: 'Http'};
+var elm$url$Url$Https = {$: 'Https'};
 var elm$core$String$indexes = _String_indexes;
 var elm$core$String$left = F2(
 	function (n, string) {
@@ -11102,7 +11144,7 @@ var elm$core$String$left = F2(
 var elm$core$String$contains = _String_contains;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {aV: fragment, a_: host, a8: path, ba: port_, be: protocol, bf: query};
+		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -11118,7 +11160,7 @@ var elm$url$Url$chompBeforePath = F5(
 					var i = _n0.a;
 					var _n1 = elm$core$String$toInt(
 						A2(elm$core$String$dropLeft, i + 1, str));
-					if (_n1.$ === 1) {
+					if (_n1.$ === 'Nothing') {
 						return elm$core$Maybe$Nothing;
 					} else {
 						var port_ = _n1;
@@ -11200,13 +11242,13 @@ var elm$url$Url$chompAfterProtocol = F2(
 var elm$url$Url$fromString = function (str) {
 	return A2(elm$core$String$startsWith, 'http://', str) ? A2(
 		elm$url$Url$chompAfterProtocol,
-		0,
+		elm$url$Url$Http,
 		A2(elm$core$String$dropLeft, 7, str)) : (A2(elm$core$String$startsWith, 'https://', str) ? A2(
 		elm$url$Url$chompAfterProtocol,
-		1,
+		elm$url$Url$Https,
 		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
 };
 var elm$browser$Browser$element = _Browser_element;
 var author$project$Main$main = elm$browser$Browser$element(
-	{bW: author$project$Main$init, ci: author$project$Main$subscriptions, cp: author$project$Main$update, cq: author$project$Main$view});
+	{init: author$project$Main$init, subscriptions: author$project$Main$subscriptions, update: author$project$Main$update, view: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(elm$json$Json$Decode$value)(0)}});}(this));

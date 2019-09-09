@@ -45,6 +45,11 @@ module Puzzle exposing
     , blankDecoder
     , toBlank
     , asQuoteIn
+
+    , Problem
+    , problemToString
+    , isValidBlank
+
     )
 
 import Dict exposing (Dict)
@@ -417,6 +422,35 @@ type alias Blank =
     , clues : List BlankClue
     }
 
+emptyBlank : Blank
+emptyBlank = toBlank empty
+
+toBlank : Puzzle -> Blank
+toBlank puzzle =
+    { quote = puzzle.quote |>
+              cleanChars |>
+              List.map (always Nothing)
+    , quoteWordLengths = puzzle.quote |>
+                         String.words |>
+                         List.map cleanChars |>
+                         List.filter (not << List.isEmpty) |>
+                         List.map List.length
+    , boardColumns = 35
+    , clues = puzzle.clues |>
+              List.map toBlankClue
+    }
+
+toBlankClue : Clue -> BlankClue
+toBlankClue clue =
+    { hint = clue.hint
+    , answer = clue.answer |>
+               List.map (Tuple.first >> Maybe.withDefault (-1))
+    }
+
+asQuoteIn : Blank -> List (Maybe Char) -> Blank
+asQuoteIn puzzle quote = { puzzle | quote = quote }
+
+
 encodeBlank : Blank -> Encode.Value
 encodeBlank b =
     Encode.object
@@ -458,29 +492,91 @@ blankClueDecoder =
         (Decode.field "hint" Decode.string)
         (Decode.field "answer" (Decode.list Decode.int))
 
-toBlank : Puzzle -> Blank
-toBlank puzzle =
-    { quote = puzzle.quote |>
-              cleanChars |>
-              List.map (always Nothing)
-    , quoteWordLengths = puzzle.quote |>
-                         String.words |>
-                         List.map cleanChars |>
-                         List.filter (not << List.isEmpty) |>
-                         List.map List.length
-    , boardColumns = 35
-    , clues = puzzle.clues |>
-              List.map toBlankClue
-    }
+-- VALIDATION
 
-toBlankClue : Clue -> BlankClue
-toBlankClue clue =
-    { hint = clue.hint
-    , answer = clue.answer |>
-               List.map (Tuple.first >> Maybe.withDefault (-1))
-    }
+type Problem = QuoteLengthMismatch Int Int
+             | MissingClueNumbers (List Int)
+             | DuplicateClueNumbers (List (Int, (List Int)))
 
-asQuoteIn : Blank -> List (Maybe Char) -> Blank
-asQuoteIn puzzle quote = { puzzle | quote = quote }
+problemToString : Problem -> String
+problemToString p =
+    case p of
+        QuoteLengthMismatch q qwl ->
+            "quote is of length " ++ String.fromInt q ++ " but quote word divisions indicate a quote of length " ++ String.fromInt qwl
+        MissingClueNumbers nums -> 
+            "missing clue numbers (" ++ String.join ", " (List.map String.fromInt nums) ++ ")"
+        DuplicateClueNumbers nums ->
+            "duplicate clue numbers (" ++ 
+                String.join "; " 
+                    (nums |>
+                     List.map 
+                         (\(qIndex, clueIndices) ->
+                              String.fromInt qIndex ++ " in " ++
+                              String.join "," (List.map letterFor clueIndices))) ++ 
+             ")"         
 
-{- FIXME puzzle validation -}
+isValidBlank : Blank -> List Problem
+isValidBlank puzzle =
+    let
+        quoteLength = List.length puzzle.quote 
+
+        qwlLength = List.sum puzzle.quoteWordLengths
+
+        correctNumbers = List.range 0 (List.length puzzle.quote - 1)
+
+        actualNumbers =
+            puzzle.clues |>
+            List.concatMap .answer |>
+            List.sort
+
+        missingNumbers = 
+            correctNumbers |>
+            List.filter
+                (\num ->
+                     not (List.member num actualNumbers))
+
+        numberCounts =
+            puzzle.clues |>
+            List.indexedMap (\index clue -> (index, clue.answer)) |>
+            List.concatMap (\(index,answer) -> List.map (Tuple.pair index) answer) |>
+            List.foldr
+                (\(index, qIndex) d -> updateCons qIndex index d)
+                Dict.empty
+
+        dupIndices =
+            numberCounts |>
+            Dict.filter (\_ idxs -> List.length idxs /= 1) |>
+            Dict.toList
+            
+    in
+        (if quoteLength == qwlLength 
+         then []
+         else [QuoteLengthMismatch quoteLength qwlLength]) ++ 
+        (if List.isEmpty missingNumbers
+         then []
+         else [MissingClueNumbers missingNumbers]) ++
+        (if List.isEmpty dupIndices
+         then []
+         else [DuplicateClueNumbers dupIndices])
+            
+
+isValid : Puzzle -> Bool
+isValid puzzle =
+    let 
+        numCluesValid = List.length puzzle.clues == 
+                          (String.length puzzle.title + String.length puzzle.author)
+
+        initialsValid = 
+            (initialism puzzle |>
+             String.toList |>
+             List.map Just) 
+            ==
+            (puzzle.clues |>
+             List.map .answer |>
+             List.map List.head |>
+             List.map (Maybe.map Tuple.second))
+
+    in
+    
+        numCluesValid &&
+        initialsValid
