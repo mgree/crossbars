@@ -46,8 +46,8 @@ import Html.Keyed as Keyed
 import Svg
 import Svg.Attributes
 
-import Json.Encode
-import Json.Decode
+import Json.Encode as Encode
+import Json.Decode as Decode
 
 import Process
 import Task
@@ -77,7 +77,7 @@ main = Browser.element
 
 -- MESSAGES, PORTS, FLAGS
     
-type alias Flags = Json.Encode.Value {- saved puzzles -}
+type alias Flags = Encode.Value {- saved puzzles -}
 
 type SaveMode = CurrentPuzzle
               | All
@@ -103,23 +103,23 @@ type Msg =
   {- numbering via Z3.wasm -}
   | ClearNumbering
   | SolveNumbering
-  | SolverResults Json.Encode.Value
-  | SolverStateChanged Json.Encode.Value
+  | SolverResults Encode.Value
+  | SolverStateChanged Encode.Value
   {- loading, etc. -}
   | TimeZone Time.Zone
   | GotWordlist WordlistSource (Result Http.Error String)
   | UpdateRecvProgress String Http.Progress
   | ClearProgress String
 
-port savePuzzles : Json.Encode.Value -> Cmd msg
+port savePuzzles : Encode.Value -> Cmd msg
 
-port saveCurrentPuzzle : Json.Encode.Value -> Cmd msg
+port saveCurrentPuzzle : Encode.Value -> Cmd msg
 
-port solveNumbering : Json.Encode.Value -> Cmd msg
+port solveNumbering : Encode.Value -> Cmd msg
 
-port solverResults : (Json.Encode.Value -> msg) -> Sub msg
+port solverResults : (Encode.Value -> msg) -> Sub msg
 
-port solverStateChanged : (Json.Encode.Value -> msg) -> Sub msg
+port solverStateChanged : (Encode.Value -> msg) -> Sub msg
 
 -- TYPES, HELPERS                
                    
@@ -229,7 +229,7 @@ wordlists =
 init : Flags -> (Model, Cmd Msg)
 init savedModel =
     ( savedModel
-        |> Json.Decode.decodeValue decodeModel 
+        |> Decode.decodeValue modelDecoder 
         |> Result.withDefault emptyModel {- FIXME indicate error? -}
     , Cmd.batch 
         ( Task.perform TimeZone Time.here ::
@@ -248,16 +248,16 @@ init savedModel =
         )
     )
 
-decodeModel : Json.Decode.Decoder Model
-decodeModel =
-    Json.Decode.map2
+modelDecoder : Decode.Decoder Model
+modelDecoder =
+    Decode.map2
         (\puzzle savedPuzzles ->
              { emptyModel 
              | puzzle = puzzle
              , savedPuzzles = savedPuzzles
              })
-        (Json.Decode.field "currentPuzzle" Puzzle.decode)
-        (Json.Decode.field "savedPuzzles" (Json.Decode.list Puzzle.decode))
+        (Decode.field "currentPuzzle" Puzzle.decoder)
+        (Decode.field "savedPuzzles" (Decode.list Puzzle.decoder))
     
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -335,7 +335,7 @@ update msg model =
         Save All _ ->
             (model, 
              Cmd.batch [ saveCurrentPuzzle (Puzzle.encode model.puzzle)
-                       , savePuzzles (Json.Encode.list Puzzle.encode model.savedPuzzles)
+                       , savePuzzles (Encode.list Puzzle.encode model.savedPuzzles)
                        ]
             )
         NewPuzzle -> 
@@ -376,13 +376,13 @@ update msg model =
              solveNumbering)
         SolverResults json ->
             json |>
-            Json.Decode.decodeValue Solver.decodeSMTResult |>
+            Decode.decodeValue Solver.smtResultDecoder |>
             Result.withDefault Solver.missingResult |>
             tryApplySMTNumberingTo model |>
             andSave CurrentPuzzle
         SolverStateChanged json -> 
             ( json |>
-              Json.Decode.decodeValue SMT.decodeSolverState |>
+              Decode.decodeValue SMT.solverStateDecoder |>
               Result.withDefault SolverUnloaded |> {- FIXME display error -}
               asSolverStateIn model
             , Cmd.none)

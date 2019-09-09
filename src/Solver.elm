@@ -1,7 +1,7 @@
 module Solver exposing 
     ( generateNumberingProblem
     , applySMTNumbering
-    , decodeSMTResult
+    , smtResultDecoder
     , SMTResult
     , missingResult
     , SMTAnswer(..)
@@ -10,8 +10,8 @@ module Solver exposing
 
 import Dict exposing (Dict)
 
-import Json.Encode
-import Json.Decode
+import Json.Encode as Encode
+import Json.Decode as Decode
 
 import Parser exposing (Parser, (|.), (|=), symbol, end, succeed, spaces)
 
@@ -37,12 +37,12 @@ isDefn c =
         IsInt _ -> True
         _ -> False
 
-generateNumberingProblem :  Puzzle -> Json.Encode.Value
+generateNumberingProblem :  Puzzle -> Encode.Value
 generateNumberingProblem puzzle =
     puzzle |> 
     constraintsOfPuzzle (Puzzle.quoteIndices puzzle) |> 
     smt2OfConstraints (Puzzle.quoteIndexWords puzzle) |>
-    Json.Encode.string
+    Encode.string
 
                   
 constraintsOfPuzzle : Dict Char (List Int) -> Puzzle -> List Constraint
@@ -119,9 +119,9 @@ applySMTNumbering nums puz =
     in
         List.foldr apply puz nums
 
-decodeSMTResult : Json.Decode.Decoder SMTResult
-decodeSMTResult = 
-    Json.Decode.map2 
+smtResultDecoder : Decode.Decoder SMTResult
+smtResultDecoder = 
+    Decode.map2 
         (\elapsed stdout ->
              let answer = String.join "\n" stdout |>
                           Parser.run smtAnswerParser |>
@@ -129,8 +129,8 @@ decodeSMTResult =
              in { answer = answer
                 , elapsed = elapsed
                 })
-        (Json.Decode.field "elapsed" Json.Decode.int)
-        (Json.Decode.field "stdout" (Json.Decode.list Json.Decode.string))
+        (Decode.field "elapsed" Decode.int)
+        (Decode.field "stdout" (Decode.list Decode.string))
 
 smtAnswerParser : Parser SMTAnswer
 smtAnswerParser =

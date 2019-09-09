@@ -1,6 +1,6 @@
 module SMT exposing 
     ( SolverState(..)
-    , decodeSolverState
+    , solverStateDecoder
     , assert
     , wordFun
     , wordOf
@@ -12,7 +12,7 @@ module SMT exposing
     , distinct
     )
 
-import Json.Decode
+import Json.Decode as Decode
 
 type SolverState = SolverUnloaded
                  | SolverDownloading
@@ -20,18 +20,18 @@ type SolverState = SolverUnloaded
                  | SolverReady
                  | SolverRunning
 
-decodeSolverState : Json.Decode.Decoder SolverState
-decodeSolverState =
-    Json.Decode.string |>
-    Json.Decode.andThen
+solverStateDecoder : Decode.Decoder SolverState
+solverStateDecoder =
+    Decode.string |>
+    Decode.andThen
         (\s ->
              case s of
-                 "SolverUnloaded" -> Json.Decode.succeed SolverUnloaded
-                 "SolverDownloading" -> Json.Decode.succeed SolverDownloading
-                 "SolverInitializing" -> Json.Decode.succeed SolverInitializing
-                 "SolverReady" -> Json.Decode.succeed SolverReady
-                 "SolverRunning" -> Json.Decode.succeed SolverRunning
-                 _ -> Json.Decode.fail ("expected solver state, found '" ++ s ++ "'"))
+                 "SolverUnloaded" -> Decode.succeed SolverUnloaded
+                 "SolverDownloading" -> Decode.succeed SolverDownloading
+                 "SolverInitializing" -> Decode.succeed SolverInitializing
+                 "SolverReady" -> Decode.succeed SolverReady
+                 "SolverRunning" -> Decode.succeed SolverRunning
+                 _ -> Decode.fail ("expected solver state, found '" ++ s ++ "'"))
 
 assert : String -> String
 assert prop = "(assert " ++ prop ++ ")"

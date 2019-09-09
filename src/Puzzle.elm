@@ -4,7 +4,7 @@ module Puzzle exposing
     , compare
     , equal
     , encode
-    , decode
+    , decoder
 
     , Phase(..)
     , phases
@@ -42,6 +42,7 @@ module Puzzle exposing
     , Blank
     , BlankClue
     , encodeBlank
+    , blankDecoder
     , toBlank
     , asQuoteIn
     )
@@ -321,8 +322,8 @@ quoteIndexUses puzzle =
 
 -- SAVING/LOADING
 
-decode : Decode.Decoder Puzzle
-decode =
+decoder : Decode.Decoder Puzzle
+decoder =
     Decode.map6
         (\title author quote clues phase timeModified ->
              { title = title
@@ -335,13 +336,13 @@ decode =
         (Decode.field "title" Decode.string)
         (Decode.field "author" Decode.string)
         (Decode.field "quote" Decode.string)
-        (Decode.field "clues" (Decode.list decodeClue))
-        (Decode.field "phase" decodePhase)
+        (Decode.field "clues" (Decode.list clueDecoder))
+        (Decode.field "phase" phaseDecoder)
         (Decode.field "timeModified" (Decode.int |>
                                                Decode.map Time.millisToPosix))
 
-decodeClue : Decode.Decoder Clue
-decodeClue =
+clueDecoder : Decode.Decoder Clue
+clueDecoder =
     Decode.map3
         (\hint text answer ->
              { hint = hint
@@ -350,17 +351,17 @@ decodeClue =
              })
         (Decode.field "hint" Decode.string)
         (Decode.field "text" Decode.string)
-        (Decode.field "answer" (Decode.list decodeAnswer))
+        (Decode.field "answer" (Decode.list answerDecoder))
 
-decodeAnswer : Decode.Decoder (Maybe Int, Char)
-decodeAnswer =
+answerDecoder : Decode.Decoder (Maybe Int, Char)
+answerDecoder =
     Decode.map2
         Tuple.pair
         (Decode.field "number" (Decode.nullable Decode.int))
         (Decode.field "char" decodeChar)
 
-decodePhase : Decode.Decoder Phase
-decodePhase =
+phaseDecoder : Decode.Decoder Phase
+phaseDecoder =
     Decode.string |> Decode.andThen
         (\s ->
              case s of
@@ -434,8 +435,8 @@ encodeBlankClue c =
         , ("answer", Encode.list Encode.int c.answer)
         ]
 
-decodeBlank : Decode.Decoder Blank
-decodeBlank =
+blankDecoder : Decode.Decoder Blank
+blankDecoder =
     Decode.map4
         (\mQuote quoteWordLengths boardColumns clues ->
              { quote = case mQuote of
@@ -448,10 +449,10 @@ decodeBlank =
         (Decode.field "quote" (Decode.nullable (Decode.list (Decode.nullable decodeChar))))
         (Decode.field "quoteWordLengths" (Decode.list Decode.int))
         (Decode.field "boardColumns" Decode.int)
-        (Decode.field "clues" (Decode.list decodeBlankClue))
+        (Decode.field "clues" (Decode.list blankClueDecoder))
 
-decodeBlankClue : Decode.Decoder BlankClue
-decodeBlankClue =
+blankClueDecoder : Decode.Decoder BlankClue
+blankClueDecoder =
     Decode.map2
         (\hint answer -> { hint = hint, answer = answer })
         (Decode.field "hint" Decode.string)

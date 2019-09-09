@@ -9,7 +9,6 @@ import Hist exposing (Hist)
 import Trie exposing (Trie, Entry)
 import Wordlist exposing (Wordlist)
 
-
 import Util exposing (..)
 
 import Parser
