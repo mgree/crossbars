@@ -5244,7 +5244,7 @@ var elm$json$Json$Decode$nullable = function (decoder) {
 				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
 			]));
 };
-var author$project$Puzzle$decodeAnswer = A3(
+var author$project$Puzzle$answerDecoder = A3(
 	elm$json$Json$Decode$map2,
 	elm$core$Tuple$pair,
 	A2(
@@ -5254,7 +5254,7 @@ var author$project$Puzzle$decodeAnswer = A3(
 	A2(elm$json$Json$Decode$field, 'char', author$project$Util$decodeChar));
 var elm$json$Json$Decode$list = _Json_decodeList;
 var elm$json$Json$Decode$map3 = _Json_map3;
-var author$project$Puzzle$decodeClue = A4(
+var author$project$Puzzle$clueDecoder = A4(
 	elm$json$Json$Decode$map3,
 	F3(
 		function (hint, text, answer) {
@@ -5265,10 +5265,10 @@ var author$project$Puzzle$decodeClue = A4(
 	A2(
 		elm$json$Json$Decode$field,
 		'answer',
-		elm$json$Json$Decode$list(author$project$Puzzle$decodeAnswer)));
+		elm$json$Json$Decode$list(author$project$Puzzle$answerDecoder)));
 var author$project$Puzzle$Anagramming = 1;
 var author$project$Puzzle$CluingLettering = 2;
-var author$project$Puzzle$decodePhase = A2(
+var author$project$Puzzle$phaseDecoder = A2(
 	elm$json$Json$Decode$andThen,
 	function (s) {
 		switch (s) {
@@ -5284,7 +5284,7 @@ var author$project$Puzzle$decodePhase = A2(
 	},
 	elm$json$Json$Decode$string);
 var elm$json$Json$Decode$map6 = _Json_map6;
-var author$project$Puzzle$decode = A7(
+var author$project$Puzzle$decoder = A7(
 	elm$json$Json$Decode$map6,
 	F6(
 		function (title, author, quote, clues, phase, timeModified) {
@@ -5296,13 +5296,13 @@ var author$project$Puzzle$decode = A7(
 	A2(
 		elm$json$Json$Decode$field,
 		'clues',
-		elm$json$Json$Decode$list(author$project$Puzzle$decodeClue)),
-	A2(elm$json$Json$Decode$field, 'phase', author$project$Puzzle$decodePhase),
+		elm$json$Json$Decode$list(author$project$Puzzle$clueDecoder)),
+	A2(elm$json$Json$Decode$field, 'phase', author$project$Puzzle$phaseDecoder),
 	A2(
 		elm$json$Json$Decode$field,
 		'timeModified',
 		A2(elm$json$Json$Decode$map, elm$time$Time$millisToPosix, elm$json$Json$Decode$int)));
-var author$project$Main$decodeModel = A3(
+var author$project$Main$modelDecoder = A3(
 	elm$json$Json$Decode$map2,
 	F2(
 		function (puzzle, savedPuzzles) {
@@ -5310,11 +5310,11 @@ var author$project$Main$decodeModel = A3(
 				author$project$Main$emptyModel,
 				{e: puzzle, s: savedPuzzles});
 		}),
-	A2(elm$json$Json$Decode$field, 'currentPuzzle', author$project$Puzzle$decode),
+	A2(elm$json$Json$Decode$field, 'currentPuzzle', author$project$Puzzle$decoder),
 	A2(
 		elm$json$Json$Decode$field,
 		'savedPuzzles',
-		elm$json$Json$Decode$list(author$project$Puzzle$decode)));
+		elm$json$Json$Decode$list(author$project$Puzzle$decoder)));
 var author$project$Main$wordlists = _List_fromArray(
 	[
 		{ar: 'FreeBSD words list', R: 'words/words.txt'}
@@ -6271,7 +6271,7 @@ var author$project$Main$init = function (savedModel) {
 		A2(
 			elm$core$Result$withDefault,
 			author$project$Main$emptyModel,
-			A2(elm$json$Json$Decode$decodeValue, author$project$Main$decodeModel, savedModel)),
+			A2(elm$json$Json$Decode$decodeValue, author$project$Main$modelDecoder, savedModel)),
 		elm$core$Platform$Cmd$batch(
 			A2(
 				elm$core$List$cons,
@@ -6959,7 +6959,7 @@ var author$project$SMT$SolverDownloading = 1;
 var author$project$SMT$SolverInitializing = 2;
 var author$project$SMT$SolverReady = 3;
 var author$project$SMT$SolverRunning = 4;
-var author$project$SMT$decodeSolverState = A2(
+var author$project$SMT$solverStateDecoder = A2(
 	elm$json$Json$Decode$andThen,
 	function (s) {
 		switch (s) {
@@ -6978,7 +6978,420 @@ var author$project$SMT$decodeSolverState = A2(
 		}
 	},
 	elm$json$Json$Decode$string);
+var elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, dict) {
+				var key = _n0.a;
+				var value = _n0.b;
+				return A3(elm$core$Dict$insert, key, value, dict);
+			}),
+		elm$core$Dict$empty,
+		assocs);
+};
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
+var elm$core$List$concat = function (lists) {
+	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
+};
+var elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$String$words = _String_words;
+var author$project$Puzzle$quoteIndexWords = function (puzzle) {
+	return elm$core$Dict$fromList(
+		A2(
+			elm$core$List$indexedMap,
+			elm$core$Tuple$pair,
+			elm$core$List$concat(
+				A2(
+					elm$core$List$indexedMap,
+					F2(
+						function (i, w) {
+							return A2(
+								elm$core$List$repeat,
+								elm$core$List$length(w),
+								i);
+						}),
+					A2(
+						elm$core$List$filter,
+						A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$List$isEmpty),
+						A2(
+							elm$core$List$map,
+							author$project$Util$cleanChars,
+							elm$core$String$words(puzzle.aE)))))));
+};
+var author$project$Util$updateCons = F3(
+	function (k, v, d) {
+		return A3(
+			elm$core$Dict$update,
+			k,
+			function (mvs) {
+				if (mvs.$ === 1) {
+					return elm$core$Maybe$Just(
+						_List_fromArray(
+							[v]));
+				} else {
+					var vs = mvs.a;
+					return elm$core$Maybe$Just(
+						A2(elm$core$List$cons, v, vs));
+				}
+			},
+			d);
+	});
+var author$project$Puzzle$quoteIndices = function (puzzle) {
+	return A3(
+		elm$core$List$foldr,
+		F2(
+			function (_n0, d) {
+				var c = _n0.a;
+				var i = _n0.b;
+				return A3(author$project$Util$updateCons, c, i, d);
+			}),
+		elm$core$Dict$empty,
+		A2(
+			elm$core$List$indexedMap,
+			F2(
+				function (i, c) {
+					return _Utils_Tuple2(c, i);
+				}),
+			author$project$Util$cleanChars(puzzle.aE)));
+};
+var author$project$Solver$Distinct = function (a) {
+	return {$: 2, a: a};
+};
+var author$project$Solver$IsInt = function (a) {
+	return {$: 0, a: a};
+};
+var author$project$Solver$NotAscending = function (a) {
+	return {$: 3, a: a};
+};
+var author$project$Solver$NotSameWord = function (a) {
+	return {$: 4, a: a};
+};
+var author$project$Solver$OneOf = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var elm$core$Char$toUpper = _Char_toUpper;
+var elm$core$Dict$values = function (dict) {
+	return A3(
+		elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2(elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var elm$core$List$concatMap = F2(
+	function (f, list) {
+		return elm$core$List$concat(
+			A2(elm$core$List$map, f, list));
+	});
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var author$project$Solver$constraintsOfPuzzle = F2(
+	function (qIndices, puzzle) {
+		var varName = F2(
+			function (clueIndex, numIndex) {
+				return 'clue' + (elm$core$String$fromInt(clueIndex) + ('_' + ('letter' + elm$core$String$fromInt(numIndex))));
+			});
+		var clueVarsByClue = A2(
+			elm$core$List$indexedMap,
+			F2(
+				function (clueIndex, clue) {
+					return A2(
+						elm$core$List$map,
+						function (_n2) {
+							var numIndex = _n2.a;
+							var _n3 = _n2.b;
+							var c = _n3.b;
+							return _Utils_Tuple2(
+								A2(varName, clueIndex, numIndex),
+								c);
+						},
+						A2(elm$core$List$indexedMap, elm$core$Tuple$pair, clue.ag));
+				}),
+			puzzle.W);
+		var numberingConstraints = A2(
+			elm$core$List$concatMap,
+			function (vs) {
+				var vars = A2(elm$core$List$map, elm$core$Tuple$first, vs);
+				return _List_fromArray(
+					[
+						author$project$Solver$NotAscending(vars),
+						author$project$Solver$NotAscending(
+						elm$core$List$reverse(vars)),
+						author$project$Solver$NotSameWord(vars)
+					]);
+			},
+			clueVarsByClue);
+		var clueVars = elm$core$List$concat(clueVarsByClue);
+		var charUses = A3(
+			elm$core$List$foldr,
+			F2(
+				function (_n1, d) {
+					var v = _n1.a;
+					var c = _n1.b;
+					return A3(author$project$Util$updateCons, c, v, d);
+				}),
+			elm$core$Dict$empty,
+			clueVars);
+		var disjointnessConstraints = A2(
+			elm$core$List$map,
+			author$project$Solver$Distinct,
+			elm$core$Dict$values(charUses));
+		var charConstraints = A2(
+			elm$core$List$concatMap,
+			function (_n0) {
+				var v = _n0.a;
+				var c = _n0.b;
+				var uses = A2(
+					elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						elm$core$Dict$get,
+						elm$core$Char$toUpper(c),
+						qIndices));
+				return _List_fromArray(
+					[
+						author$project$Solver$IsInt(v),
+						A2(author$project$Solver$OneOf, v, uses)
+					]);
+			},
+			clueVars);
+		return _Utils_ap(
+			charConstraints,
+			_Utils_ap(disjointnessConstraints, numberingConstraints));
+	});
+var author$project$SMT$and = function (props) {
+	if (!props.b) {
+		return 'true';
+	} else {
+		if (!props.b.b) {
+			var prop = props.a;
+			return prop;
+		} else {
+			return '(and ' + (A2(elm$core$String$join, ' ', props) + ')');
+		}
+	}
+};
+var author$project$SMT$assert = function (prop) {
+	return '(assert ' + (prop + ')');
+};
+var author$project$SMT$wordFun = 'word-of';
+var author$project$SMT$wordOf = function (x) {
+	return '(' + (author$project$SMT$wordFun + (' ' + (x + ')')));
+};
+var author$project$Solver$isDefn = function (c) {
+	if (!c.$) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var author$project$SMT$ascending = function (vars) {
+	if (!vars.b) {
+		return 'true';
+	} else {
+		if (!vars.b.b) {
+			var _var = vars.a;
+			return 'true';
+		} else {
+			return '(< ' + (A2(elm$core$String$join, ' ', vars) + ')');
+		}
+	}
+};
+var author$project$SMT$distinct = function (vars) {
+	if (!vars.b) {
+		return 'true';
+	} else {
+		if (!vars.b.b) {
+			var _var = vars.a;
+			return 'true';
+		} else {
+			return '(distinct ' + (A2(elm$core$String$join, ' ', vars) + ')');
+		}
+	}
+};
+var author$project$SMT$eq = F2(
+	function (l, r) {
+		return '(= ' + (l + (' ' + (r + ')')));
+	});
+var author$project$SMT$not = function (prop) {
+	return '(not ' + (prop + ')');
+};
+var author$project$SMT$or = function (props) {
+	if (!props.b) {
+		return 'true';
+	} else {
+		if (!props.b.b) {
+			var prop = props.a;
+			return prop;
+		} else {
+			return '(or ' + (A2(elm$core$String$join, ' ', props) + ')');
+		}
+	}
+};
+var author$project$Solver$smt2OfConstraint = function (c) {
+	switch (c.$) {
+		case 0:
+			var _var = c.a;
+			return '(declare-const ' + (_var + ' Int)');
+		case 1:
+			var _var = c.a;
+			var ns = c.b;
+			return author$project$SMT$assert(
+				author$project$SMT$or(
+					A2(
+						elm$core$List$map,
+						function (n) {
+							return A2(
+								author$project$SMT$eq,
+								_var,
+								elm$core$String$fromInt(n));
+						},
+						ns)));
+		case 2:
+			if (!c.a.b) {
+				return author$project$SMT$assert('true');
+			} else {
+				var vars = c.a;
+				return author$project$SMT$assert(
+					author$project$SMT$distinct(vars));
+			}
+		case 3:
+			var vars = c.a;
+			return author$project$SMT$assert(
+				author$project$SMT$not(
+					author$project$SMT$ascending(vars)));
+		default:
+			if (!c.a.b) {
+				return author$project$SMT$assert('true');
+			} else {
+				if (!c.a.b.b) {
+					var _n1 = c.a;
+					return author$project$SMT$assert('true');
+				} else {
+					var vars = c.a;
+					return author$project$SMT$assert(
+						author$project$SMT$distinct(
+							A2(elm$core$List$map, author$project$SMT$wordOf, vars)));
+				}
+			}
+	}
+};
+var elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _n0) {
+				var trues = _n0.a;
+				var falses = _n0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2(elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2(elm$core$List$cons, x, falses));
+			});
+		return A3(
+			elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var author$project$Solver$smt2OfConstraints = F2(
+	function (qIndexWords, constraints) {
+		var wordFun = function () {
+			var vals = author$project$SMT$assert(
+				author$project$SMT$and(
+					A3(
+						elm$core$Dict$foldr,
+						F3(
+							function (x, wordNum, eqs) {
+								return A2(
+									elm$core$List$cons,
+									'(= ' + (author$project$SMT$wordOf(
+										elm$core$String$fromInt(x)) + (' ' + (elm$core$String$fromInt(wordNum) + ')'))),
+									eqs);
+							}),
+						_List_Nil,
+						qIndexWords)));
+			var decl = '(declare-fun ' + (author$project$SMT$wordFun + ' (Int) Int)');
+			var conds = A3(
+				elm$core$Dict$foldr,
+				F3(
+					function (x, wordNum, otw) {
+						return '(ite (= n ' + (elm$core$String$fromInt(x) + (') ' + (elm$core$String$fromInt(wordNum) + (' ' + (otw + ')')))));
+					}),
+				'-1',
+				qIndexWords);
+			var defn = '(define-fun ' + (author$project$SMT$wordFun + (' ((n Int)) Int ' + (conds + ')')));
+			return _List_fromArray(
+				[decl, vals]);
+		}();
+		var _n0 = A2(elm$core$List$partition, author$project$Solver$isDefn, constraints);
+		var defnConstraints = _n0.a;
+		var assertConstraints = _n0.b;
+		var assertions = A2(elm$core$List$map, author$project$Solver$smt2OfConstraint, assertConstraints);
+		var defns = A2(elm$core$List$map, author$project$Solver$smt2OfConstraint, defnConstraints);
+		var vars = A2(
+			elm$core$List$filterMap,
+			function (c) {
+				if (!c.$) {
+					var v = c.a;
+					return elm$core$Maybe$Just(v);
+				} else {
+					return elm$core$Maybe$Nothing;
+				}
+			},
+			defnConstraints);
+		var commands = _Utils_ap(
+			_List_fromArray(
+				['(set-option :produce-models true)']),
+			_Utils_ap(
+				defns,
+				_Utils_ap(
+					wordFun,
+					_Utils_ap(
+						assertions,
+						_List_fromArray(
+							[
+								'(check-sat)',
+								'(get-value (' + (A2(elm$core$String$join, ' ', vars) + '))')
+							])))));
+		return A2(elm$core$String$join, '\n', commands);
+	});
+var author$project$Solver$generateNumberingProblem = function (puzzle) {
+	return elm$json$Json$Encode$string(
+		A2(
+			author$project$Solver$smt2OfConstraints,
+			author$project$Puzzle$quoteIndexWords(puzzle),
+			A2(
+				author$project$Solver$constraintsOfPuzzle,
+				author$project$Puzzle$quoteIndices(puzzle),
+				puzzle)));
+};
 var author$project$Solver$SMTFailed = {$: 2};
+var author$project$Solver$missingResult = {ag: author$project$Solver$SMTFailed, ak: 0};
 var author$project$Solver$SMTOk = function (a) {
 	return {$: 0, a: a};
 };
@@ -7532,7 +7945,7 @@ var elm$parser$Parser$run = F2(
 				A2(elm$core$List$map, elm$parser$Parser$problemToDeadEnd, problems));
 		}
 	});
-var author$project$Solver$decodeSMTResult = A3(
+var author$project$Solver$smtResultDecoder = A3(
 	elm$json$Json$Decode$map2,
 	F2(
 		function (elapsed, stdout) {
@@ -7550,419 +7963,6 @@ var author$project$Solver$decodeSMTResult = A3(
 		elm$json$Json$Decode$field,
 		'stdout',
 		elm$json$Json$Decode$list(elm$json$Json$Decode$string)));
-var elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		elm$core$List$foldl,
-		F2(
-			function (_n0, dict) {
-				var key = _n0.a;
-				var value = _n0.b;
-				return A3(elm$core$Dict$insert, key, value, dict);
-			}),
-		elm$core$Dict$empty,
-		assocs);
-};
-var elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
-		}
-	});
-var elm$core$List$concat = function (lists) {
-	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
-};
-var elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var elm$core$String$words = _String_words;
-var author$project$Puzzle$quoteIndexWords = function (puzzle) {
-	return elm$core$Dict$fromList(
-		A2(
-			elm$core$List$indexedMap,
-			elm$core$Tuple$pair,
-			elm$core$List$concat(
-				A2(
-					elm$core$List$indexedMap,
-					F2(
-						function (i, w) {
-							return A2(
-								elm$core$List$repeat,
-								elm$core$List$length(w),
-								i);
-						}),
-					A2(
-						elm$core$List$filter,
-						A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$List$isEmpty),
-						A2(
-							elm$core$List$map,
-							author$project$Util$cleanChars,
-							elm$core$String$words(puzzle.aE)))))));
-};
-var author$project$Util$updateCons = F3(
-	function (k, v, d) {
-		return A3(
-			elm$core$Dict$update,
-			k,
-			function (mvs) {
-				if (mvs.$ === 1) {
-					return elm$core$Maybe$Just(
-						_List_fromArray(
-							[v]));
-				} else {
-					var vs = mvs.a;
-					return elm$core$Maybe$Just(
-						A2(elm$core$List$cons, v, vs));
-				}
-			},
-			d);
-	});
-var author$project$Puzzle$quoteIndices = function (puzzle) {
-	return A3(
-		elm$core$List$foldr,
-		F2(
-			function (_n0, d) {
-				var c = _n0.a;
-				var i = _n0.b;
-				return A3(author$project$Util$updateCons, c, i, d);
-			}),
-		elm$core$Dict$empty,
-		A2(
-			elm$core$List$indexedMap,
-			F2(
-				function (i, c) {
-					return _Utils_Tuple2(c, i);
-				}),
-			author$project$Util$cleanChars(puzzle.aE)));
-};
-var author$project$Solver$Distinct = function (a) {
-	return {$: 2, a: a};
-};
-var author$project$Solver$IsInt = function (a) {
-	return {$: 0, a: a};
-};
-var author$project$Solver$NotAscending = function (a) {
-	return {$: 3, a: a};
-};
-var author$project$Solver$NotSameWord = function (a) {
-	return {$: 4, a: a};
-};
-var author$project$Solver$OneOf = F2(
-	function (a, b) {
-		return {$: 1, a: a, b: b};
-	});
-var elm$core$Char$toUpper = _Char_toUpper;
-var elm$core$Dict$values = function (dict) {
-	return A3(
-		elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2(elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var elm$core$List$concatMap = F2(
-	function (f, list) {
-		return elm$core$List$concat(
-			A2(elm$core$List$map, f, list));
-	});
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var author$project$Solver$constraintsOfPuzzle = F2(
-	function (qIndices, puzzle) {
-		var varName = F2(
-			function (clueIndex, numIndex) {
-				return 'clue' + (elm$core$String$fromInt(clueIndex) + ('_' + ('letter' + elm$core$String$fromInt(numIndex))));
-			});
-		var clueVarsByClue = A2(
-			elm$core$List$indexedMap,
-			F2(
-				function (clueIndex, clue) {
-					return A2(
-						elm$core$List$map,
-						function (_n2) {
-							var numIndex = _n2.a;
-							var _n3 = _n2.b;
-							var c = _n3.b;
-							return _Utils_Tuple2(
-								A2(varName, clueIndex, numIndex),
-								c);
-						},
-						A2(elm$core$List$indexedMap, elm$core$Tuple$pair, clue.ag));
-				}),
-			puzzle.W);
-		var numberingConstraints = A2(
-			elm$core$List$concatMap,
-			function (vs) {
-				var vars = A2(elm$core$List$map, elm$core$Tuple$first, vs);
-				return _List_fromArray(
-					[
-						author$project$Solver$NotAscending(vars),
-						author$project$Solver$NotAscending(
-						elm$core$List$reverse(vars)),
-						author$project$Solver$NotSameWord(vars)
-					]);
-			},
-			clueVarsByClue);
-		var clueVars = elm$core$List$concat(clueVarsByClue);
-		var charUses = A3(
-			elm$core$List$foldr,
-			F2(
-				function (_n1, d) {
-					var v = _n1.a;
-					var c = _n1.b;
-					return A3(author$project$Util$updateCons, c, v, d);
-				}),
-			elm$core$Dict$empty,
-			clueVars);
-		var disjointnessConstraints = A2(
-			elm$core$List$map,
-			author$project$Solver$Distinct,
-			elm$core$Dict$values(charUses));
-		var charConstraints = A2(
-			elm$core$List$concatMap,
-			function (_n0) {
-				var v = _n0.a;
-				var c = _n0.b;
-				var uses = A2(
-					elm$core$Maybe$withDefault,
-					_List_Nil,
-					A2(
-						elm$core$Dict$get,
-						elm$core$Char$toUpper(c),
-						qIndices));
-				return _List_fromArray(
-					[
-						author$project$Solver$IsInt(v),
-						A2(author$project$Solver$OneOf, v, uses)
-					]);
-			},
-			clueVars);
-		return _Utils_ap(
-			charConstraints,
-			_Utils_ap(disjointnessConstraints, numberingConstraints));
-	});
-var author$project$SMT$and = function (props) {
-	if (!props.b) {
-		return 'true';
-	} else {
-		if (!props.b.b) {
-			var prop = props.a;
-			return prop;
-		} else {
-			return '(and ' + (A2(elm$core$String$join, ' ', props) + ')');
-		}
-	}
-};
-var author$project$SMT$assert = function (prop) {
-	return '(assert ' + (prop + ')');
-};
-var author$project$SMT$wordFun = 'word-of';
-var author$project$SMT$wordOf = function (x) {
-	return '(' + (author$project$SMT$wordFun + (' ' + (x + ')')));
-};
-var author$project$Solver$isDefn = function (c) {
-	if (!c.$) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var author$project$SMT$ascending = function (vars) {
-	if (!vars.b) {
-		return 'true';
-	} else {
-		if (!vars.b.b) {
-			var _var = vars.a;
-			return 'true';
-		} else {
-			return '(< ' + (A2(elm$core$String$join, ' ', vars) + ')');
-		}
-	}
-};
-var author$project$SMT$distinct = function (vars) {
-	if (!vars.b) {
-		return 'true';
-	} else {
-		if (!vars.b.b) {
-			var _var = vars.a;
-			return 'true';
-		} else {
-			return '(distinct ' + (A2(elm$core$String$join, ' ', vars) + ')');
-		}
-	}
-};
-var author$project$SMT$eq = F2(
-	function (l, r) {
-		return '(= ' + (l + (' ' + (r + ')')));
-	});
-var author$project$SMT$not = function (prop) {
-	return '(not ' + (prop + ')');
-};
-var author$project$SMT$or = function (props) {
-	if (!props.b) {
-		return 'true';
-	} else {
-		if (!props.b.b) {
-			var prop = props.a;
-			return prop;
-		} else {
-			return '(or ' + (A2(elm$core$String$join, ' ', props) + ')');
-		}
-	}
-};
-var author$project$Solver$smt2OfConstraint = function (c) {
-	switch (c.$) {
-		case 0:
-			var _var = c.a;
-			return '(declare-const ' + (_var + ' Int)');
-		case 1:
-			var _var = c.a;
-			var ns = c.b;
-			return author$project$SMT$assert(
-				author$project$SMT$or(
-					A2(
-						elm$core$List$map,
-						function (n) {
-							return A2(
-								author$project$SMT$eq,
-								_var,
-								elm$core$String$fromInt(n));
-						},
-						ns)));
-		case 2:
-			if (!c.a.b) {
-				return author$project$SMT$assert('true');
-			} else {
-				var vars = c.a;
-				return author$project$SMT$assert(
-					author$project$SMT$distinct(vars));
-			}
-		case 3:
-			var vars = c.a;
-			return author$project$SMT$assert(
-				author$project$SMT$not(
-					author$project$SMT$ascending(vars)));
-		default:
-			if (!c.a.b) {
-				return author$project$SMT$assert('true');
-			} else {
-				if (!c.a.b.b) {
-					var _n1 = c.a;
-					return author$project$SMT$assert('true');
-				} else {
-					var vars = c.a;
-					return author$project$SMT$assert(
-						author$project$SMT$distinct(
-							A2(elm$core$List$map, author$project$SMT$wordOf, vars)));
-				}
-			}
-	}
-};
-var elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _n0) {
-				var trues = _n0.a;
-				var falses = _n0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2(elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2(elm$core$List$cons, x, falses));
-			});
-		return A3(
-			elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
-var author$project$Solver$smt2OfConstraints = F2(
-	function (qIndexWords, constraints) {
-		var wordFun = function () {
-			var vals = author$project$SMT$assert(
-				author$project$SMT$and(
-					A3(
-						elm$core$Dict$foldr,
-						F3(
-							function (x, wordNum, eqs) {
-								return A2(
-									elm$core$List$cons,
-									'(= ' + (author$project$SMT$wordOf(
-										elm$core$String$fromInt(x)) + (' ' + (elm$core$String$fromInt(wordNum) + ')'))),
-									eqs);
-							}),
-						_List_Nil,
-						qIndexWords)));
-			var decl = '(declare-fun ' + (author$project$SMT$wordFun + ' (Int) Int)');
-			var conds = A3(
-				elm$core$Dict$foldr,
-				F3(
-					function (x, wordNum, otw) {
-						return '(ite (= n ' + (elm$core$String$fromInt(x) + (') ' + (elm$core$String$fromInt(wordNum) + (' ' + (otw + ')')))));
-					}),
-				'-1',
-				qIndexWords);
-			var defn = '(define-fun ' + (author$project$SMT$wordFun + (' ((n Int)) Int ' + (conds + ')')));
-			return _List_fromArray(
-				[decl, vals]);
-		}();
-		var _n0 = A2(elm$core$List$partition, author$project$Solver$isDefn, constraints);
-		var defnConstraints = _n0.a;
-		var assertConstraints = _n0.b;
-		var assertions = A2(elm$core$List$map, author$project$Solver$smt2OfConstraint, assertConstraints);
-		var defns = A2(elm$core$List$map, author$project$Solver$smt2OfConstraint, defnConstraints);
-		var vars = A2(
-			elm$core$List$filterMap,
-			function (c) {
-				if (!c.$) {
-					var v = c.a;
-					return elm$core$Maybe$Just(v);
-				} else {
-					return elm$core$Maybe$Nothing;
-				}
-			},
-			defnConstraints);
-		var commands = _Utils_ap(
-			_List_fromArray(
-				['(set-option :produce-models true)']),
-			_Utils_ap(
-				defns,
-				_Utils_ap(
-					wordFun,
-					_Utils_ap(
-						assertions,
-						_List_fromArray(
-							[
-								'(check-sat)',
-								'(get-value (' + (A2(elm$core$String$join, ' ', vars) + '))')
-							])))));
-		return A2(elm$core$String$join, '\n', commands);
-	});
-var author$project$Solver$generateNumberingProblem = function (puzzle) {
-	return elm$json$Json$Encode$string(
-		A2(
-			author$project$Solver$smt2OfConstraints,
-			author$project$Puzzle$quoteIndexWords(puzzle),
-			A2(
-				author$project$Solver$constraintsOfPuzzle,
-				author$project$Puzzle$quoteIndices(puzzle),
-				puzzle)));
-};
-var author$project$Solver$missingResult = {ag: author$project$Solver$SMTFailed, ak: 0};
 var author$project$Trie$compareEntry = F2(
 	function (e1, e2) {
 		return A2(elm$core$Basics$compare, e1.U, e2.U);
@@ -8261,7 +8261,7 @@ var author$project$Main$update = F2(
 						A2(
 							elm$core$Result$withDefault,
 							author$project$Solver$missingResult,
-							A2(elm$json$Json$Decode$decodeValue, author$project$Solver$decodeSMTResult, json))));
+							A2(elm$json$Json$Decode$decodeValue, author$project$Solver$smtResultDecoder, json))));
 			case 18:
 				var json = msg.a;
 				return _Utils_Tuple2(
@@ -8271,7 +8271,7 @@ var author$project$Main$update = F2(
 						A2(
 							elm$core$Result$withDefault,
 							0,
-							A2(elm$json$Json$Decode$decodeValue, author$project$SMT$decodeSolverState, json))),
+							A2(elm$json$Json$Decode$decodeValue, author$project$SMT$solverStateDecoder, json))),
 					elm$core$Platform$Cmd$none);
 			case 19:
 				var here = msg.a;
