@@ -23,8 +23,6 @@ import Util exposing (..)
 
 {- PICK UP HERE
 
-   warning when not in focus
-
    support for markdown in hints
 
    loading games
@@ -65,29 +63,46 @@ defaultCursor = Clues 0 0
 type alias Clue = Puzzle.BlankClue
 type alias Puzzle = Puzzle.Blank
 
-type Model = NoPuzzle (Maybe String)
-           | Playing State
+type alias Model =
+    { mode : Mode
+    , msg : Maybe String
+    , focused : Bool
+    }
 
-type alias State = 
+type Mode = NoPuzzle
+          | Playing GameState
+
+type alias GameState = 
     { cursor : Cursor
     , puzzle : Puzzle
     }
 
 defaultModel : Model
-defaultModel = NoPuzzle Nothing
+defaultModel = 
+    { mode = NoPuzzle
+    , msg = Nothing
+    , focused = False
+    }
 
-testModel : Model
-testModel = Playing { cursor = Clues 0 0 
-                    , puzzle = wcw
-                    }
+clearMsg : Model -> Model
+clearMsg model = { model | msg = Nothing }
 
-asPuzzleIn : State -> Puzzle -> State
+withMsg : String -> Model -> Model
+withMsg msg model = { model | msg = Just msg }
+
+withFocused : Bool -> Model -> Model
+withFocused focused model = { model | focused = focused }
+
+asModeIn : Model -> Mode -> Model
+asModeIn model mode = { model | mode = mode }
+
+asPuzzleIn : GameState -> Puzzle -> GameState
 asPuzzleIn state puzzle = { state | puzzle = puzzle }
 
-withCursor : Cursor -> State -> State
+withCursor : Cursor -> GameState -> GameState
 withCursor cursor state = { state | cursor = cursor }
 
-swapCursor : State -> State
+swapCursor : GameState -> GameState
 swapCursor state =
     (\c -> withCursor c state) <|
     case state.cursor of
@@ -96,7 +111,7 @@ swapCursor state =
             Clues cIndex lIndex
         Clues _ _ -> Board (selectedBoard state)
             
-moveCursor : Direction -> State -> State
+moveCursor : Direction -> GameState -> GameState
 moveCursor dir state =
     (\c -> withCursor c state) <|
     case state.cursor of
@@ -163,13 +178,13 @@ moveCursor dir state =
 
 type SelectionMode = NotSelected | AsClue | AsBoard
                         
-isSelected : Int -> (Int, Int) -> State -> SelectionMode
+isSelected : Int -> (Int, Int) -> GameState -> SelectionMode
 isSelected qIndex (cIndex, lIndex) state =
     case state.cursor of
         Clues clue letter -> if clue == cIndex && letter == lIndex then AsClue else NotSelected
         Board quote -> if quote == qIndex then AsBoard else NotSelected
 
-selectedClue : State -> (Int, Int)
+selectedClue : GameState -> (Int, Int)
 selectedClue state =
     case state.cursor of
         Clues clue letter -> (clue, letter)
@@ -189,7 +204,7 @@ selectedClue state =
                      [idx] -> idx
                      _ -> (-1, -1) {- YIKES -})
 
-selectedBoard : State -> Int
+selectedBoard : GameState -> Int
 selectedBoard state =
     case state.cursor of
         Board index -> index
@@ -270,28 +285,39 @@ subscriptions model =
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case (model, msg) of
+    case (model.mode, msg) of
         (_, LoadPuzzle json) ->
             case Decode.decodeValue Puzzle.blankDecoder json of
                 Err err ->
-                    ( NoPuzzle (Just ("Couldn't load puzzle: " ++ Decode.errorToString err))
+                    ( NoPuzzle |>
+                      asModeIn model |>
+                      withMsg ("Couldn't load puzzle: " ++ Decode.errorToString err)
                     , Cmd.none)
                     
                 Ok puzzle ->
                     case Puzzle.isValidBlank puzzle of
                         [] -> ( Playing { cursor = defaultCursor
                                         , puzzle = puzzle 
-                                        }
+                                        }  |>
+                                asModeIn model |>
+                                clearMsg
                               , Cmd.none)
                         problems -> 
-                            ( NoPuzzle 
-                                  (Just ("Invalid puzzle: " ++ 
-                                         String.join ", " 
-                                             (List.map Puzzle.problemToString problems)))
+                            ( NoPuzzle |>
+                              asModeIn model |>
+                              withMsg ("Invalid puzzle: " ++ 
+                                           String.join ", " 
+                                           (List.map Puzzle.problemToString problems))
                             , Cmd.none)
 
-        (_, Focused _) -> 
-            ( model {- FIXME warning that keyboard controls won't work -}
+        (_, Focused (Err _)) -> 
+            ( model |> 
+              withFocused False
+            , Cmd.none)
+
+        (_, Focused (Ok ())) ->
+            ( model |>
+              withFocused True
             , Cmd.none)
 
         (_, VisibilityChanged vis) ->
@@ -300,7 +326,7 @@ update msg model =
               then getFocus
               else Cmd.none)
 
-        (NoPuzzle _, _) -> 
+        (NoPuzzle, _) -> 
             ( model
             , Cmd.none)
 
@@ -311,25 +337,32 @@ update msg model =
               (case mdir of
                    Nothing -> identity
                    Just dir -> moveCursor dir) |>
-              Playing
+              Playing |>
+              asModeIn model |>
+              withFocused True
             , Cmd.none)
                                
         (Playing state, SwapCursor) -> 
             ( state |>
               swapCursor |>
-              Playing
+              Playing |>
+              asModeIn model |>
+              withFocused True
             , Cmd.none)
                           
         (Playing state, MoveCursor dir) -> 
             ( state |>
               moveCursor dir |>
-              Playing
+              Playing  |>
+              asModeIn model |>
+              withFocused True
             , Cmd.none)
      
         (Playing state, SelectIndex cursor) -> 
             ( state |>
               withCursor cursor |>
-              Playing
+              Playing |>
+              asModeIn model
             , Cmd.none)
 
 -- VIEW
@@ -339,24 +372,40 @@ view model =
     div [ id "crossbars-wrapper"
         , tabindex 0
         , Html.Events.preventDefaultOn "keydown" msgOfKey
+        , onFocus (Focused (Ok ()))
         ] 
         (  section [id "overview"]
            [ h3 [class "header"] [text "Crossbars — Acrostic Player"]
+           , div [id "warnings"]
+               (let
+
+                   focusWarning =
+                       if model.focused 
+                       then [] 
+                       else ["If keyboard controls do not work, try clicking in the play area."]
+
+                   otherWarnings = 
+                       case model.msg of
+                           Nothing -> []
+                           Just msg -> [msg]
+
+                in
+
+                    (focusWarning ++ otherWarnings) |>
+                    List.map
+                        (text >> List.singleton >> span [class "warning"]))
            ]
-        :: case model of
-               NoPuzzle msg -> [ input [ type_ "button"
-                                       , onClick (LoadPuzzle (Puzzle.encodeBlank wcw))
-                                       , value "Load testing puzzle" 
-                                       ]
-                                     [ ]
-                               , case msg of
-                                     Nothing -> span [] []
-                                     Just err -> span [class "warning"] [text err]
-                               ]
+        :: case model.mode of
+               NoPuzzle -> [ input [ type_ "button"
+                                   , onClick (LoadPuzzle (Puzzle.encodeBlank wcw))
+                                   , value "Load testing puzzle" 
+                                   ]
+                                 [ ]
+                           ]
                Playing state -> playingView state
         )
 
-playingView : State -> List (Html Msg)
+playingView : GameState -> List (Html Msg)
 playingView state = 
     [ section [id "board-wrapper"]
           [ boardView state ]
@@ -426,7 +475,7 @@ boardSquares puzzle =
 
         numberedSquares
 
-boardView : State -> Html Msg
+boardView : GameState -> Html Msg
 boardView state =
     let 
 
@@ -530,7 +579,7 @@ boardView state =
                                   ]))
              
 
-clueView : State -> Int -> Clue -> Html Msg
+clueView : GameState -> Int -> Clue -> Html Msg
 clueView state clueIndex clue =
     let 
         letter = Puzzle.letterFor clueIndex 
