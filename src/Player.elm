@@ -23,8 +23,6 @@ import Util exposing (..)
 
 {- PICK UP HERE
 
-   grab focus whenever visibility comes back
-
    warning when not in focus
 
    support for markdown in hints
@@ -55,6 +53,7 @@ type Msg =
   | LoadPuzzle Encode.Value
 
   {- UI business -}
+  | VisibilityChanged Browser.Events.Visibility
   | Focused (Result Browser.Dom.Error ())
 
 type Cursor = Board Int
@@ -216,10 +215,13 @@ main = Browser.element
 
 -- INIT/SUBSCRIPTIONS
 
+getFocus : Cmd Msg
+getFocus = Task.attempt Focused (Browser.Dom.focus "crossbars-wrapper")
+
 init : Flags -> (Model, Cmd Msg)
 init savedModel =
     ( defaultModel
-    , Task.attempt Focused (Browser.Dom.focus "crossbars-wrapper")
+    , getFocus
     )
 
 msgOfKey : Decode.Decoder (Msg, Bool)
@@ -261,7 +263,8 @@ msgOfKey =
                  Ok msg -> Decode.succeed (msg, True))
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+subscriptions model = 
+    Browser.Events.onVisibilityChange VisibilityChanged
 
 -- UPDATE
 
@@ -290,6 +293,12 @@ update msg model =
         (_, Focused _) -> 
             ( model {- FIXME warning that keyboard controls won't work -}
             , Cmd.none)
+
+        (_, VisibilityChanged vis) ->
+            ( model
+            , if vis == Browser.Events.Visible
+              then getFocus
+              else Cmd.none)
 
         (NoPuzzle _, _) -> 
             ( model
