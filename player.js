@@ -4347,11 +4347,10 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
-var author$project$Main$NoPuzzle = function (a) {
-	return {$: 'NoPuzzle', a: a};
-};
+var author$project$Main$NoPuzzle = {$: 'NoPuzzle'};
+var elm$core$Basics$False = {$: 'False'};
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
-var author$project$Main$defaultModel = author$project$Main$NoPuzzle(elm$core$Maybe$Nothing);
+var author$project$Main$defaultModel = {focused: false, mode: author$project$Main$NoPuzzle, msg: elm$core$Maybe$Nothing};
 var author$project$Main$Focused = function (a) {
 	return {$: 'Focused', a: a};
 };
@@ -4376,7 +4375,6 @@ var elm$core$Basics$never = function (_n0) {
 var elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
-var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
@@ -5606,12 +5604,23 @@ var author$project$Main$subscriptions = function (model) {
 var author$project$Main$Playing = function (a) {
 	return {$: 'Playing', a: a};
 };
+var author$project$Main$asModeIn = F2(
+	function (model, mode) {
+		return _Utils_update(
+			model,
+			{mode: mode});
+	});
 var author$project$Main$asPuzzleIn = F2(
 	function (state, puzzle) {
 		return _Utils_update(
 			state,
 			{puzzle: puzzle});
 	});
+var author$project$Main$clearMsg = function (model) {
+	return _Utils_update(
+		model,
+		{msg: elm$core$Maybe$Nothing});
+};
 var author$project$Main$Clues = F2(
 	function (a, b) {
 		return {$: 'Clues', a: a, b: b};
@@ -6145,6 +6154,20 @@ var author$project$Main$swapCursor = function (state) {
 			}
 		}());
 };
+var author$project$Main$withFocused = F2(
+	function (focused, model) {
+		return _Utils_update(
+			model,
+			{focused: focused});
+	});
+var author$project$Main$withMsg = F2(
+	function (msg, model) {
+		return _Utils_update(
+			model,
+			{
+				msg: elm$core$Maybe$Just(msg)
+			});
+	});
 var author$project$Puzzle$asQuoteIn = F2(
 	function (puzzle, quote) {
 		return _Utils_update(
@@ -6908,8 +6931,8 @@ var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$json$Json$Decode$decodeValue = _Json_run;
 var author$project$Main$update = F2(
 	function (msg, model) {
-		var _n0 = _Utils_Tuple2(model, msg);
-		_n0$3:
+		var _n0 = _Utils_Tuple2(model.mode, msg);
+		_n0$4:
 		while (true) {
 			switch (_n0.b.$) {
 				case 'LoadPuzzle':
@@ -6918,32 +6941,46 @@ var author$project$Main$update = F2(
 					if (_n1.$ === 'Err') {
 						var err = _n1.a;
 						return _Utils_Tuple2(
-							author$project$Main$NoPuzzle(
-								elm$core$Maybe$Just(
-									'Couldn\'t load puzzle: ' + elm$json$Json$Decode$errorToString(err))),
+							A2(
+								author$project$Main$withMsg,
+								'Couldn\'t load puzzle: ' + elm$json$Json$Decode$errorToString(err),
+								A2(author$project$Main$asModeIn, model, author$project$Main$NoPuzzle)),
 							elm$core$Platform$Cmd$none);
 					} else {
 						var puzzle = _n1.a;
 						var _n2 = author$project$Puzzle$isValidBlank(puzzle);
 						if (!_n2.b) {
 							return _Utils_Tuple2(
-								author$project$Main$Playing(
-									{cursor: author$project$Main$defaultCursor, puzzle: puzzle}),
+								author$project$Main$clearMsg(
+									A2(
+										author$project$Main$asModeIn,
+										model,
+										author$project$Main$Playing(
+											{cursor: author$project$Main$defaultCursor, puzzle: puzzle}))),
 								elm$core$Platform$Cmd$none);
 						} else {
 							var problems = _n2;
 							return _Utils_Tuple2(
-								author$project$Main$NoPuzzle(
-									elm$core$Maybe$Just(
-										'Invalid puzzle: ' + A2(
-											elm$core$String$join,
-											', ',
-											A2(elm$core$List$map, author$project$Puzzle$problemToString, problems)))),
+								A2(
+									author$project$Main$withMsg,
+									'Invalid puzzle: ' + A2(
+										elm$core$String$join,
+										', ',
+										A2(elm$core$List$map, author$project$Puzzle$problemToString, problems)),
+									A2(author$project$Main$asModeIn, model, author$project$Main$NoPuzzle)),
 								elm$core$Platform$Cmd$none);
 						}
 					}
 				case 'Focused':
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					if (_n0.b.a.$ === 'Err') {
+						return _Utils_Tuple2(
+							A2(author$project$Main$withFocused, false, model),
+							elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(
+							A2(author$project$Main$withFocused, true, model),
+							elm$core$Platform$Cmd$none);
+					}
 				case 'VisibilityChanged':
 					var vis = _n0.b.a;
 					return _Utils_Tuple2(
@@ -6951,70 +6988,92 @@ var author$project$Main$update = F2(
 						_Utils_eq(vis, elm$browser$Browser$Events$Visible) ? author$project$Main$getFocus : elm$core$Platform$Cmd$none);
 				case 'SetCursor':
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$3;
+						break _n0$4;
 					} else {
 						var state = _n0.a.a;
-						var _n3 = _n0.b;
-						var mc = _n3.a;
-						var mdir = _n3.b;
+						var _n4 = _n0.b;
+						var mc = _n4.a;
+						var mdir = _n4.b;
 						return _Utils_Tuple2(
-							author$project$Main$Playing(
-								function () {
-									if (mdir.$ === 'Nothing') {
-										return elm$core$Basics$identity;
-									} else {
-										var dir = mdir.a;
-										return author$project$Main$moveCursor(dir);
-									}
-								}()(
-									A2(
-										author$project$Main$asPuzzleIn,
-										state,
-										A2(
-											author$project$Puzzle$asQuoteIn,
-											state.puzzle,
-											A3(
-												author$project$Util$updateIndex,
-												author$project$Main$selectedBoard(state),
-												elm$core$Basics$always(mc),
-												state.puzzle.quote))))),
+							A2(
+								author$project$Main$withFocused,
+								true,
+								A2(
+									author$project$Main$asModeIn,
+									model,
+									author$project$Main$Playing(
+										function () {
+											if (mdir.$ === 'Nothing') {
+												return elm$core$Basics$identity;
+											} else {
+												var dir = mdir.a;
+												return author$project$Main$moveCursor(dir);
+											}
+										}()(
+											A2(
+												author$project$Main$asPuzzleIn,
+												state,
+												A2(
+													author$project$Puzzle$asQuoteIn,
+													state.puzzle,
+													A3(
+														author$project$Util$updateIndex,
+														author$project$Main$selectedBoard(state),
+														elm$core$Basics$always(mc),
+														state.puzzle.quote))))))),
 							elm$core$Platform$Cmd$none);
 					}
 				case 'SwapCursor':
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$3;
+						break _n0$4;
 					} else {
 						var state = _n0.a.a;
-						var _n5 = _n0.b;
+						var _n6 = _n0.b;
 						return _Utils_Tuple2(
-							author$project$Main$Playing(
-								author$project$Main$swapCursor(state)),
+							A2(
+								author$project$Main$withFocused,
+								true,
+								A2(
+									author$project$Main$asModeIn,
+									model,
+									author$project$Main$Playing(
+										author$project$Main$swapCursor(state)))),
 							elm$core$Platform$Cmd$none);
 					}
 				case 'MoveCursor':
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$3;
+						break _n0$4;
 					} else {
 						var state = _n0.a.a;
 						var dir = _n0.b.a;
 						return _Utils_Tuple2(
-							author$project$Main$Playing(
-								A2(author$project$Main$moveCursor, dir, state)),
+							A2(
+								author$project$Main$withFocused,
+								true,
+								A2(
+									author$project$Main$asModeIn,
+									model,
+									author$project$Main$Playing(
+										A2(author$project$Main$moveCursor, dir, state)))),
 							elm$core$Platform$Cmd$none);
 					}
 				default:
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$3;
+						break _n0$4;
 					} else {
 						var state = _n0.a.a;
 						var cursor = _n0.b.a;
 						return _Utils_Tuple2(
-							author$project$Main$Playing(
-								A2(author$project$Main$withCursor, cursor, state)),
+							A2(
+								author$project$Main$asModeIn,
+								model,
+								author$project$Main$Playing(
+									A2(author$project$Main$withCursor, cursor, state))),
 							elm$core$Platform$Cmd$none);
 					}
 			}
 		}
+		var _n3 = _n0.a;
 		return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 	});
 var author$project$Main$LoadPuzzle = function (a) {
@@ -7910,6 +7969,10 @@ var author$project$Puzzle$encodeBlank = function (b) {
 				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeBlankClue, b.clues))
 			]));
 };
+var elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$Attributes$tabindex = function (n) {
 	return A2(
@@ -7919,6 +7982,12 @@ var elm$html$Html$Attributes$tabindex = function (n) {
 };
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+var elm$html$Html$Events$onFocus = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'focus',
+		elm$json$Json$Decode$succeed(msg));
+};
 var elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
 	return {$: 'MayPreventDefault', a: a};
 };
@@ -7936,7 +8005,10 @@ var author$project$Main$view = function (model) {
 			[
 				elm$html$Html$Attributes$id('crossbars-wrapper'),
 				elm$html$Html$Attributes$tabindex(0),
-				A2(elm$html$Html$Events$preventDefaultOn, 'keydown', author$project$Main$msgOfKey)
+				A2(elm$html$Html$Events$preventDefaultOn, 'keydown', author$project$Main$msgOfKey),
+				elm$html$Html$Events$onFocus(
+				author$project$Main$Focused(
+					elm$core$Result$Ok(_Utils_Tuple0)))
 			]),
 		A2(
 			elm$core$List$cons,
@@ -7957,11 +8029,45 @@ var author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								elm$html$Html$text('Crossbars — Acrostic Player')
-							]))
+							])),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$id('warnings')
+							]),
+						function () {
+							var otherWarnings = function () {
+								var _n0 = model.msg;
+								if (_n0.$ === 'Nothing') {
+									return _List_Nil;
+								} else {
+									var msg = _n0.a;
+									return _List_fromArray(
+										[msg]);
+								}
+							}();
+							var focusWarning = model.focused ? _List_Nil : _List_fromArray(
+								['If keyboard controls do not work, try clicking in the play area.']);
+							return A2(
+								elm$core$List$map,
+								A2(
+									elm$core$Basics$composeR,
+									elm$html$Html$text,
+									A2(
+										elm$core$Basics$composeR,
+										elm$core$List$singleton,
+										elm$html$Html$span(
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('warning')
+												])))),
+								_Utils_ap(focusWarning, otherWarnings));
+						}())
 					])),
 			function () {
-				if (model.$ === 'NoPuzzle') {
-					var msg = model.a;
+				var _n1 = model.mode;
+				if (_n1.$ === 'NoPuzzle') {
 					return _List_fromArray(
 						[
 							A2(
@@ -7974,27 +8080,10 @@ var author$project$Main$view = function (model) {
 										author$project$Puzzle$encodeBlank(author$project$Main$wcw))),
 									elm$html$Html$Attributes$value('Load testing puzzle')
 								]),
-							_List_Nil),
-							function () {
-							if (msg.$ === 'Nothing') {
-								return A2(elm$html$Html$span, _List_Nil, _List_Nil);
-							} else {
-								var err = msg.a;
-								return A2(
-									elm$html$Html$span,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('warning')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text(err)
-										]));
-							}
-						}()
+							_List_Nil)
 						]);
 				} else {
-					var state = model.a;
+					var state = _n1.a;
 					return author$project$Main$playingView(state);
 				}
 			}()));
