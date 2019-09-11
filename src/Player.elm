@@ -32,9 +32,6 @@ import Util exposing (..)
 
    support for markdown in hints
 
-   loading games
-     uuencoded (from URL, copy/paste?)
-
    more concise blank format (JSON is v wasteful)
 
  -}
