@@ -4364,6 +4364,184 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
+
+
+
+// DECODER
+
+var _File_decoder = _Json_decodePrim(function(value) {
+	// NOTE: checks if `File` exists in case this is run on node
+	return (typeof File !== 'undefined' && value instanceof File)
+		? elm$core$Result$Ok(value)
+		: _Json_expecting('a FILE', value);
+});
+
+
+// METADATA
+
+function _File_name(file) { return file.name; }
+function _File_mime(file) { return file.type; }
+function _File_size(file) { return file.size; }
+
+function _File_lastModified(file)
+{
+	return elm$time$Time$millisToPosix(file.lastModified);
+}
+
+
+// DOWNLOAD
+
+var _File_downloadNode;
+
+function _File_getDownloadNode()
+{
+	return _File_downloadNode || (_File_downloadNode = document.createElement('a'));
+}
+
+var _File_download = F3(function(name, mime, content)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var blob = new Blob([content], {type: mime});
+
+		// for IE10+
+		if (navigator.msSaveOrOpenBlob)
+		{
+			navigator.msSaveOrOpenBlob(blob, name);
+			return;
+		}
+
+		// for HTML5
+		var node = _File_getDownloadNode();
+		var objectUrl = URL.createObjectURL(blob);
+		node.href = objectUrl;
+		node.download = name;
+		_File_click(node);
+		URL.revokeObjectURL(objectUrl);
+	});
+});
+
+function _File_downloadUrl(href)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var node = _File_getDownloadNode();
+		node.href = href;
+		node.download = '';
+		node.origin === location.origin || (node.target = '_blank');
+		_File_click(node);
+	});
+}
+
+
+// IE COMPATIBILITY
+
+function _File_makeBytesSafeForInternetExplorer(bytes)
+{
+	// only needed by IE10 and IE11 to fix https://github.com/elm/file/issues/10
+	// all other browsers can just run `new Blob([bytes])` directly with no problem
+	//
+	return new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
+
+function _File_click(node)
+{
+	// only needed by IE10 and IE11 to fix https://github.com/elm/file/issues/11
+	// all other browsers have MouseEvent and do not need this conditional stuff
+	//
+	if (typeof MouseEvent === 'function')
+	{
+		node.dispatchEvent(new MouseEvent('click'));
+	}
+	else
+	{
+		var event = document.createEvent('MouseEvents');
+		event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+		document.body.appendChild(node);
+		node.dispatchEvent(event);
+		document.body.removeChild(node);
+	}
+}
+
+
+// UPLOAD
+
+var _File_node;
+
+function _File_uploadOne(mimes)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_File_node = document.createElement('input');
+		_File_node.type = 'file';
+		_File_node.accept = A2(elm$core$String$join, ',', mimes);
+		_File_node.addEventListener('change', function(event)
+		{
+			callback(_Scheduler_succeed(event.target.files[0]));
+		});
+		_File_click(_File_node);
+	});
+}
+
+function _File_uploadOneOrMore(mimes)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_File_node = document.createElement('input');
+		_File_node.type = 'file';
+		_File_node.multiple = true;
+		_File_node.accept = A2(elm$core$String$join, ',', mimes);
+		_File_node.addEventListener('change', function(event)
+		{
+			var elmFiles = _List_fromArray(event.target.files);
+			callback(_Scheduler_succeed(_Utils_Tuple2(elmFiles.a, elmFiles.b)));
+		});
+		_File_click(_File_node);
+	});
+}
+
+
+// CONTENT
+
+function _File_toString(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(reader.result));
+		});
+		reader.readAsText(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+function _File_toBytes(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(new DataView(reader.result)));
+		});
+		reader.readAsArrayBuffer(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+function _File_toUrl(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(reader.result));
+		});
+		reader.readAsDataURL(blob);
+		return function() { reader.abort(); };
+	});
+}
+
 var author$project$Main$NoPuzzle = {$: 'NoPuzzle'};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
@@ -5360,14 +5538,24 @@ var author$project$Main$asModeIn = F2(
 			model,
 			{mode: mode});
 	});
+var author$project$Main$withPlayedPuzzles = F2(
+	function (playedPuzzles, model) {
+		return _Utils_update(
+			model,
+			{playedPuzzles: playedPuzzles});
+	});
 var author$project$Main$tryLoadRecentPuzzle = function (model) {
 	var _n0 = model.playedPuzzles;
 	if (_n0.b) {
-		var last = _n0.a;
+		var recent = _n0.a;
+		var rest = _n0.b;
 		return A2(
-			author$project$Main$asModeIn,
-			model,
-			author$project$Main$Playing(last));
+			author$project$Main$withPlayedPuzzles,
+			rest,
+			A2(
+				author$project$Main$asModeIn,
+				model,
+				author$project$Main$Playing(recent)));
 	} else {
 		return model;
 	}
@@ -5429,23 +5617,17 @@ var author$project$Main$selectPuzzle = F2(
 							},
 							elm$url$Url$fromString(sUrl))))));
 	});
-var author$project$Main$withPlayedPuzzles = F2(
-	function (playedPuzzles, model) {
-		return _Utils_update(
-			model,
-			{playedPuzzles: playedPuzzles});
-	});
 var elm$json$Json$Decode$decodeValue = _Json_run;
 var author$project$Main$init = function (json) {
 	var model = function () {
 		var _n0 = A2(elm$json$Json$Decode$decodeValue, author$project$Main$saveDecoder, json);
 		if (_n0.$ === 'Err') {
-			return A2(elm$core$Debug$log, 'Default', author$project$Main$defaultModel);
+			return author$project$Main$defaultModel;
 		} else {
 			var saved = _n0.a;
 			return A2(
 				author$project$Main$selectPuzzle,
-				A2(elm$core$Debug$log, 'url', saved.url),
+				saved.url,
 				A2(author$project$Main$withPlayedPuzzles, saved.playedPuzzles, author$project$Main$defaultModel));
 		}
 	}();
@@ -5881,6 +6063,192 @@ var elm$browser$Browser$Events$onVisibilityChange = function (func) {
 var author$project$Main$subscriptions = function (model) {
 	return elm$browser$Browser$Events$onVisibilityChange(author$project$Main$VisibilityChanged);
 };
+var author$project$Main$LoadedPuzzleFile = function (a) {
+	return {$: 'LoadedPuzzleFile', a: a};
+};
+var author$project$Main$ReceivedPuzzleFile = function (a) {
+	return {$: 'ReceivedPuzzleFile', a: a};
+};
+var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var author$project$Main$cursorEncoder = function (cursor) {
+	if (cursor.$ === 'Board') {
+		var index = cursor.a;
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'boardIndex',
+					elm$json$Json$Encode$int(index))
+				]));
+	} else {
+		var cIndex = cursor.a;
+		var lIndex = cursor.b;
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'clueIndex',
+					elm$json$Json$Encode$int(cIndex)),
+					_Utils_Tuple2(
+					'letterIndex',
+					elm$json$Json$Encode$int(lIndex))
+				]));
+	}
+};
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Puzzle$encodeBlankClue = function (c) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'hint',
+				elm$json$Json$Encode$string(c.hint)),
+				_Utils_Tuple2(
+				'answer',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, c.answer))
+			]));
+};
+var elm$json$Json$Encode$null = _Json_encodeNull;
+var author$project$Util$encodeNullable = F2(
+	function (encode, ma) {
+		if (ma.$ === 'Nothing') {
+			return elm$json$Json$Encode$null;
+		} else {
+			var a = ma.a;
+			return encode(a);
+		}
+	});
+var elm$core$Basics$not = _Basics_not;
+var elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			elm$core$List$any,
+			A2(elm$core$Basics$composeL, elm$core$Basics$not, isOkay),
+			list);
+	});
+var elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$String$cons = _String_cons;
+var elm$core$String$fromChar = function (_char) {
+	return A2(elm$core$String$cons, _char, '');
+};
+var author$project$Puzzle$encodeBlank = function (b) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'quote',
+				(elm$core$List$isEmpty(b.quote) || A2(
+					elm$core$List$all,
+					function (qc) {
+						return _Utils_eq(qc, elm$core$Maybe$Nothing);
+					},
+					b.quote)) ? elm$json$Json$Encode$null : A2(
+					elm$json$Json$Encode$list,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$Maybe$map(elm$core$String$fromChar),
+						author$project$Util$encodeNullable(elm$json$Json$Encode$string)),
+					b.quote)),
+				_Utils_Tuple2(
+				'quoteWordLengths',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, b.quoteWordLengths)),
+				_Utils_Tuple2(
+				'boardColumns',
+				elm$json$Json$Encode$int(b.boardColumns)),
+				_Utils_Tuple2(
+				'clues',
+				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeBlankClue, b.clues))
+			]));
+};
+var author$project$Main$gameStateEncoder = function (gs) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'cursor',
+				author$project$Main$cursorEncoder(gs.cursor)),
+				_Utils_Tuple2(
+				'puzzle',
+				author$project$Puzzle$encodeBlank(gs.puzzle))
+			]));
+};
+var author$project$Main$savePlayedPuzzles = _Platform_outgoingPort('savePlayedPuzzles', elm$core$Basics$identity);
+var author$project$Main$andSave = function (model) {
+	return _Utils_Tuple2(
+		model,
+		author$project$Main$savePlayedPuzzles(
+			A2(
+				elm$json$Json$Encode$list,
+				author$project$Main$gameStateEncoder,
+				function () {
+					var _n0 = model.mode;
+					if (_n0.$ === 'NoPuzzle') {
+						return model.playedPuzzles;
+					} else {
+						var gs = _n0.a;
+						return A2(elm$core$List$cons, gs, model.playedPuzzles);
+					}
+				}())));
+};
 var author$project$Main$asPuzzleIn = F2(
 	function (state, puzzle) {
 		return _Utils_update(
@@ -6137,16 +6505,6 @@ var elm$core$List$head = function (list) {
 	}
 };
 var elm$core$List$sortBy = _List_sortBy;
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6402,6 +6760,18 @@ var author$project$Main$swapCursor = function (state) {
 					author$project$Main$selectedBoard(state));
 			}
 		}());
+};
+var author$project$Main$trySaveCurrentPuzzle = function (model) {
+	var _n0 = model.mode;
+	if (_n0.$ === 'NoPuzzle') {
+		return model;
+	} else {
+		var old = _n0.a;
+		return A2(
+			author$project$Main$withPlayedPuzzles,
+			A2(elm$core$List$cons, old, model.playedPuzzles),
+			model);
+	}
 };
 var author$project$Main$withFocused = F2(
 	function (focused, model) {
@@ -6856,7 +7226,6 @@ var author$project$Util$updateCons = F3(
 			d);
 	});
 var elm$core$Basics$neq = _Utils_notEqual;
-var elm$core$Basics$not = _Basics_not;
 var elm$core$Dict$filter = F2(
 	function (isGood, dict) {
 		return A3(
@@ -6872,34 +7241,6 @@ var elm$core$List$concatMap = F2(
 	function (f, list) {
 		return elm$core$List$concat(
 			A2(elm$core$List$map, f, list));
-	});
-var elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
 	});
 var elm$core$List$member = F2(
 	function (x, xs) {
@@ -6988,10 +7329,6 @@ var elm$core$String$toList = function (string) {
 	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
 };
 var author$project$Util$alphabetList = elm$core$String$toList(author$project$Util$alphabet);
-var elm$core$String$cons = _String_cons;
-var elm$core$String$fromChar = function (_char) {
-	return A2(elm$core$String$cons, _char, '');
-};
 var elm$core$Bitwise$and = _Bitwise_and;
 var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
 var elm$core$String$repeatHelp = F3(
@@ -7073,48 +7410,71 @@ var elm$core$Basics$always = F2(
 	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var elm$time$Time$millisToPosix = elm$time$Time$Posix;
+var elm$file$File$toString = _File_toString;
+var elm$file$File$Select$file = F2(
+	function (mimes, toMsg) {
+		return A2(
+			elm$core$Task$perform,
+			toMsg,
+			_File_uploadOne(mimes));
+	});
 var author$project$Main$update = F2(
 	function (msg, model) {
 		var _n0 = _Utils_Tuple2(model.mode, msg);
-		_n0$4:
+		_n0$6:
 		while (true) {
 			switch (_n0.b.$) {
-				case 'LoadPuzzle':
-					var json = _n0.b.a;
-					var _n1 = A2(elm$json$Json$Decode$decodeValue, author$project$Puzzle$blankDecoder, json);
-					if (_n1.$ === 'Err') {
-						var err = _n1.a;
-						return _Utils_Tuple2(
-							A2(
-								author$project$Main$withMsg,
-								'Couldn\'t load puzzle: ' + elm$json$Json$Decode$errorToString(err),
-								A2(author$project$Main$asModeIn, model, author$project$Main$NoPuzzle)),
-							elm$core$Platform$Cmd$none);
-					} else {
-						var puzzle = _n1.a;
-						var _n2 = author$project$Puzzle$isValidBlank(puzzle);
-						if (!_n2.b) {
-							return _Utils_Tuple2(
-								author$project$Main$clearMsg(
-									A2(
-										author$project$Main$asModeIn,
-										model,
-										author$project$Main$Playing(
-											{cursor: author$project$Main$defaultCursor, puzzle: puzzle}))),
-								elm$core$Platform$Cmd$none);
-						} else {
-							var problems = _n2;
-							return _Utils_Tuple2(
-								A2(
-									author$project$Main$withMsg,
-									'Invalid puzzle: ' + A2(
-										elm$core$String$join,
-										', ',
-										A2(elm$core$List$map, author$project$Puzzle$problemToString, problems)),
-									A2(author$project$Main$asModeIn, model, author$project$Main$NoPuzzle)),
-								elm$core$Platform$Cmd$none);
-						}
-					}
+				case 'RequestPuzzleFile':
+					var _n1 = _n0.b;
+					return _Utils_Tuple2(
+						model,
+						A2(
+							elm$file$File$Select$file,
+							_List_fromArray(
+								['application/json', 'text/plain']),
+							author$project$Main$ReceivedPuzzleFile));
+				case 'ReceivedPuzzleFile':
+					var file = _n0.b.a;
+					return _Utils_Tuple2(
+						model,
+						A2(
+							elm$core$Task$perform,
+							author$project$Main$LoadedPuzzleFile,
+							elm$file$File$toString(file)));
+				case 'LoadedPuzzleFile':
+					var cts = _n0.b.a;
+					return author$project$Main$andSave(
+						function () {
+							var _n2 = A2(elm$json$Json$Decode$decodeString, author$project$Main$gameStateDecoder, cts);
+							if (_n2.$ === 'Err') {
+								var err = _n2.a;
+								return A2(author$project$Main$withMsg, 'Couldn\'t load file.', model);
+							} else {
+								var gs = _n2.a;
+								var _n3 = author$project$Puzzle$isValidBlank(gs.puzzle);
+								if (!_n3.b) {
+									return author$project$Main$trySaveCurrentPuzzle(
+										author$project$Main$clearMsg(
+											A2(
+												author$project$Main$asModeIn,
+												model,
+												author$project$Main$Playing(gs))));
+								} else {
+									var problems = _n3;
+									return A2(
+										author$project$Main$withMsg,
+										'Invalid puzzle: ' + A2(
+											elm$core$String$join,
+											', ',
+											A2(elm$core$List$map, author$project$Puzzle$problemToString, problems)),
+										model);
+								}
+							}
+						}());
 				case 'Focused':
 					if (_n0.b.a.$ === 'Err') {
 						return _Utils_Tuple2(
@@ -7132,13 +7492,13 @@ var author$project$Main$update = F2(
 						_Utils_eq(vis, elm$browser$Browser$Events$Visible) ? author$project$Main$getFocus : elm$core$Platform$Cmd$none);
 				case 'SetCursor':
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$4;
+						break _n0$6;
 					} else {
 						var state = _n0.a.a;
-						var _n4 = _n0.b;
-						var mc = _n4.a;
-						var mdir = _n4.b;
-						return _Utils_Tuple2(
+						var _n5 = _n0.b;
+						var mc = _n5.a;
+						var mdir = _n5.b;
+						return author$project$Main$andSave(
 							A2(
 								author$project$Main$withFocused,
 								true,
@@ -7164,16 +7524,15 @@ var author$project$Main$update = F2(
 														author$project$Util$updateIndex,
 														author$project$Main$selectedBoard(state),
 														elm$core$Basics$always(mc),
-														state.puzzle.quote))))))),
-							elm$core$Platform$Cmd$none);
+														state.puzzle.quote))))))));
 					}
 				case 'SwapCursor':
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$4;
+						break _n0$6;
 					} else {
 						var state = _n0.a.a;
-						var _n6 = _n0.b;
-						return _Utils_Tuple2(
+						var _n7 = _n0.b;
+						return author$project$Main$andSave(
 							A2(
 								author$project$Main$withFocused,
 								true,
@@ -7181,16 +7540,15 @@ var author$project$Main$update = F2(
 									author$project$Main$asModeIn,
 									model,
 									author$project$Main$Playing(
-										author$project$Main$swapCursor(state)))),
-							elm$core$Platform$Cmd$none);
+										author$project$Main$swapCursor(state)))));
 					}
 				case 'MoveCursor':
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$4;
+						break _n0$6;
 					} else {
 						var state = _n0.a.a;
 						var dir = _n0.b.a;
-						return _Utils_Tuple2(
+						return author$project$Main$andSave(
 							A2(
 								author$project$Main$withFocused,
 								true,
@@ -7198,31 +7556,27 @@ var author$project$Main$update = F2(
 									author$project$Main$asModeIn,
 									model,
 									author$project$Main$Playing(
-										A2(author$project$Main$moveCursor, dir, state)))),
-							elm$core$Platform$Cmd$none);
+										A2(author$project$Main$moveCursor, dir, state)))));
 					}
 				default:
 					if (_n0.a.$ === 'NoPuzzle') {
-						break _n0$4;
+						break _n0$6;
 					} else {
 						var state = _n0.a.a;
 						var cursor = _n0.b.a;
-						return _Utils_Tuple2(
+						return author$project$Main$andSave(
 							A2(
 								author$project$Main$asModeIn,
 								model,
 								author$project$Main$Playing(
-									A2(author$project$Main$withCursor, cursor, state))),
-							elm$core$Platform$Cmd$none);
+									A2(author$project$Main$withCursor, cursor, state))));
 					}
 			}
 		}
-		var _n3 = _n0.a;
+		var _n4 = _n0.a;
 		return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 	});
-var author$project$Main$LoadPuzzle = function (a) {
-	return {$: 'LoadPuzzle', a: a};
-};
+var author$project$Main$RequestPuzzleFile = {$: 'RequestPuzzleFile'};
 var author$project$Main$Down = {$: 'Down'};
 var author$project$Main$Left = {$: 'Left'};
 var author$project$Main$MoveCursor = function (a) {
@@ -7393,7 +7747,6 @@ var elm$core$List$partition = F2(
 			list);
 	});
 var elm$core$String$fromFloat = _String_fromNumber;
-var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -7903,227 +8256,6 @@ var author$project$Main$playingView = function (state) {
 				]))
 		]);
 };
-var author$project$Main$wcw = {
-	boardColumns: 40,
-	clues: _List_fromArray(
-		[
-			{
-			answer: _List_fromArray(
-				[150, 202, 16, 71, 112, 209, 196, 88, 213, 27, 130]),
-			hint: 'Red object glazed with rainwater in a poem by this quote\'s author'
-		},
-			{
-			answer: _List_fromArray(
-				[44, 121, 38, 155, 54, 197, 70]),
-			hint: 'Cold compress (2 wds.)'
-		},
-			{
-			answer: _List_fromArray(
-				[210, 157, 138, 169, 187]),
-			hint: 'In bounds'
-		},
-			{
-			answer: _List_fromArray(
-				[20, 179, 174, 30, 90, 81, 37, 139, 74]),
-			hint: 'Unexpected gift, in Louisiana Creole French'
-		},
-			{
-			answer: _List_fromArray(
-				[57, 124, 167, 18, 98, 105, 176, 164, 97, 127, 67, 50, 211]),
-			hint: '\"Great men are over-estimated and small men are _______\", George Eliot, _Adam Bede_'
-		},
-			{
-			answer: _List_fromArray(
-				[203, 153, 92, 1, 40, 168, 99, 58, 80]),
-			hint: 'Recipient of the Pritzker Prize'
-		},
-			{
-			answer: _List_fromArray(
-				[166, 116, 17, 119, 133, 200, 41, 186, 31, 198, 4, 45, 0, 60]),
-			hint: 'A spoonful of sugar helps overcome it (2 wds.)'
-		},
-			{
-			answer: _List_fromArray(
-				[219, 191, 95, 193, 103, 149, 36]),
-			hint: 'It means the same thing'
-		},
-			{
-			answer: _List_fromArray(
-				[132, 68, 52, 220]),
-			hint: 'Raises hackles'
-		},
-			{
-			answer: _List_fromArray(
-				[160, 205, 42]),
-			hint: 'Yuletide flip, for short'
-		},
-			{
-			answer: _List_fromArray(
-				[64, 15, 53, 177, 154, 215, 192, 118, 73, 5]),
-			hint: '\"No defeat is made up entirely of defeat\" poem by this quote\'s author (2 wds.)'
-		},
-			{
-			answer: _List_fromArray(
-				[134, 125, 161, 143, 10, 190, 14, 165, 201]),
-			hint: '\"_______ Venus\", racist exhibition of 19th Century Europe'
-		},
-			{
-			answer: _List_fromArray(
-				[185, 173, 91, 216, 156, 135, 140, 19]),
-			hint: 'Spellbind'
-		},
-			{
-			answer: _List_fromArray(
-				[189, 48, 76, 162, 85, 151, 144, 194, 96, 120]),
-			hint: 'Questions doubters (3 wds.)'
-		},
-			{
-			answer: _List_fromArray(
-				[129, 145, 12, 108, 217, 183, 207, 34]),
-			hint: 'Lamb-like quality'
-		},
-			{
-			answer: _List_fromArray(
-				[141, 184, 29, 55, 122, 49, 63, 146, 87]),
-			hint: 'Vividly remniscent'
-		},
-			{
-			answer: _List_fromArray(
-				[148, 56, 113, 180, 86, 83, 35, 75]),
-			hint: 'Like a pulse'
-		},
-			{
-			answer: _List_fromArray(
-				[128, 123, 175, 178, 8, 171, 82, 2, 28]),
-			hint: 'Grill on camera?'
-		},
-			{
-			answer: _List_fromArray(
-				[100, 69, 163, 3, 214, 159, 206, 136, 66, 59, 21]),
-			hint: 'Frappuccino, Coolatta, or Awful Awful (2 wds.)'
-		},
-			{
-			answer: _List_fromArray(
-				[33, 204, 93, 6, 115, 89, 13, 51, 107]),
-			hint: 'Couldn\'t care less'
-		},
-			{
-			answer: _List_fromArray(
-				[111, 147, 23, 109, 199, 137, 26, 77, 131, 32]),
-			hint: 'Fit to print'
-		},
-			{
-			answer: _List_fromArray(
-				[46, 39, 24, 25]),
-			hint: '\"Mad Dog\" Maddux, familiarly'
-		},
-			{
-			answer: _List_fromArray(
-				[117, 47, 195, 65, 106, 170, 212, 110, 182, 104]),
-			hint: 'Birthplace and hometown of this quote\'s author'
-		},
-			{
-			answer: _List_fromArray(
-				[79, 9, 101, 62, 102, 22, 43, 61, 152, 84, 188]),
-			hint: 'Adolescent quality, often'
-		},
-			{
-			answer: _List_fromArray(
-				[208, 142, 158, 7, 72, 126]),
-			hint: 'Devise; lie'
-		},
-			{
-			answer: _List_fromArray(
-				[94, 218, 114, 78, 172, 11, 181]),
-			hint: 'Record breaker (2 wds.)'
-		}
-		]),
-	quote: _List_fromArray(
-		[elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing, elm$core$Maybe$Nothing]),
-	quoteWordLengths: _List_fromArray(
-		[3, 6, 2, 3, 3, 6, 2, 4, 4, 1, 9, 7, 4, 1, 7, 4, 1, 6, 4, 4, 4, 5, 2, 6, 4, 3, 5, 4, 5, 2, 6, 3, 5, 1, 9, 10, 8, 4, 8, 2, 5, 7, 3, 7, 4, 1, 8, 9])
-};
-var elm$json$Json$Encode$int = _Json_wrap;
-var elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
-var elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n0, obj) {
-					var k = _n0.a;
-					var v = _n0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var author$project$Puzzle$encodeBlankClue = function (c) {
-	return elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'hint',
-				elm$json$Json$Encode$string(c.hint)),
-				_Utils_Tuple2(
-				'answer',
-				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, c.answer))
-			]));
-};
-var elm$json$Json$Encode$null = _Json_encodeNull;
-var author$project$Util$encodeNullable = F2(
-	function (encode, ma) {
-		if (ma.$ === 'Nothing') {
-			return elm$json$Json$Encode$null;
-		} else {
-			var a = ma.a;
-			return encode(a);
-		}
-	});
-var elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			elm$core$List$any,
-			A2(elm$core$Basics$composeL, elm$core$Basics$not, isOkay),
-			list);
-	});
-var author$project$Puzzle$encodeBlank = function (b) {
-	return elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'quote',
-				(elm$core$List$isEmpty(b.quote) || A2(
-					elm$core$List$all,
-					function (qc) {
-						return _Utils_eq(qc, elm$core$Maybe$Nothing);
-					},
-					b.quote)) ? elm$json$Json$Encode$null : A2(
-					elm$json$Json$Encode$list,
-					A2(
-						elm$core$Basics$composeR,
-						elm$core$Maybe$map(elm$core$String$fromChar),
-						author$project$Util$encodeNullable(elm$json$Json$Encode$string)),
-					b.quote)),
-				_Utils_Tuple2(
-				'quoteWordLengths',
-				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, b.quoteWordLengths)),
-				_Utils_Tuple2(
-				'boardColumns',
-				elm$json$Json$Encode$int(b.boardColumns)),
-				_Utils_Tuple2(
-				'clues',
-				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeBlankClue, b.clues))
-			]));
-};
 var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
@@ -8189,6 +8321,25 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$div,
 						_List_fromArray(
 							[
+								elm$html$Html$Attributes$id('saved')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$input,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$type_('button'),
+										elm$html$Html$Attributes$id('loadpuzzle'),
+										elm$html$Html$Attributes$value('Load puzzle from file...'),
+										elm$html$Html$Events$onClick(author$project$Main$RequestPuzzleFile)
+									]),
+								_List_Nil)
+							])),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
 								elm$html$Html$Attributes$id('warnings')
 							]),
 						function () {
@@ -8223,20 +8374,7 @@ var author$project$Main$view = function (model) {
 			function () {
 				var _n1 = model.mode;
 				if (_n1.$ === 'NoPuzzle') {
-					return _List_fromArray(
-						[
-							A2(
-							elm$html$Html$input,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$type_('button'),
-									elm$html$Html$Events$onClick(
-									author$project$Main$LoadPuzzle(
-										author$project$Puzzle$encodeBlank(author$project$Main$wcw))),
-									elm$html$Html$Attributes$value('Load testing puzzle')
-								]),
-							_List_Nil)
-						]);
+					return _List_Nil;
 				} else {
 					var state = _n1.a;
 					return author$project$Main$playingView(state);

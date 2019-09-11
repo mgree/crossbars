@@ -2665,6 +2665,184 @@ var _Parser_findSubString = F5(function(smallString, offset, row, col, bigString
 
 
 
+// DECODER
+
+var _File_decoder = _Json_decodePrim(function(value) {
+	// NOTE: checks if `File` exists in case this is run on node
+	return (typeof File !== 'undefined' && value instanceof File)
+		? elm$core$Result$Ok(value)
+		: _Json_expecting('a FILE', value);
+});
+
+
+// METADATA
+
+function _File_name(file) { return file.name; }
+function _File_mime(file) { return file.type; }
+function _File_size(file) { return file.size; }
+
+function _File_lastModified(file)
+{
+	return elm$time$Time$millisToPosix(file.lastModified);
+}
+
+
+// DOWNLOAD
+
+var _File_downloadNode;
+
+function _File_getDownloadNode()
+{
+	return _File_downloadNode || (_File_downloadNode = document.createElement('a'));
+}
+
+var _File_download = F3(function(name, mime, content)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var blob = new Blob([content], {type: mime});
+
+		// for IE10+
+		if (navigator.msSaveOrOpenBlob)
+		{
+			navigator.msSaveOrOpenBlob(blob, name);
+			return;
+		}
+
+		// for HTML5
+		var node = _File_getDownloadNode();
+		var objectUrl = URL.createObjectURL(blob);
+		node.href = objectUrl;
+		node.download = name;
+		_File_click(node);
+		URL.revokeObjectURL(objectUrl);
+	});
+});
+
+function _File_downloadUrl(href)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var node = _File_getDownloadNode();
+		node.href = href;
+		node.download = '';
+		node.origin === location.origin || (node.target = '_blank');
+		_File_click(node);
+	});
+}
+
+
+// IE COMPATIBILITY
+
+function _File_makeBytesSafeForInternetExplorer(bytes)
+{
+	// only needed by IE10 and IE11 to fix https://github.com/elm/file/issues/10
+	// all other browsers can just run `new Blob([bytes])` directly with no problem
+	//
+	return new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
+
+function _File_click(node)
+{
+	// only needed by IE10 and IE11 to fix https://github.com/elm/file/issues/11
+	// all other browsers have MouseEvent and do not need this conditional stuff
+	//
+	if (typeof MouseEvent === 'function')
+	{
+		node.dispatchEvent(new MouseEvent('click'));
+	}
+	else
+	{
+		var event = document.createEvent('MouseEvents');
+		event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+		document.body.appendChild(node);
+		node.dispatchEvent(event);
+		document.body.removeChild(node);
+	}
+}
+
+
+// UPLOAD
+
+var _File_node;
+
+function _File_uploadOne(mimes)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_File_node = document.createElement('input');
+		_File_node.type = 'file';
+		_File_node.accept = A2(elm$core$String$join, ',', mimes);
+		_File_node.addEventListener('change', function(event)
+		{
+			callback(_Scheduler_succeed(event.target.files[0]));
+		});
+		_File_click(_File_node);
+	});
+}
+
+function _File_uploadOneOrMore(mimes)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_File_node = document.createElement('input');
+		_File_node.type = 'file';
+		_File_node.multiple = true;
+		_File_node.accept = A2(elm$core$String$join, ',', mimes);
+		_File_node.addEventListener('change', function(event)
+		{
+			var elmFiles = _List_fromArray(event.target.files);
+			callback(_Scheduler_succeed(_Utils_Tuple2(elmFiles.a, elmFiles.b)));
+		});
+		_File_click(_File_node);
+	});
+}
+
+
+// CONTENT
+
+function _File_toString(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(reader.result));
+		});
+		reader.readAsText(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+function _File_toBytes(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(new DataView(reader.result)));
+		});
+		reader.readAsArrayBuffer(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+function _File_toUrl(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(reader.result));
+		});
+		reader.readAsDataURL(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+
+
+
 
 // HELPERS
 
@@ -6764,6 +6942,136 @@ var author$project$Puzzle$encode = function (puzzle) {
 					elm$time$Time$posixToMillis(puzzle.timeModified)))
 			]));
 };
+var author$project$Puzzle$encodeBlankClue = function (c) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'hint',
+				elm$json$Json$Encode$string(c.hint)),
+				_Utils_Tuple2(
+				'answer',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, c.answer))
+			]));
+};
+var elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$Puzzle$encodeBlank = function (b) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'quote',
+				(elm$core$List$isEmpty(b.quote) || A2(
+					elm$core$List$all,
+					function (qc) {
+						return _Utils_eq(qc, elm$core$Maybe$Nothing);
+					},
+					b.quote)) ? elm$json$Json$Encode$null : A2(
+					elm$json$Json$Encode$list,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$Maybe$map(elm$core$String$fromChar),
+						author$project$Util$encodeNullable(elm$json$Json$Encode$string)),
+					b.quote)),
+				_Utils_Tuple2(
+				'quoteWordLengths',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, b.quoteWordLengths)),
+				_Utils_Tuple2(
+				'boardColumns',
+				elm$json$Json$Encode$int(b.boardColumns)),
+				_Utils_Tuple2(
+				'clues',
+				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeBlankClue, b.clues))
+			]));
+};
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var author$project$Puzzle$toBlankClue = function (clue) {
+	return {
+		answer: A2(
+			elm$core$List$map,
+			A2(
+				elm$core$Basics$composeR,
+				elm$core$Tuple$first,
+				elm$core$Maybe$withDefault(-1)),
+			clue.answer),
+		hint: clue.hint
+	};
+};
+var elm$core$String$filter = _String_filter;
+var elm$core$String$toUpper = _String_toUpper;
+var author$project$Util$cleanString = function (s) {
+	return A2(
+		elm$core$String$filter,
+		elm$core$Char$isAlphaNum,
+		elm$core$String$toUpper(s));
+};
+var elm$core$String$foldr = _String_foldr;
+var elm$core$String$toList = function (string) {
+	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
+};
+var author$project$Util$cleanChars = function (s) {
+	return elm$core$String$toList(
+		author$project$Util$cleanString(s));
+};
+var elm$core$Basics$always = F2(
+	function (a, _n0) {
+		return a;
+	});
+var elm$core$String$words = _String_words;
+var author$project$Puzzle$toBlank = function (puzzle) {
+	return {
+		boardColumns: 35,
+		clues: A2(elm$core$List$map, author$project$Puzzle$toBlankClue, puzzle.clues),
+		quote: A2(
+			elm$core$List$map,
+			elm$core$Basics$always(elm$core$Maybe$Nothing),
+			author$project$Util$cleanChars(puzzle.quote)),
+		quoteWordLengths: A2(
+			elm$core$List$map,
+			elm$core$List$length,
+			A2(
+				elm$core$List$filter,
+				A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$List$isEmpty),
+				A2(
+					elm$core$List$map,
+					author$project$Util$cleanChars,
+					elm$core$String$words(puzzle.quote))))
+	};
+};
+var author$project$Puzzle$exportJSON = function (puzzle) {
+	return A2(
+		elm$json$Json$Encode$encode,
+		0,
+		author$project$Puzzle$encodeBlank(
+			author$project$Puzzle$toBlank(puzzle)));
+};
 var elm$core$String$fromList = _String_fromList;
 var elm$core$Tuple$second = function (_n0) {
 	var y = _n0.b;
@@ -6773,11 +7081,6 @@ var author$project$Puzzle$clueAnswer = function (c) {
 	return elm$core$String$fromList(
 		A2(elm$core$List$map, elm$core$Tuple$second, c.answer));
 };
-var elm$core$String$foldr = _String_foldr;
-var elm$core$String$toList = function (string) {
-	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
-};
-var elm$core$String$toUpper = _String_toUpper;
 var author$project$Puzzle$defaultClue = function (s) {
 	return {
 		answer: A2(
@@ -6788,7 +7091,6 @@ var author$project$Puzzle$defaultClue = function (s) {
 		text: elm$core$String$toUpper(s)
 	};
 };
-var elm$core$String$filter = _String_filter;
 var author$project$Puzzle$initialism = function (puzzle) {
 	return A2(
 		elm$core$String$filter,
@@ -6850,16 +7152,6 @@ var author$project$Puzzle$setTitle = F2(
 			puzzle,
 			{title: title});
 	});
-var author$project$Util$cleanString = function (s) {
-	return A2(
-		elm$core$String$filter,
-		elm$core$Char$isAlphaNum,
-		elm$core$String$toUpper(s));
-};
-var author$project$Util$cleanChars = function (s) {
-	return elm$core$String$toList(
-		author$project$Util$cleanString(s));
-};
 var elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -7026,14 +7318,6 @@ var elm$core$List$append = F2(
 var elm$core$List$concat = function (lists) {
 	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
 };
-var elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var elm$core$String$words = _String_words;
 var author$project$Puzzle$quoteIndexWords = function (puzzle) {
 	return elm$core$Dict$fromList(
 		A2(
@@ -7124,15 +7408,6 @@ var elm$core$List$concatMap = F2(
 	function (f, list) {
 		return elm$core$List$concat(
 			A2(elm$core$List$map, f, list));
-	});
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
 	});
 var author$project$Solver$constraintsOfPuzzle = F2(
 	function (qIndices, puzzle) {
@@ -7421,10 +7696,6 @@ var author$project$Solver$SMTOk = function (a) {
 	return {$: 'SMTOk', a: a};
 };
 var author$project$Solver$SMTTimeout = {$: 'SMTTimeout'};
-var elm$core$Basics$always = F2(
-	function (a, _n0) {
-		return a;
-	});
 var elm$parser$Parser$Advanced$Bad = F2(
 	function (a, b) {
 		return {$: 'Bad', a: a, b: b};
@@ -7484,9 +7755,6 @@ var elm$parser$Parser$Advanced$bumpOffset = F2(
 		return {col: s.col + (newOffset - s.offset), context: s.context, indent: s.indent, offset: newOffset, row: s.row, src: s.src};
 	});
 var elm$parser$Parser$Advanced$chompBase10 = _Parser_chompBase10;
-var elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var elm$parser$Parser$Advanced$isAsciiCode = _Parser_isAsciiCode;
 var elm$parser$Parser$Advanced$consumeExp = F2(
 	function (offset, src) {
@@ -8082,6 +8350,22 @@ var elm$core$List$member = F2(
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$Process$sleep = _Process_sleep;
 var elm$core$String$toInt = _String_toInt;
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$file$File$Download$string = F3(
+	function (name, mime, content) {
+		return A2(
+			elm$core$Task$perform,
+			elm$core$Basics$never,
+			A3(_File_download, name, mime, content));
+	});
 var elm$core$Basics$clamp = F3(
 	function (low, high, number) {
 		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
@@ -8275,6 +8559,14 @@ var author$project$Main$update = F2(
 						author$project$Main$loadPuzzle,
 						savedPuzzle,
 						author$project$Main$clearSelectedPuzzle(model)));
+			case 'DownloadJSON':
+				return _Utils_Tuple2(
+					model,
+					A3(
+						elm$file$File$Download$string,
+						'acrostic.json',
+						'application/json',
+						author$project$Puzzle$exportJSON(model.puzzle)));
 			case 'ClearNumbering':
 				return A2(
 					author$project$Main$andSave,
@@ -8788,6 +9080,7 @@ var author$project$Main$Author = function (a) {
 };
 var author$project$Main$ClearNumbering = {$: 'ClearNumbering'};
 var author$project$Main$DeletePuzzle = {$: 'DeletePuzzle'};
+var author$project$Main$DownloadJSON = {$: 'DownloadJSON'};
 var author$project$Main$Hint = F2(
 	function (a, b) {
 		return {$: 'Hint', a: a, b: b};
@@ -9805,57 +10098,6 @@ var author$project$Puzzle$duplicateNumberings = function (puz) {
 							}),
 						puz.clues)))));
 };
-var author$project$Puzzle$encodeBlankClue = function (c) {
-	return elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'hint',
-				elm$json$Json$Encode$string(c.hint)),
-				_Utils_Tuple2(
-				'answer',
-				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, c.answer))
-			]));
-};
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var author$project$Puzzle$encodeBlank = function (b) {
-	return elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'quote',
-				(elm$core$List$isEmpty(b.quote) || A2(
-					elm$core$List$all,
-					function (qc) {
-						return _Utils_eq(qc, elm$core$Maybe$Nothing);
-					},
-					b.quote)) ? elm$json$Json$Encode$null : A2(
-					elm$json$Json$Encode$list,
-					A2(
-						elm$core$Basics$composeR,
-						elm$core$Maybe$map(elm$core$String$fromChar),
-						author$project$Util$encodeNullable(elm$json$Json$Encode$string)),
-					b.quote)),
-				_Utils_Tuple2(
-				'quoteWordLengths',
-				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, b.quoteWordLengths)),
-				_Utils_Tuple2(
-				'boardColumns',
-				elm$json$Json$Encode$int(b.boardColumns)),
-				_Utils_Tuple2(
-				'clues',
-				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeBlankClue, b.clues))
-			]));
-};
 var author$project$Puzzle$phases = _List_fromArray(
 	[author$project$Puzzle$QuoteEntry, author$project$Puzzle$Anagramming, author$project$Puzzle$CluingLettering]);
 var author$project$Util$updateAppend = F3(
@@ -9940,38 +10182,6 @@ var author$project$Puzzle$stringOfPhase = function (p) {
 		default:
 			return 'Cluing and lettering';
 	}
-};
-var author$project$Puzzle$toBlankClue = function (clue) {
-	return {
-		answer: A2(
-			elm$core$List$map,
-			A2(
-				elm$core$Basics$composeR,
-				elm$core$Tuple$first,
-				elm$core$Maybe$withDefault(-1)),
-			clue.answer),
-		hint: clue.hint
-	};
-};
-var author$project$Puzzle$toBlank = function (puzzle) {
-	return {
-		boardColumns: 35,
-		clues: A2(elm$core$List$map, author$project$Puzzle$toBlankClue, puzzle.clues),
-		quote: A2(
-			elm$core$List$map,
-			elm$core$Basics$always(elm$core$Maybe$Nothing),
-			author$project$Util$cleanChars(puzzle.quote)),
-		quoteWordLengths: A2(
-			elm$core$List$map,
-			elm$core$List$length,
-			A2(
-				elm$core$List$filter,
-				A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$List$isEmpty),
-				A2(
-					elm$core$List$map,
-					author$project$Util$cleanChars,
-					elm$core$String$words(puzzle.quote))))
-	};
 };
 var author$project$Puzzle$unclued = function (puz) {
 	return A2(
@@ -10223,15 +10433,23 @@ var author$project$Main$view = function (model) {
 											[
 												elm$html$Html$Attributes$href(
 												'player.html?' + elm$url$Url$percentEncode(
-													A2(
-														elm$json$Json$Encode$encode,
-														0,
-														author$project$Puzzle$encodeBlank(
-															author$project$Puzzle$toBlank(puzzle)))))
+													author$project$Puzzle$exportJSON(puzzle)))
 											]),
 										_List_fromArray(
 											[
 												elm$html$Html$text('Export to player')
+											])),
+										elm$html$Html$text(' '),
+										A2(
+										elm$html$Html$a,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$href('#'),
+												elm$html$Html$Events$onClick(author$project$Main$DownloadJSON)
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('Download')
 											]))
 									])) : elm$html$Html$text(
 								function () {
@@ -11240,15 +11458,6 @@ var elm$browser$Browser$Internal = function (a) {
 };
 var elm$browser$Browser$Dom$NotFound = function (a) {
 	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
 };
 var elm$url$Url$Http = {$: 'Http'};
 var elm$url$Url$Https = {$: 'Https'};

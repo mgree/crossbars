@@ -50,6 +50,7 @@ module Puzzle exposing
     , problemToString
     , isValidBlank
 
+    , exportJSON
     )
 
 import Dict exposing (Dict)
@@ -579,3 +580,10 @@ isValid puzzle =
     
         numCluesValid &&
         initialsValid
+
+exportJSON : Puzzle -> String
+exportJSON puzzle =
+    puzzle |>
+    toBlank |>
+    encodeBlank |>
+    Encode.encode 0

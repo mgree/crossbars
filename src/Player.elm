@@ -18,6 +18,8 @@ import Json.Encode as Encode
 
 import Task
 
+import File exposing (File)
+import File.Select as Select
 import Url
 
 import Puzzle
@@ -25,11 +27,15 @@ import Util exposing (..)
 
 {- PICK UP HERE
 
+   dropdown for loading from playedPuzzles
+     partition based on completed vs. not
+
    support for markdown in hints
 
    loading games
-     JSON file (upload, URL?)
      uuencoded (from URL, copy/paste?)
+
+   more concise blank format (JSON is v wasteful)
 
  -}
 
@@ -50,11 +56,15 @@ type Msg =
   | SelectIndex Cursor
 
   {- saving and loading -}
-  | LoadPuzzle Encode.Value
+  | RequestPuzzleFile
+  | ReceivedPuzzleFile File
+  | LoadedPuzzleFile String
 
   {- UI business -}
   | VisibilityChanged Browser.Events.Visibility
   | Focused (Result Browser.Dom.Error ())
+
+port savePlayedPuzzles : Encode.Value -> Cmd msg
 
 type Cursor = Board Int
             | Clues Int Int
@@ -79,6 +89,22 @@ type alias GameState =
     { cursor : Cursor
     , puzzle : Puzzle
     }
+
+gameStateEncoder : GameState -> Encode.Value
+gameStateEncoder gs =
+    Encode.object
+        [ ("cursor", cursorEncoder gs.cursor)
+        , ("puzzle", Puzzle.encodeBlank gs.puzzle)
+        ]
+
+cursorEncoder : Cursor -> Encode.Value
+cursorEncoder cursor =
+    case cursor of
+        Board index -> Encode.object [("boardIndex", Encode.int index)]
+        Clues cIndex lIndex -> 
+            Encode.object [ ("clueIndex", Encode.int cIndex)
+                          , ("letterIndex", Encode.int lIndex)
+                          ]
 
 gameStateDecoder : Decode.Decoder GameState
 gameStateDecoder =
@@ -121,6 +147,13 @@ defaultModel =
 
 withPlayedPuzzles : List GameState -> Model -> Model
 withPlayedPuzzles playedPuzzles model = { model | playedPuzzles = playedPuzzles }
+
+trySaveCurrentPuzzle : Model -> Model
+trySaveCurrentPuzzle model =
+    case model.mode of
+        NoPuzzle -> model
+        Playing old -> model |>
+                       withPlayedPuzzles (old::model.playedPuzzles)
 
 clearMsg : Model -> Model
 clearMsg model = { model | msg = Nothing }
@@ -257,6 +290,15 @@ selectedBoard state =
                      List.head) |>
             Maybe.withDefault (-1) {- YIKES -}
 
+andSave : Model -> (Model, Cmd Msg)
+andSave model = 
+    ( model
+    , savePlayedPuzzles <| 
+        Encode.list gameStateEncoder <|
+        case model.mode of
+            NoPuzzle -> model.playedPuzzles
+            Playing gs -> gs::model.playedPuzzles)
+
 -- MAIN
 
 main = Browser.element
@@ -289,10 +331,11 @@ saveDecoder =
 tryLoadRecentPuzzle : Model -> Model
 tryLoadRecentPuzzle model =
     case model.playedPuzzles of
-        last::_ ->
-            last |> 
+        recent::rest ->
+            recent |> 
             Playing |> 
-            asModeIn model
+            asModeIn model |>
+            withPlayedPuzzles rest
         _ -> model
 
 selectPuzzle : String -> Model -> Model
@@ -312,10 +355,10 @@ init : Flags -> (Model, Cmd Msg)
 init json =
     let model =
             case Decode.decodeValue saveDecoder json of
-                Err _ -> defaultModel |> Debug.log "Default"
+                Err _ -> defaultModel
                 Ok saved -> defaultModel |>
                             withPlayedPuzzles saved.playedPuzzles |>
-                            selectPuzzle (saved.url |> Debug.log "url")
+                            selectPuzzle saved.url
     in
         ( model |> Debug.log "initial model"
         , getFocus
@@ -368,29 +411,32 @@ subscriptions model =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case (model.mode, msg) of
-        (_, LoadPuzzle json) ->
-            case Decode.decodeValue Puzzle.blankDecoder json of
-                Err err ->
-                    ( NoPuzzle |>
-                      asModeIn model |>
-                      withMsg ("Couldn't load puzzle: " ++ Decode.errorToString err)
-                    , Cmd.none)
-                    
-                Ok puzzle ->
-                    case Puzzle.isValidBlank puzzle of
-                        [] -> ( Playing { cursor = defaultCursor
-                                        , puzzle = puzzle 
-                                        }  |>
-                                asModeIn model |>
-                                clearMsg
-                              , Cmd.none)
-                        problems -> 
-                            ( NoPuzzle |>
+        (_, RequestPuzzleFile) ->
+            ( model
+            , Select.file ["application/json", "text/plain"] ReceivedPuzzleFile)
+
+        (_, ReceivedPuzzleFile file) ->
+            ( model
+            , Task.perform LoadedPuzzleFile (File.toString file))
+
+        (_, LoadedPuzzleFile cts) ->
+            andSave <|
+                case Decode.decodeString gameStateDecoder cts of
+                    Err err -> model |> 
+                               withMsg "Couldn't load file." 
+                               
+                    Ok gs -> 
+                        case Puzzle.isValidBlank gs.puzzle of
+                        [] -> gs |>
+                              Playing |>
                               asModeIn model |>
-                              withMsg ("Invalid puzzle: " ++ 
-                                           String.join ", " 
-                                           (List.map Puzzle.problemToString problems))
-                            , Cmd.none)
+                              clearMsg |>
+                              trySaveCurrentPuzzle
+                        problems -> 
+                            model |>
+                            withMsg ("Invalid puzzle: " ++ 
+                                         String.join ", " 
+                                         (List.map Puzzle.problemToString problems))
 
         (_, Focused (Err _)) -> 
             ( model |> 
@@ -413,39 +459,39 @@ update msg model =
             , Cmd.none)
 
         (Playing state, SetCursor mc mdir) -> 
-            ( updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
-              Puzzle.asQuoteIn state.puzzle |>
-              asPuzzleIn state |>
-              (case mdir of
-                   Nothing -> identity
-                   Just dir -> moveCursor dir) |>
-              Playing |>
-              asModeIn model |>
-              withFocused True
-            , Cmd.none)
+            updateIndex (selectedBoard state) (always mc) state.puzzle.quote |>
+            Puzzle.asQuoteIn state.puzzle |>
+            asPuzzleIn state |>
+            (case mdir of
+                 Nothing -> identity
+                 Just dir -> moveCursor dir) |>
+            Playing |>
+            asModeIn model |>
+            withFocused True |>
+            andSave
                                
         (Playing state, SwapCursor) -> 
-            ( state |>
-              swapCursor |>
-              Playing |>
-              asModeIn model |>
-              withFocused True
-            , Cmd.none)
+            state |>
+            swapCursor |>
+            Playing |>
+            asModeIn model |>
+            withFocused True |>
+            andSave
                           
         (Playing state, MoveCursor dir) -> 
-            ( state |>
-              moveCursor dir |>
-              Playing  |>
-              asModeIn model |>
-              withFocused True
-            , Cmd.none)
+            state |>
+            moveCursor dir |>
+            Playing  |>
+            asModeIn model |>
+            withFocused True |>
+            andSave
      
         (Playing state, SelectIndex cursor) -> 
-            ( state |>
-              withCursor cursor |>
-              Playing |>
-              asModeIn model
-            , Cmd.none)
+            state |>
+            withCursor cursor |>
+            Playing |>
+            asModeIn model |>
+            andSave
 
 -- VIEW
 
@@ -458,6 +504,14 @@ view model =
         ] 
         (  section [id "overview"]
            [ h3 [class "header"] [text "Crossbars — Acrostic Player"]
+           , div [id "saved"]
+               [ input [ type_ "button" 
+                       , id "loadpuzzle"
+                       , value "Load puzzle from file..."
+                       , onClick RequestPuzzleFile
+                       ]
+                     []     
+               ]
            , div [id "warnings"]
                (let
 
@@ -478,12 +532,7 @@ view model =
                         (text >> List.singleton >> span [class "warning"]))
            ]
         :: case model.mode of
-               NoPuzzle -> [ input [ type_ "button"
-                                   , onClick (LoadPuzzle (Puzzle.encodeBlank wcw))
-                                   , value "Load testing puzzle" 
-                                   ]
-                                 [ ]
-                           ]
+               NoPuzzle -> [ ]
                Playing state -> playingView state
         )
 
@@ -710,8 +759,3 @@ clueView state clueIndex clue =
                               ]))
             ]
         ]
-
--- TESTING
-
-wcw : Puzzle
-wcw = { boardColumns = 40, clues = [{ answer = [150,202,16,71,112,209,196,88,213,27,130], hint = "Red object glazed with rainwater in a poem by this quote's author" },{ answer = [44,121,38,155,54,197,70], hint = "Cold compress (2 wds.)" },{ answer = [210,157,138,169,187], hint = "In bounds" },{ answer = [20,179,174,30,90,81,37,139,74], hint = "Unexpected gift, in Louisiana Creole French" },{ answer = [57,124,167,18,98,105,176,164,97,127,67,50,211], hint = "\"Great men are over-estimated and small men are _______\", George Eliot, _Adam Bede_" },{ answer = [203,153,92,1,40,168,99,58,80], hint = "Recipient of the Pritzker Prize" },{ answer = [166,116,17,119,133,200,41,186,31,198,4,45,0,60], hint = "A spoonful of sugar helps overcome it (2 wds.)" },{ answer = [219,191,95,193,103,149,36], hint = "It means the same thing" },{ answer = [132,68,52,220], hint = "Raises hackles" },{ answer = [160,205,42], hint = "Yuletide flip, for short" },{ answer = [64,15,53,177,154,215,192,118,73,5], hint = "\"No defeat is made up entirely of defeat\" poem by this quote's author (2 wds.)" },{ answer = [134,125,161,143,10,190,14,165,201], hint = "\"_______ Venus\", racist exhibition of 19th Century Europe" },{ answer = [185,173,91,216,156,135,140,19], hint = "Spellbind" },{ answer = [189,48,76,162,85,151,144,194,96,120], hint = "Questions doubters (3 wds.)" },{ answer = [129,145,12,108,217,183,207,34], hint = "Lamb-like quality" },{ answer = [141,184,29,55,122,49,63,146,87], hint = "Vividly remniscent" },{ answer = [148,56,113,180,86,83,35,75], hint = "Like a pulse" },{ answer = [128,123,175,178,8,171,82,2,28], hint = "Grill on camera?" },{ answer = [100,69,163,3,214,159,206,136,66,59,21], hint = "Frappuccino, Coolatta, or Awful Awful (2 wds.)" },{ answer = [33,204,93,6,115,89,13,51,107], hint = "Couldn't care less" },{ answer = [111,147,23,109,199,137,26,77,131,32], hint = "Fit to print" },{ answer = [46,39,24,25], hint = "\"Mad Dog\" Maddux, familiarly" },{ answer = [117,47,195,65,106,170,212,110,182,104], hint = "Birthplace and hometown of this quote's author" },{ answer = [79,9,101,62,102,22,43,61,152,84,188], hint = "Adolescent quality, often" },{ answer = [208,142,158,7,72,126], hint = "Devise; lie" },{ answer = [94,218,114,78,172,11,181], hint = "Record breaker (2 wds.)" }], quote = [Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing], quoteWordLengths = [3,6,2,3,3,6,2,4,4,1,9,7,4,1,7,4,1,6,4,4,4,5,2,6,4,3,5,4,5,2,6,3,5,1,9,10,8,4,8,2,5,7,3,7,4,1,8,9] }

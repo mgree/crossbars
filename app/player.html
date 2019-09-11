@@ -18,6 +18,11 @@
             , url : window.location.href
             }
       });
+
+      app.ports.savePlayedPuzzles.subscribe(function (playedPuzzles) {
+          localStorage.setItem('playedPuzzles', JSON.stringify(playedPuzzles));
+      });
+
     </script>
     <div id="footer">
       <div>Crossbars is open source under GPLv3; you can find the <a href="https://github.com/mgree/crossbars"> source code on GitHub</a>.</div>

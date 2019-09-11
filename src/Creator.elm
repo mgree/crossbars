@@ -56,9 +56,9 @@ import Time
 
 import Browser
 
-import Url
-
+import File.Download as Download
 import Http
+import Url
 
 {- FIXME don't just expose everything -}
 import Puzzle exposing (Puzzle, Phase(..))
@@ -102,6 +102,7 @@ type Msg =
   | ReallyDeletePuzzle Bool
   | SelectPuzzle String
   | LoadPuzzle Puzzle
+  | DownloadJSON
   {- numbering via Z3.wasm -}
   | ClearNumbering
   | SolveNumbering
@@ -365,6 +366,12 @@ update msg model =
             clearSelectedPuzzle |>
             loadPuzzle savedPuzzle |> 
             andSave All
+        DownloadJSON ->
+            ( model
+            , model.puzzle |>
+              Puzzle.exportJSON |>
+              Download.string "acrostic.json" "application/json")
+
         ClearNumbering -> 
             model.puzzle |> 
             Puzzle.clearNumbering |> 
@@ -482,12 +489,15 @@ view model =
                         [ text "Your puzzle is filled in! 🎉 "
                         , a [ href ("player.html?" ++ 
                                     (puzzle |>
-                                     Puzzle.toBlank |>
-                                     Puzzle.encodeBlank |>
-                                     Encode.encode 0 |>
+                                     Puzzle.exportJSON |>
                                      Url.percentEncode))
                             ]
                             [ text "Export to player" ]
+                        , text " "
+                        , a [ href "#"
+                            , onClick DownloadJSON
+                            ]
+                            [ text "Download" ]
                         ]
                     else text <| case puzzle.phase of
                              QuoteEntry -> 

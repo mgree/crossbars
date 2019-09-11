@@ -2,6 +2,13 @@
     outline: 0px;
 }
 
+#overview #saved {
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+    margin-bottom: 0.5em;
+}
+
 #board-wrapper {
     display: flex;
     justify-content: space-around;
