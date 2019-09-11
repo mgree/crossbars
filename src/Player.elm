@@ -554,7 +554,7 @@ playingView state =
             [ span [] [text "TAB - switch between board and clues"]
             , span [] [text "ARROW KEYS - navigate"]
             , span [] [text "BACKSPACE - delete current entry (and move back one)"]
-            , span [] [text "DELETE, Ctrl-D, SPACEBAR - delete currentry (and do not move)"]
+            , span [] [text "DELETE, Ctrl-D, SPACEBAR - delete current entry (and do not move)"]
             ]
         ]
     ]

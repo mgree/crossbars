@@ -8250,7 +8250,7 @@ var author$project$Main$playingView = function (state) {
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text('DELETE, Ctrl-D, SPACEBAR - delete currentry (and do not move)')
+									elm$html$Html$text('DELETE, Ctrl-D, SPACEBAR - delete current entry (and do not move)')
 								]))
 						]))
 				]))
