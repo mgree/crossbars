@@ -56,6 +56,8 @@ import Time
 
 import Browser
 
+import Url
+
 import Http
 
 {- FIXME don't just expose everything -}
@@ -475,10 +477,19 @@ view model =
                                             [])
                                  Puzzle.phases))
               , div [ id "next-steps" ]
-                  [ text <|
-                    if completed
-                    then "Your puzzle is filled in! 🎉"
-                    else case puzzle.phase of
+                  [ if completed
+                    then div [] 
+                        [ text "Your puzzle is filled in! 🎉 "
+                        , a [ href ("player.html?" ++ 
+                                    (puzzle |>
+                                     Puzzle.toBlank |>
+                                     Puzzle.encodeBlank |>
+                                     Encode.encode 0 |>
+                                     Url.percentEncode))
+                            ]
+                            [ text "Export to player" ]
+                        ]
+                    else text <| case puzzle.phase of
                              QuoteEntry -> 
                                  "Make sure your author and title are included in your quote to move on to anagramming."
                              Anagramming ->

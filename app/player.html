@@ -13,7 +13,10 @@
     <script>
       let app = Elm.Main.init({
           node: document.getElementById('elm'),
-          flags: {}
+          flags: 
+            { playedPuzzles: JSON.parse(localStorage.getItem('playedPuzzles'))
+            , url : window.location.href
+            }
       });
     </script>
     <div id="footer">

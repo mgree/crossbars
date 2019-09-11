@@ -450,11 +450,10 @@ toBlankClue clue =
 asQuoteIn : Blank -> List (Maybe Char) -> Blank
 asQuoteIn puzzle quote = { puzzle | quote = quote }
 
-
 encodeBlank : Blank -> Encode.Value
 encodeBlank b =
     Encode.object
-        [ ("quote", if List.isEmpty b.quote
+        [ ("quote", if List.isEmpty b.quote || List.all (\qc -> qc == Nothing) b.quote               
                     then Encode.null
                     else Encode.list (Maybe.map String.fromChar >> encodeNullable Encode.string) b.quote)
         , ("quoteWordLengths", Encode.list Encode.int b.quoteWordLengths)

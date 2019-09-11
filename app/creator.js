@@ -4259,6 +4259,23 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 });
 
 
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return elm$core$Maybe$Nothing;
+	}
+}
+
 
 
 // ELEMENT
@@ -9788,6 +9805,57 @@ var author$project$Puzzle$duplicateNumberings = function (puz) {
 							}),
 						puz.clues)))));
 };
+var author$project$Puzzle$encodeBlankClue = function (c) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'hint',
+				elm$json$Json$Encode$string(c.hint)),
+				_Utils_Tuple2(
+				'answer',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, c.answer))
+			]));
+};
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$Puzzle$encodeBlank = function (b) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'quote',
+				(elm$core$List$isEmpty(b.quote) || A2(
+					elm$core$List$all,
+					function (qc) {
+						return _Utils_eq(qc, elm$core$Maybe$Nothing);
+					},
+					b.quote)) ? elm$json$Json$Encode$null : A2(
+					elm$json$Json$Encode$list,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$Maybe$map(elm$core$String$fromChar),
+						author$project$Util$encodeNullable(elm$json$Json$Encode$string)),
+					b.quote)),
+				_Utils_Tuple2(
+				'quoteWordLengths',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, b.quoteWordLengths)),
+				_Utils_Tuple2(
+				'boardColumns',
+				elm$json$Json$Encode$int(b.boardColumns)),
+				_Utils_Tuple2(
+				'clues',
+				A2(elm$json$Json$Encode$list, author$project$Puzzle$encodeBlankClue, b.clues))
+			]));
+};
 var author$project$Puzzle$phases = _List_fromArray(
 	[author$project$Puzzle$QuoteEntry, author$project$Puzzle$Anagramming, author$project$Puzzle$CluingLettering]);
 var author$project$Util$updateAppend = F3(
@@ -9873,6 +9941,38 @@ var author$project$Puzzle$stringOfPhase = function (p) {
 			return 'Cluing and lettering';
 	}
 };
+var author$project$Puzzle$toBlankClue = function (clue) {
+	return {
+		answer: A2(
+			elm$core$List$map,
+			A2(
+				elm$core$Basics$composeR,
+				elm$core$Tuple$first,
+				elm$core$Maybe$withDefault(-1)),
+			clue.answer),
+		hint: clue.hint
+	};
+};
+var author$project$Puzzle$toBlank = function (puzzle) {
+	return {
+		boardColumns: 35,
+		clues: A2(elm$core$List$map, author$project$Puzzle$toBlankClue, puzzle.clues),
+		quote: A2(
+			elm$core$List$map,
+			elm$core$Basics$always(elm$core$Maybe$Nothing),
+			author$project$Util$cleanChars(puzzle.quote)),
+		quoteWordLengths: A2(
+			elm$core$List$map,
+			elm$core$List$length,
+			A2(
+				elm$core$List$filter,
+				A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$List$isEmpty),
+				A2(
+					elm$core$List$map,
+					author$project$Util$cleanChars,
+					elm$core$String$words(puzzle.quote))))
+	};
+};
 var author$project$Puzzle$unclued = function (puz) {
 	return A2(
 		elm$core$List$filterMap,
@@ -9935,16 +10035,7 @@ var elm$core$List$sortBy = _List_sortBy;
 var elm$core$List$sort = function (xs) {
 	return A2(elm$core$List$sortBy, elm$core$Basics$identity, xs);
 };
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
+var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$h3 = _VirtualDom_node('h3');
 var elm$html$Html$h5 = _VirtualDom_node('h5');
 var elm$html$Html$label = _VirtualDom_node('label');
@@ -9980,6 +10071,12 @@ var elm$html$Html$Attributes$boolProperty = F2(
 	});
 var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
 var elm$html$Html$Attributes$list = _VirtualDom_attribute('list');
 var elm$html$Html$Attributes$max = elm$html$Html$Attributes$stringProperty('max');
 var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
@@ -10014,6 +10111,7 @@ var elm$html$Html$Events$onFocus = function (msg) {
 };
 var elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var elm$html$Html$Lazy$lazy4 = elm$virtual_dom$VirtualDom$lazy4;
+var elm$url$Url$percentEncode = _Url_percentEncode;
 var author$project$Main$view = function (model) {
 	var puzzle = model.puzzle;
 	var qIndexUses = author$project$Puzzle$quoteIndexUses(puzzle);
@@ -10113,20 +10211,38 @@ var author$project$Main$view = function (model) {
 							]),
 						_List_fromArray(
 							[
-								elm$html$Html$text(
+								completed ? A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('Your puzzle is filled in! 🎉 '),
+										A2(
+										elm$html$Html$a,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$href(
+												'player.html?' + elm$url$Url$percentEncode(
+													A2(
+														elm$json$Json$Encode$encode,
+														0,
+														author$project$Puzzle$encodeBlank(
+															author$project$Puzzle$toBlank(puzzle)))))
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('Export to player')
+											]))
+									])) : elm$html$Html$text(
 								function () {
-									if (completed) {
-										return 'Your puzzle is filled in! 🎉';
-									} else {
-										var _n0 = puzzle.phase;
-										switch (_n0.$) {
-											case 'QuoteEntry':
-												return 'Make sure your author and title are included in your quote to move on to anagramming.';
-											case 'Anagramming':
-												return 'Finish anagramming to move on to numbering and cluing.';
-											default:
-												return 'Assign non-duplicate numbers to each letter and come up with clues.';
-										}
+									var _n0 = puzzle.phase;
+									switch (_n0.$) {
+										case 'QuoteEntry':
+											return 'Make sure your author and title are included in your quote to move on to anagramming.';
+										case 'Anagramming':
+											return 'Finish anagramming to move on to numbering and cluing.';
+										default:
+											return 'Assign non-duplicate numbers to each letter and come up with clues.';
 									}
 								}())
 							]))

@@ -232,87 +232,6 @@ var _JsArray_appendN = F3(function(n, dest, source)
 
 
 
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
-
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
-
-
-var _List_cons = F2(_List_Cons);
-
-function _List_fromArray(arr)
-{
-	var out = _List_Nil;
-	for (var i = arr.length; i--; )
-	{
-		out = _List_Cons(arr[i], out);
-	}
-	return out;
-}
-
-function _List_toArray(xs)
-{
-	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		out.push(xs.a);
-	}
-	return out;
-}
-
-var _List_map2 = F3(function(f, xs, ys)
-{
-	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
-	{
-		arr.push(A2(f, xs.a, ys.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map3 = F4(function(f, xs, ys, zs)
-{
-	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A3(f, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map4 = F5(function(f, ws, xs, ys, zs)
-{
-	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
-{
-	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_sortBy = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		return _Utils_cmp(f(a), f(b));
-	}));
-});
-
-var _List_sortWith = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		var ord = A2(f, a, b);
-		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
-	}));
-});
-
-
-
 // LOG
 
 var _Debug_log_UNUSED = F2(function(tag, value)
@@ -790,6 +709,87 @@ function _Utils_ap(xs, ys)
 	}
 	return root;
 }
+
+
+
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
+
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
+{
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
+}
+
+function _List_toArray(xs)
+{
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
+}
+
+var _List_map2 = F3(function(f, xs, ys)
+{
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map3 = F4(function(f, xs, ys, zs)
+{
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
+{
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+{
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_sortBy = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
+});
+
+var _List_sortWith = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
+	}));
+});
 
 
 
@@ -4312,6 +4312,23 @@ function _Browser_load(url)
 }
 
 
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return elm$core$Maybe$Nothing;
+	}
+}
+
 
 var _Bitwise_and = F2(function(a, b)
 {
@@ -4350,45 +4367,8 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 var author$project$Main$NoPuzzle = {$: 'NoPuzzle'};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
-var author$project$Main$defaultModel = {focused: false, mode: author$project$Main$NoPuzzle, msg: elm$core$Maybe$Nothing};
-var author$project$Main$Focused = function (a) {
-	return {$: 'Focused', a: a};
-};
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
-};
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var elm$core$Basics$True = {$: 'True'};
-var elm$core$Result$isOk = function (result) {
-	if (result.$ === 'Ok') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
+var elm$core$Basics$EQ = {$: 'EQ'};
+var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
 var elm$core$Array$foldr = F3(
 	function (func, baseCase, _n0) {
@@ -4410,8 +4390,6 @@ var elm$core$Array$foldr = F3(
 			A3(elm$core$Elm$JsArray$foldr, func, baseCase, tail),
 			tree);
 	});
-var elm$core$Basics$EQ = {$: 'EQ'};
-var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$List$cons = _List_cons;
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
@@ -4468,6 +4446,45 @@ var elm$core$Dict$keys = function (dict) {
 var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
+};
+var author$project$Main$defaultModel = {focused: false, mode: author$project$Main$NoPuzzle, msg: elm$core$Maybe$Nothing, playedPuzzles: _List_Nil};
+var author$project$Main$Focused = function (a) {
+	return {$: 'Focused', a: a};
+};
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$core$Basics$True = {$: 'True'};
+var elm$core$Result$isOk = function (result) {
+	if (result.$ === 'Ok') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
 };
 var elm$core$Task$succeed = _Scheduler_succeed;
 var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
@@ -5169,8 +5186,272 @@ var author$project$Main$getFocus = A2(
 	elm$core$Task$attempt,
 	author$project$Main$Focused,
 	elm$browser$Browser$Dom$focus('crossbars-wrapper'));
-var author$project$Main$init = function (savedModel) {
-	return _Utils_Tuple2(author$project$Main$defaultModel, author$project$Main$getFocus);
+var author$project$Main$Board = function (a) {
+	return {$: 'Board', a: a};
+};
+var author$project$Main$Clues = F2(
+	function (a, b) {
+		return {$: 'Clues', a: a, b: b};
+	});
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var author$project$Main$cursorDecoder = elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			A2(
+			elm$json$Json$Decode$map,
+			author$project$Main$Board,
+			A2(elm$json$Json$Decode$field, 'boardIndex', elm$json$Json$Decode$int)),
+			A3(
+			elm$json$Json$Decode$map2,
+			author$project$Main$Clues,
+			A2(elm$json$Json$Decode$field, 'clueIndex', elm$json$Json$Decode$int),
+			A2(elm$json$Json$Decode$field, 'letterIndex', elm$json$Json$Decode$int))
+		]));
+var author$project$Main$defaultCursor = A2(author$project$Main$Clues, 0, 0);
+var elm$json$Json$Decode$list = _Json_decodeList;
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$Puzzle$blankClueDecoder = A3(
+	elm$json$Json$Decode$map2,
+	F2(
+		function (hint, answer) {
+			return {answer: answer, hint: hint};
+		}),
+	A2(elm$json$Json$Decode$field, 'hint', elm$json$Json$Decode$string),
+	A2(
+		elm$json$Json$Decode$field,
+		'answer',
+		elm$json$Json$Decode$list(elm$json$Json$Decode$int)));
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$fail = _Json_fail;
+var author$project$Util$decodeChar = A2(
+	elm$json$Json$Decode$andThen,
+	function (s) {
+		var _n0 = elm$core$String$uncons(s);
+		if (_n0.$ === 'Just') {
+			if (_n0.a.b === '') {
+				var _n1 = _n0.a;
+				var c = _n1.a;
+				return elm$json$Json$Decode$succeed(c);
+			} else {
+				return elm$json$Json$Decode$fail('expected single character, found \'' + (s + '\''));
+			}
+		} else {
+			return elm$json$Json$Decode$fail('expected single character, found empty string');
+		}
+	},
+	elm$json$Json$Decode$string);
+var elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2(elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3(elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
+};
+var elm$json$Json$Decode$map4 = _Json_map4;
+var elm$json$Json$Decode$null = _Json_decodeNull;
+var elm$json$Json$Decode$nullable = function (decoder) {
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				elm$json$Json$Decode$null(elm$core$Maybe$Nothing),
+				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
+			]));
+};
+var author$project$Puzzle$blankDecoder = A5(
+	elm$json$Json$Decode$map4,
+	F4(
+		function (mQuote, quoteWordLengths, boardColumns, clues) {
+			return {
+				boardColumns: boardColumns,
+				clues: clues,
+				quote: function () {
+					if (mQuote.$ === 'Nothing') {
+						return A2(
+							elm$core$List$repeat,
+							elm$core$List$sum(quoteWordLengths),
+							elm$core$Maybe$Nothing);
+					} else {
+						var quote = mQuote.a;
+						return quote;
+					}
+				}(),
+				quoteWordLengths: quoteWordLengths
+			};
+		}),
+	A2(
+		elm$json$Json$Decode$field,
+		'quote',
+		elm$json$Json$Decode$nullable(
+			elm$json$Json$Decode$list(
+				elm$json$Json$Decode$nullable(author$project$Util$decodeChar)))),
+	A2(
+		elm$json$Json$Decode$field,
+		'quoteWordLengths',
+		elm$json$Json$Decode$list(elm$json$Json$Decode$int)),
+	A2(elm$json$Json$Decode$field, 'boardColumns', elm$json$Json$Decode$int),
+	A2(
+		elm$json$Json$Decode$field,
+		'clues',
+		elm$json$Json$Decode$list(author$project$Puzzle$blankClueDecoder)));
+var author$project$Main$gameStateDecoder = elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			A3(
+			elm$json$Json$Decode$map2,
+			F2(
+				function (cursor, puzzle) {
+					return {cursor: cursor, puzzle: puzzle};
+				}),
+			elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						A2(elm$json$Json$Decode$field, 'cursor', author$project$Main$cursorDecoder),
+						elm$json$Json$Decode$null(author$project$Main$defaultCursor)
+					])),
+			A2(elm$json$Json$Decode$field, 'puzzle', author$project$Puzzle$blankDecoder)),
+			A2(
+			elm$json$Json$Decode$map,
+			function (puzzle) {
+				return {cursor: author$project$Main$defaultCursor, puzzle: puzzle};
+			},
+			author$project$Puzzle$blankDecoder)
+		]));
+var author$project$Main$saveDecoder = A3(
+	elm$json$Json$Decode$map2,
+	F2(
+		function (playedPuzzles, url) {
+			return {playedPuzzles: playedPuzzles, url: url};
+		}),
+	A2(
+		elm$json$Json$Decode$field,
+		'playedPuzzles',
+		elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					elm$json$Json$Decode$list(author$project$Main$gameStateDecoder),
+					elm$json$Json$Decode$null(_List_Nil)
+				]))),
+	A2(elm$json$Json$Decode$field, 'url', elm$json$Json$Decode$string));
+var author$project$Main$Playing = function (a) {
+	return {$: 'Playing', a: a};
+};
+var author$project$Main$asModeIn = F2(
+	function (model, mode) {
+		return _Utils_update(
+			model,
+			{mode: mode});
+	});
+var author$project$Main$tryLoadRecentPuzzle = function (model) {
+	var _n0 = model.playedPuzzles;
+	if (_n0.b) {
+		var last = _n0.a;
+		return A2(
+			author$project$Main$asModeIn,
+			model,
+			author$project$Main$Playing(last));
+	} else {
+		return model;
+	}
+};
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Debug$log = _Debug_log;
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Result$toMaybe = function (result) {
+	if (result.$ === 'Ok') {
+		var v = result.a;
+		return elm$core$Maybe$Just(v);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$json$Json$Decode$decodeString = _Json_runOnString;
+var elm$url$Url$percentDecode = _Url_percentDecode;
+var author$project$Main$selectPuzzle = F2(
+	function (sUrl, model) {
+		return function (mPuzzle) {
+			if (mPuzzle.$ === 'Nothing') {
+				return author$project$Main$tryLoadRecentPuzzle(model);
+			} else {
+				var puzzle = mPuzzle.a;
+				return A2(
+					author$project$Main$asModeIn,
+					author$project$Main$defaultModel,
+					author$project$Main$Playing(puzzle));
+			}
+		}(
+			A2(
+				elm$core$Debug$log,
+				'decoded',
+				A2(
+					elm$core$Maybe$andThen,
+					A2(
+						elm$core$Basics$composeR,
+						elm$json$Json$Decode$decodeString(author$project$Main$gameStateDecoder),
+						elm$core$Result$toMaybe),
+					A2(
+						elm$core$Maybe$andThen,
+						elm$url$Url$percentDecode,
+						A2(
+							elm$core$Maybe$andThen,
+							function ($) {
+								return $.query;
+							},
+							elm$url$Url$fromString(sUrl))))));
+	});
+var author$project$Main$withPlayedPuzzles = F2(
+	function (playedPuzzles, model) {
+		return _Utils_update(
+			model,
+			{playedPuzzles: playedPuzzles});
+	});
+var elm$json$Json$Decode$decodeValue = _Json_run;
+var author$project$Main$init = function (json) {
+	var model = function () {
+		var _n0 = A2(elm$json$Json$Decode$decodeValue, author$project$Main$saveDecoder, json);
+		if (_n0.$ === 'Err') {
+			return A2(elm$core$Debug$log, 'Default', author$project$Main$defaultModel);
+		} else {
+			var saved = _n0.a;
+			return A2(
+				author$project$Main$selectPuzzle,
+				A2(elm$core$Debug$log, 'url', saved.url),
+				A2(author$project$Main$withPlayedPuzzles, saved.playedPuzzles, author$project$Main$defaultModel));
+		}
+	}();
+	return _Utils_Tuple2(
+		A2(elm$core$Debug$log, 'initial model', model),
+		author$project$Main$getFocus);
 };
 var author$project$Main$VisibilityChanged = function (a) {
 	return {$: 'VisibilityChanged', a: a};
@@ -5583,7 +5864,6 @@ var elm$browser$Browser$Events$withHidden = F2(
 			isHidden ? elm$browser$Browser$Events$Hidden : elm$browser$Browser$Events$Visible);
 	});
 var elm$json$Json$Decode$bool = _Json_decodeBool;
-var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$browser$Browser$Events$onVisibilityChange = function (func) {
 	var info = _Browser_visibilityInfo(_Utils_Tuple0);
 	return A3(
@@ -5601,15 +5881,6 @@ var elm$browser$Browser$Events$onVisibilityChange = function (func) {
 var author$project$Main$subscriptions = function (model) {
 	return elm$browser$Browser$Events$onVisibilityChange(author$project$Main$VisibilityChanged);
 };
-var author$project$Main$Playing = function (a) {
-	return {$: 'Playing', a: a};
-};
-var author$project$Main$asModeIn = F2(
-	function (model, mode) {
-		return _Utils_update(
-			model,
-			{mode: mode});
-	});
 var author$project$Main$asPuzzleIn = F2(
 	function (state, puzzle) {
 		return _Utils_update(
@@ -5621,15 +5892,7 @@ var author$project$Main$clearMsg = function (model) {
 		model,
 		{msg: elm$core$Maybe$Nothing});
 };
-var author$project$Main$Clues = F2(
-	function (a, b) {
-		return {$: 'Clues', a: a, b: b};
-	});
-var author$project$Main$defaultCursor = A2(author$project$Main$Clues, 0, 0);
 var author$project$Main$Black = {$: 'Black'};
-var author$project$Main$Board = function (a) {
-	return {$: 'Board', a: a};
-};
 var author$project$Main$White = F2(
 	function (a, b) {
 		return {$: 'White', a: a, b: b};
@@ -5849,11 +6112,6 @@ var author$project$Main$withCursor = F2(
 			state,
 			{cursor: cursor});
 	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -6052,15 +6310,6 @@ var author$project$Main$moveCursor = F2(
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
-var elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
 var author$project$Main$selectedBoard = function (state) {
 	var _n0 = state.cursor;
 	if (_n0.$ === 'Board') {
@@ -6174,110 +6423,6 @@ var author$project$Puzzle$asQuoteIn = F2(
 			puzzle,
 			{quote: quote});
 	});
-var elm$json$Json$Decode$int = _Json_decodeInt;
-var elm$json$Json$Decode$list = _Json_decodeList;
-var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$Puzzle$blankClueDecoder = A3(
-	elm$json$Json$Decode$map2,
-	F2(
-		function (hint, answer) {
-			return {answer: answer, hint: hint};
-		}),
-	A2(elm$json$Json$Decode$field, 'hint', elm$json$Json$Decode$string),
-	A2(
-		elm$json$Json$Decode$field,
-		'answer',
-		elm$json$Json$Decode$list(elm$json$Json$Decode$int)));
-var elm$json$Json$Decode$andThen = _Json_andThen;
-var elm$json$Json$Decode$fail = _Json_fail;
-var author$project$Util$decodeChar = A2(
-	elm$json$Json$Decode$andThen,
-	function (s) {
-		var _n0 = elm$core$String$uncons(s);
-		if (_n0.$ === 'Just') {
-			if (_n0.a.b === '') {
-				var _n1 = _n0.a;
-				var c = _n1.a;
-				return elm$json$Json$Decode$succeed(c);
-			} else {
-				return elm$json$Json$Decode$fail('expected single character, found \'' + (s + '\''));
-			}
-		} else {
-			return elm$json$Json$Decode$fail('expected single character, found empty string');
-		}
-	},
-	elm$json$Json$Decode$string);
-var elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2(elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3(elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
-var elm$core$List$sum = function (numbers) {
-	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
-};
-var elm$json$Json$Decode$map4 = _Json_map4;
-var elm$json$Json$Decode$null = _Json_decodeNull;
-var elm$json$Json$Decode$oneOf = _Json_oneOf;
-var elm$json$Json$Decode$nullable = function (decoder) {
-	return elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				elm$json$Json$Decode$null(elm$core$Maybe$Nothing),
-				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
-			]));
-};
-var author$project$Puzzle$blankDecoder = A5(
-	elm$json$Json$Decode$map4,
-	F4(
-		function (mQuote, quoteWordLengths, boardColumns, clues) {
-			return {
-				boardColumns: boardColumns,
-				clues: clues,
-				quote: function () {
-					if (mQuote.$ === 'Nothing') {
-						return A2(
-							elm$core$List$repeat,
-							elm$core$List$sum(quoteWordLengths),
-							elm$core$Maybe$Nothing);
-					} else {
-						var quote = mQuote.a;
-						return quote;
-					}
-				}(),
-				quoteWordLengths: quoteWordLengths
-			};
-		}),
-	A2(
-		elm$json$Json$Decode$field,
-		'quote',
-		elm$json$Json$Decode$nullable(
-			elm$json$Json$Decode$list(
-				elm$json$Json$Decode$nullable(author$project$Util$decodeChar)))),
-	A2(
-		elm$json$Json$Decode$field,
-		'quoteWordLengths',
-		elm$json$Json$Decode$list(elm$json$Json$Decode$int)),
-	A2(elm$json$Json$Decode$field, 'boardColumns', elm$json$Json$Decode$int),
-	A2(
-		elm$json$Json$Decode$field,
-		'clues',
-		elm$json$Json$Decode$list(author$project$Puzzle$blankClueDecoder)));
 var author$project$Puzzle$DuplicateClueNumbers = function (a) {
 	return {$: 'DuplicateClueNumbers', a: a};
 };
@@ -6928,7 +7073,6 @@ var elm$core$Basics$always = F2(
 	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
-var elm$json$Json$Decode$decodeValue = _Json_run;
 var author$project$Main$update = F2(
 	function (msg, model) {
 		var _n0 = _Utils_Tuple2(model.mode, msg);
@@ -7092,7 +7236,6 @@ var author$project$Main$SetCursor = F2(
 var author$project$Main$SwapCursor = {$: 'SwapCursor'};
 var author$project$Main$Up = {$: 'Up'};
 var elm$core$Char$toUpper = _Char_toUpper;
-var elm$core$Debug$log = _Debug_log;
 var author$project$Main$msgOfKey = A2(
 	elm$json$Json$Decode$andThen,
 	function (mmsg) {
@@ -7945,13 +8088,25 @@ var author$project$Util$encodeNullable = F2(
 			return encode(a);
 		}
 	});
+var elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			elm$core$List$any,
+			A2(elm$core$Basics$composeL, elm$core$Basics$not, isOkay),
+			list);
+	});
 var author$project$Puzzle$encodeBlank = function (b) {
 	return elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'quote',
-				elm$core$List$isEmpty(b.quote) ? elm$json$Json$Encode$null : A2(
+				(elm$core$List$isEmpty(b.quote) || A2(
+					elm$core$List$all,
+					function (qc) {
+						return _Utils_eq(qc, elm$core$Maybe$Nothing);
+					},
+					b.quote)) ? elm$json$Json$Encode$null : A2(
 					elm$json$Json$Encode$list,
 					A2(
 						elm$core$Basics$composeR,

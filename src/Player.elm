@@ -18,6 +18,8 @@ import Json.Encode as Encode
 
 import Task
 
+import Url
+
 import Puzzle
 import Util exposing (..)
 
@@ -67,6 +69,7 @@ type alias Model =
     { mode : Mode
     , msg : Maybe String
     , focused : Bool
+    , playedPuzzles : List GameState
     }
 
 type Mode = NoPuzzle
@@ -77,12 +80,47 @@ type alias GameState =
     , puzzle : Puzzle
     }
 
+gameStateDecoder : Decode.Decoder GameState
+gameStateDecoder =
+    Decode.oneOf
+        [ Decode.map2
+              (\cursor puzzle ->
+                   { cursor = cursor
+                   , puzzle = puzzle
+                   })
+              (Decode.oneOf 
+                   [ Decode.field "cursor" cursorDecoder
+                   , Decode.null defaultCursor
+                   ])
+              (Decode.field "puzzle" Puzzle.blankDecoder)
+        , Decode.map
+            (\puzzle ->
+                 { cursor = defaultCursor
+                 , puzzle = puzzle
+                 })
+            Puzzle.blankDecoder
+        ]
+
+cursorDecoder : Decode.Decoder Cursor
+cursorDecoder =
+    Decode.oneOf
+        [ Decode.map Board 
+              (Decode.field "boardIndex" Decode.int)
+        , Decode.map2 Clues 
+            (Decode.field "clueIndex" Decode.int)
+            (Decode.field "letterIndex" Decode.int)
+        ]
+
 defaultModel : Model
 defaultModel = 
     { mode = NoPuzzle
     , msg = Nothing
     , focused = False
+    , playedPuzzles = []
     }
+
+withPlayedPuzzles : List GameState -> Model -> Model
+withPlayedPuzzles playedPuzzles model = { model | playedPuzzles = playedPuzzles }
 
 clearMsg : Model -> Model
 clearMsg model = { model | msg = Nothing }
@@ -233,11 +271,55 @@ main = Browser.element
 getFocus : Cmd Msg
 getFocus = Task.attempt Focused (Browser.Dom.focus "crossbars-wrapper")
 
+saveDecoder : Decode.Decoder { playedPuzzles : List GameState
+                             , url : String
+                             }
+saveDecoder = 
+    Decode.map2 
+        (\playedPuzzles url ->
+             { playedPuzzles = playedPuzzles
+             , url = url
+             })
+        (Decode.field "playedPuzzles" (Decode.oneOf
+                                           [ Decode.list gameStateDecoder
+                                           , Decode.null []
+                                           ]))
+        (Decode.field "url" Decode.string)
+
+tryLoadRecentPuzzle : Model -> Model
+tryLoadRecentPuzzle model =
+    case model.playedPuzzles of
+        last::_ ->
+            last |> 
+            Playing |> 
+            asModeIn model
+        _ -> model
+
+selectPuzzle : String -> Model -> Model
+selectPuzzle sUrl model =
+    Url.fromString sUrl |>
+    Maybe.andThen .query |> 
+    Maybe.andThen Url.percentDecode |>
+    Maybe.andThen (Decode.decodeString gameStateDecoder >>
+                   Result.toMaybe) |> Debug.log "decoded" |>
+    \mPuzzle -> case mPuzzle of
+        Nothing -> tryLoadRecentPuzzle model
+        Just puzzle -> puzzle |>
+                       Playing |>
+                       asModeIn defaultModel
+
 init : Flags -> (Model, Cmd Msg)
-init savedModel =
-    ( defaultModel
-    , getFocus
-    )
+init json =
+    let model =
+            case Decode.decodeValue saveDecoder json of
+                Err _ -> defaultModel |> Debug.log "Default"
+                Ok saved -> defaultModel |>
+                            withPlayedPuzzles saved.playedPuzzles |>
+                            selectPuzzle (saved.url |> Debug.log "url")
+    in
+        ( model |> Debug.log "initial model"
+        , getFocus
+        )
 
 msgOfKey : Decode.Decoder (Msg, Bool)
 msgOfKey =
