@@ -41,6 +41,8 @@ module Puzzle exposing
 
     , Blank
     , BlankClue
+    , completedBlank
+    , sameBlank
     , encodeBlank
     , blankDecoder
     , toBlank
@@ -425,6 +427,15 @@ type alias Blank =
 
 emptyBlank : Blank
 emptyBlank = toBlank empty
+
+sameBlank : Blank -> Blank -> Bool
+sameBlank b1 b2 =
+    (b1 |> Debug.log "b1").quoteWordLengths == (b2 |> Debug.log "b2").quoteWordLengths &&
+    List.all identity (List.map2 (==) b1.clues b2.clues)
+
+completedBlank : Blank -> Bool
+completedBlank b =
+    List.all (\mc -> mc /= Nothing) b.quote
 
 toBlank : Puzzle -> Blank
 toBlank puzzle =

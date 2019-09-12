@@ -27,9 +27,6 @@ import Util exposing (..)
 
 {- PICK UP HERE
 
-   dropdown for loading from playedPuzzles
-     partition based on completed vs. not
-
    support for markdown in hints
 
    more concise blank format (JSON is v wasteful)
@@ -56,6 +53,8 @@ type Msg =
   | RequestPuzzleFile
   | ReceivedPuzzleFile File
   | LoadedPuzzleFile String
+  | SelectSavedPuzzle String
+  | LoadSavedPuzzle
 
   {- UI business -}
   | VisibilityChanged Browser.Events.Visibility
@@ -77,6 +76,7 @@ type alias Model =
     , msg : Maybe String
     , focused : Bool
     , playedPuzzles : List GameState
+    , selectedPuzzle : Maybe GameState
     }
 
 type Mode = NoPuzzle
@@ -86,6 +86,18 @@ type alias GameState =
     { cursor : Cursor
     , puzzle : Puzzle
     }
+
+gameStateDescription : GameState -> String
+gameStateDescription gs =
+    {- FIXME something from the solved portion of the quote, too? -}
+    let abbrev clue = String.join " " (List.take 2 (String.words (clue.hint))) ++ "..." in
+    
+    case List.take 2 gs.puzzle.clues of
+        [] -> "???" {- FIXME yikes -}
+        [clue] -> abbrev clue
+        clue1::clue2::_ -> 
+            "A. " ++ abbrev clue1 ++ "; " ++
+            "B. " ++ abbrev clue2
 
 gameStateEncoder : GameState -> Encode.Value
 gameStateEncoder gs =
@@ -140,17 +152,19 @@ defaultModel =
     , msg = Nothing
     , focused = False
     , playedPuzzles = []
+    , selectedPuzzle = Nothing
     }
 
 withPlayedPuzzles : List GameState -> Model -> Model
-withPlayedPuzzles playedPuzzles model = { model | playedPuzzles = playedPuzzles }
+withPlayedPuzzles playedPuzzles model = 
+    { model | playedPuzzles = playedPuzzles }
 
-trySaveCurrentPuzzle : Model -> Model
-trySaveCurrentPuzzle model =
-    case model.mode of
-        NoPuzzle -> model
-        Playing old -> model |>
-                       withPlayedPuzzles (old::model.playedPuzzles)
+asSelectedPuzzleIn : Model -> Maybe Int -> Model
+asSelectedPuzzleIn model mIndex = 
+    { model | selectedPuzzle =
+          mIndex |>
+          Maybe.andThen (\idx -> List.head (List.drop idx model.playedPuzzles))
+    }
 
 clearMsg : Model -> Model
 clearMsg model = { model | msg = Nothing }
@@ -325,6 +339,36 @@ saveDecoder =
                                            ]))
         (Decode.field "url" Decode.string)
 
+loadPuzzle : GameState -> Model -> Model
+loadPuzzle gs model =
+    case Puzzle.isValidBlank gs.puzzle of
+    [] -> gs |>
+          Playing |>
+          asModeIn model |>
+          clearMsg |>
+          clearPuzzlesLike gs |>
+          trySaveCurrentPuzzle
+    problems -> 
+        model |>
+        withMsg ("Invalid puzzle: " ++ 
+                     String.join ", " 
+                     (List.map Puzzle.problemToString problems))
+
+clearPuzzlesLike : GameState -> Model -> Model
+clearPuzzlesLike gs model =
+    model |>
+    withPlayedPuzzles 
+      (List.filter (not << Puzzle.sameBlank gs.puzzle << .puzzle)
+           model.playedPuzzles)
+
+trySaveCurrentPuzzle : Model -> Model
+trySaveCurrentPuzzle model =
+    case model.mode of
+        NoPuzzle -> model
+        Playing old -> model |>
+                       clearPuzzlesLike old |>
+                       withPlayedPuzzles (old :: model.playedPuzzles)
+
 tryLoadRecentPuzzle : Model -> Model
 tryLoadRecentPuzzle model =
     case model.playedPuzzles of
@@ -341,7 +385,7 @@ selectPuzzle sUrl model =
     Maybe.andThen .query |> 
     Maybe.andThen Url.percentDecode |>
     Maybe.andThen (Decode.decodeString gameStateDecoder >>
-                   Result.toMaybe) |> Debug.log "decoded" |>
+                   Result.toMaybe) |>
     \mPuzzle -> case mPuzzle of
         Nothing -> tryLoadRecentPuzzle model
         Just puzzle -> puzzle |>
@@ -357,7 +401,7 @@ init json =
                             withPlayedPuzzles saved.playedPuzzles |>
                             selectPuzzle saved.url
     in
-        ( model |> Debug.log "initial model"
+        ( model
         , getFocus
         )
 
@@ -422,18 +466,24 @@ update msg model =
                     Err err -> model |> 
                                withMsg "Couldn't load file." 
                                
-                    Ok gs -> 
-                        case Puzzle.isValidBlank gs.puzzle of
-                        [] -> gs |>
-                              Playing |>
-                              asModeIn model |>
-                              clearMsg |>
-                              trySaveCurrentPuzzle
-                        problems -> 
-                            model |>
-                            withMsg ("Invalid puzzle: " ++ 
-                                         String.join ", " 
-                                         (List.map Puzzle.problemToString problems))
+                    Ok gs -> model |>
+                             loadPuzzle gs
+
+        (_, LoadSavedPuzzle) ->
+            case model.selectedPuzzle of
+                Nothing -> (model, Cmd.none)
+
+                Just gs ->
+                    Nothing |>
+                    asSelectedPuzzleIn model |> 
+                    loadPuzzle gs |>
+                    andSave
+
+        (_, SelectSavedPuzzle sIndex) ->
+            ( sIndex |>
+              String.toInt |>
+              asSelectedPuzzleIn model
+            , Cmd.none)
 
         (_, Focused (Err _)) -> 
             ( model |> 
@@ -502,8 +552,49 @@ view model =
         (  section [id "overview"]
            [ h3 [class "header"] [text "Crossbars — Acrostic Player"]
            , div [id "saved"]
-               [ input [ type_ "button" 
-                       , id "loadpuzzle"
+               [ select [ id "saved-puzzle-list"
+                        , onInput SelectSavedPuzzle
+                        ]
+                     (option [ value ""
+                             , selected (model.selectedPuzzle == Nothing)
+                             ]
+                             [ text "Select saved puzzle..."] ::
+                      (let 
+                          saved = model.playedPuzzles |>
+                                  List.indexedMap Tuple.pair |>
+                                  List.drop 1 {- current puzzle is the head of this list -}
+
+                          (completed, playing) = 
+                              saved |>
+                              List.partition (Tuple.second >> .puzzle >> Puzzle.completedBlank)
+
+                          grouping name l =
+                              if List.isEmpty l 
+                              then []
+                              else 
+                                  [ optgroup [attribute "label" name]
+                                        (List.map 
+                                             (\(index, savedPuzzle) ->
+                                                  option 
+                                                    [ index |> String.fromInt |> value
+                                                    , selected (model.selectedPuzzle == Just savedPuzzle)
+                                                    ]
+                                                    [ savedPuzzle |>
+                                                      gameStateDescription |>
+                                                      text
+                                                    ])
+                                             l)
+                                  ]
+                       in 
+                           grouping "In progress" playing ++ grouping "Completed" completed))
+               , input [ type_ "button"
+                       , id "loadsavedpuzzle"
+                       , value "Load puzzle"
+                       , onClick LoadSavedPuzzle
+                       ]
+                     []
+               , input [ type_ "button" 
+                       , id "loadpuzzlefile"
                        , value "Load puzzle from file..."
                        , onClick RequestPuzzleFile
                        ]

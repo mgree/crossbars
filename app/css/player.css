@@ -9,6 +9,10 @@
     margin-bottom: 0.5em;
 }
 
+#overview #saved #loadpuzzlefile {
+    margin-left: 2em;
+}
+
 #board-wrapper {
     display: flex;
     justify-content: space-around;
