@@ -1,0 +1,7 @@
+app/creator.js linguist-generated
+app/creator.min.js linguist-generated
+app/player.js linguist-generated
+app/player.min.js linguist-generated
+app/z3w.js linguist-vendored
+app/z3w.wasm linguist-vendored
+app/words/words.txt linguist-vendored
